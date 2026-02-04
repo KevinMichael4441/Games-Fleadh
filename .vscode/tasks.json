@@ -1,0 +1,162 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build: debug_linux",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "debug_linux"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Build: release_linux",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "release_linux"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Build: debug_web",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "debug_web"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Build: release_web",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "release_web"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Build: debug_r36s",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "debug_r36s"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Build: release_r36s",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "release_r36s"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Clean: Current Build",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "clean"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Clean: all",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "clean_all"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Build: debug_linux VSC",
+      "type": "shell",
+      "command": "make",
+      "args": ["-f", "Makefile.mk", "PLATFORM=linux", "CONFIG=debug", "all", "-j"],
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$gcc"],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Bear: rebuild compile_commands.json",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "rebuild_component_db"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    }
+  ]
+}

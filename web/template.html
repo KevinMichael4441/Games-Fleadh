@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gameplay Programming I Webbuild for testing R36S</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        /* Custom styles */
+        body {
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            overflow: hidden;
+            /* Prevent scrollbars */
+        }
+
+        canvas {
+            display: block;
+            /* Block element to ensure correct sizing */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Full-screen canvas for Raylib rendering -->
+    <canvas id="canvas"></canvas>
+
+    <!-- Emscripten will inject the necessary scripts here -->
+    {{{ SCRIPT }}}
+
+    <script>
+
+        // Ensure 'Module' exists before using it
+        var Module = Module || {};
+        
+        // Emscripten initialization function
+        Module['onRuntimeInitialized'] = function () {
+            const canvas = document.getElementById('canvas');
+
+            // Set the initial canvas size to fill the window
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            // Tell the Emscripten module to use this canvas for rendering
+            Module.canvas = canvas;
+
+            console.log("Raylib Template is ready!");
+        };
+
+        // Resize the canvas when the window is resized
+        function resizeCanvas() {
+            const canvas = document.getElementById('canvas');
+            if (canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+        }
+
+        // Adjust canvas size when the page loads and on window resize
+        window.addEventListener('resize', resizeCanvas);
+        window.onload = resizeCanvas;
+    </script>
+</body>
+
+</html>

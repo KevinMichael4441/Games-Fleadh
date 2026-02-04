@@ -1,0 +1,5 @@
+set architecture i386:x86-64
+set pagination off
+set print pretty on
+break main
+run

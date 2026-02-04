@@ -1,0 +1,7 @@
+services:
+  gpp:
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - render

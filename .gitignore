@@ -1,0 +1,31 @@
+# Compiled binaries
+gpp_*
+*.o
+
+# Build artifacts
+*.a
+
+# Logs
+*.log
+qemu_test.log
+
+# Editor/IDE files
+.idea/
+*.swp
+*~
+
+# Docker
+*.tar
+*.tgz
+*.gz
+*.zip
+*.bak
+*.tmp
+
+# Backup
+*.old
+
+# Build directories
+build/
+
+

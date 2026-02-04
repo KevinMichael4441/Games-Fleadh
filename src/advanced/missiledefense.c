@@ -1,0 +1,316 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <raylib.h>
+
+#include "constants.h"
+
+/*******************************************************************************************
+ *
+ * Missile Defense style game for the R36S platform
+ * Implemented using raylib for graphics and input handling
+ * Original concept by Muddy Games:
+ * https://bitbucket.org/MuddyGames/missiledefencegame/src/master/
+ *
+ * This version is adapted for the R36S platform with added gamepad support.
+ *
+ * Controls:
+ *   - D-Pad or WASD : Move the missile
+ *   - A button or Space : Arm/Disarm
+ *   - B button or Enter : Launch
+ *   - X button or R : Reset
+ *
+ ********************************************************************************************/
+
+// Screen dimensions and grid settings
+#define GRID_SIZE 32
+#define GRID_COLS (SCREEN_WIDTH / GRID_SIZE)
+#define GRID_ROWS (SCREEN_HEIGHT / GRID_SIZE)
+
+// Data Structures
+typedef struct Position
+{
+	int x;
+	int y;
+} Coordinates;
+
+// Warhead types
+typedef enum
+{
+	EXPLOSIVE,
+	NUCLEAR
+} WarHead;
+
+// Enemy (Target) structure
+typedef struct Enemy
+{
+	Coordinates coordinates;
+} Target;
+
+// Missile structure
+typedef struct Missile
+{
+	WarHead payload;
+	Coordinates coordinates;
+	Target target;
+	bool armed;
+	void (*update)(struct Missile *missile); // Function pointer for updating missile position
+	void (*arm)(struct Missile *missile);	 // Function pointer for arming/disarming
+} Missile;
+
+// Arm or disarm the missile
+void ArmMissile(struct Missile *missile)
+{
+	missile->armed = !missile->armed;
+}
+
+// Update missile position towards target along grid
+void UpdateMissile(struct Missile *missile)
+{
+	// Move towards target
+	if (missile->coordinates.x < missile->target.coordinates.x)
+		missile->coordinates.x += 1;
+	else if (missile->coordinates.x > missile->target.coordinates.x)
+		missile->coordinates.x -= 1;
+
+	if (missile->coordinates.y < missile->target.coordinates.y)
+		missile->coordinates.y += 1;
+	else if (missile->coordinates.y > missile->target.coordinates.y)
+		missile->coordinates.y -= 1;
+}
+
+// Draw Battlefield grid
+void DrawBattlefieldGrid(void)
+{
+	for (int i = 0; i <= GRID_COLS; i++)
+	{
+		DrawLine(i * GRID_SIZE, 0, i * GRID_SIZE, SCREEN_HEIGHT, GRAY);
+	}
+	for (int i = 0; i <= GRID_ROWS; i++)
+	{
+		DrawLine(0, i * GRID_SIZE, SCREEN_WIDTH, i * GRID_SIZE, GRAY);
+	}
+}
+
+// Draw GameObject (missile or target) at grid position
+void DrawGameObject(Coordinates pos, Color color)
+{
+	DrawRectangle(pos.x * GRID_SIZE + 2,
+				  pos.y * GRID_SIZE + 2,
+				  GRID_SIZE - 4,
+				  GRID_SIZE - 4,
+				  color);
+}
+
+// Ensure coordinates stay within grid bounds
+void ClampCoordinates(Coordinates *coords)
+{
+	if (coords->x < 0)
+		coords->x = 0;
+	if (coords->y < 0)
+		coords->y = 0;
+	if (coords->x >= GRID_COLS)
+		coords->x = GRID_COLS - 1;
+	if (coords->y >= GRID_ROWS)
+		coords->y = GRID_ROWS - 1;
+}
+
+// Check for collision between missile and target
+bool CheckCollision(Coordinates missile, Coordinates target)
+{
+	return (missile.x == target.x && missile.y == target.y);
+}
+
+// Main function
+int main(void)
+{
+	// Initialize window
+	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Missile Defense : R36S");
+	SetTargetFPS(TARGET_FRAME_RATE);
+
+	// Initialize gamepad if available
+	int gamepad = 0;
+
+	// Create Target
+	Target *target = (Target *)malloc(sizeof(Target));
+	target->coordinates.x = 15;
+	target->coordinates.y = 10;
+
+	// Create Missile
+	Missile *missile = (Missile *)malloc(sizeof(Missile));
+	missile->payload = EXPLOSIVE;
+	missile->arm = ArmMissile;
+	missile->update = UpdateMissile;
+	missile->armed = false;
+	missile->target = *target;
+	missile->coordinates.x = 2;
+	missile->coordinates.y = 2;
+
+	// Game state
+	bool launched = false;
+	float updateTimer = 0.0f;
+	float updateDelay = 0.2f;
+	bool hitTarget = false;
+	int score = 0;
+
+	// Main game loop
+	while (!WindowShouldClose())
+	{
+		// Update
+		float deltaTime = GetFrameTime();
+		updateTimer += deltaTime;
+
+		// Input handling
+		bool useGamepad = IsGamepadAvailable(gamepad);
+
+		// Movement (only when not launched)
+		if (!launched)
+		{
+			// Keyboard input
+			if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W))
+				missile->coordinates.y--;
+			if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S))
+				missile->coordinates.y++;
+			if (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_A))
+				missile->coordinates.x--;
+			if (IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D))
+				missile->coordinates.x++;
+
+			// Gamepad D-pad input (R36S)
+			if (useGamepad)
+			{
+				if (IsGamepadButtonPressed(gamepad, GAMEPAD_BUTTON_LEFT_FACE_UP))
+					missile->coordinates.y--;
+				if (IsGamepadButtonPressed(gamepad, GAMEPAD_BUTTON_LEFT_FACE_DOWN))
+					missile->coordinates.y++;
+				if (IsGamepadButtonPressed(gamepad, GAMEPAD_BUTTON_LEFT_FACE_LEFT))
+					missile->coordinates.x--;
+				if (IsGamepadButtonPressed(gamepad, GAMEPAD_BUTTON_LEFT_FACE_RIGHT))
+					missile->coordinates.x++;
+			}
+
+			ClampCoordinates(&missile->coordinates);
+		}
+
+		// Arm/Disarm (A button / Space)
+		if (IsKeyPressed(KEY_SPACE) ||
+			(useGamepad && IsGamepadButtonPressed(gamepad, GAMEPAD_BUTTON_RIGHT_FACE_DOWN)))
+		{
+			missile->arm(missile);
+		}
+
+		// Launch (B button / Enter)
+		if ((IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_L) ||
+			 (useGamepad && IsGamepadButtonPressed(gamepad, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT))) &&
+			missile->armed && !launched)
+		{
+			launched = true;
+		}
+
+		// Reset (X button / R)
+		if (IsKeyPressed(KEY_R) ||
+			(useGamepad && IsGamepadButtonPressed(gamepad, GAMEPAD_BUTTON_RIGHT_FACE_LEFT)))
+		{
+			launched = false;
+			hitTarget = false;
+			missile->armed = false;
+			missile->coordinates.x = 2;
+			missile->coordinates.y = 2;
+			// Randomize target
+			target->coordinates.x = GetRandomValue(10, GRID_COLS - 2);
+			target->coordinates.y = GetRandomValue(5, GRID_ROWS - 2);
+			missile->target = *target;
+		}
+
+		// Update missile position if launched
+		if (launched && updateTimer >= updateDelay && !hitTarget)
+		{
+			missile->update(missile);
+			updateTimer = 0.0f;
+
+			// Check if hit target
+			if (CheckCollision(missile->coordinates, target->coordinates))
+			{
+				hitTarget = true;
+				score += 100;
+			}
+		}
+
+		// Draw
+		BeginDrawing();
+
+		ClearBackground(DARKBLUE);
+
+		// Draw grid
+		DrawBattlefieldGrid();
+
+		// Draw target
+		if (!hitTarget)
+		{
+			DrawGameObject(target->coordinates, RED);
+			// Draw target crosshair
+			int tx = target->coordinates.x * GRID_SIZE + GRID_SIZE / 2;
+			int ty = target->coordinates.y * GRID_SIZE + GRID_SIZE / 2;
+			DrawCircleLines(tx, ty, GRID_SIZE / 3, RED);
+		}
+		else
+		{
+			// Draw explosion effect
+			int tx = target->coordinates.x * GRID_SIZE + GRID_SIZE / 2;
+			int ty = target->coordinates.y * GRID_SIZE + GRID_SIZE / 2;
+			DrawCircle(tx, ty, GRID_SIZE / 2, ORANGE);
+			DrawCircle(tx, ty, GRID_SIZE / 3, YELLOW);
+		}
+
+		// Draw missile
+		Color missileColor = missile->armed ? GREEN : LIGHTGRAY;
+		if (launched)
+			missileColor = YELLOW;
+		DrawGameObject(missile->coordinates, missileColor);
+
+		// Draw missile direction indicator when armed but not launched
+		if (missile->armed && !launched)
+		{
+			int mx = missile->coordinates.x * GRID_SIZE + GRID_SIZE / 2;
+			int my = missile->coordinates.y * GRID_SIZE + GRID_SIZE / 2;
+			int tx = missile->target.coordinates.x * GRID_SIZE + GRID_SIZE / 2;
+			int ty = missile->target.coordinates.y * GRID_SIZE + GRID_SIZE / 2;
+			DrawLine(mx, my, tx, ty, (Color){0, 255, 0, 100});
+		}
+
+		// Draw trail when launched
+		if (launched)
+		{
+			int mx = missile->coordinates.x * GRID_SIZE + GRID_SIZE / 2;
+			int my = missile->coordinates.y * GRID_SIZE + GRID_SIZE / 2;
+			DrawCircle(mx, my, 3, YELLOW);
+		}
+
+		// HUD Text
+		DrawText(TextFormat("TIMER: %d", score), 10, 10, DEFAULT_FONT_SIZE, WHITE);
+		DrawText(TextFormat("SCORE: %d", score), 10, 35, DEFAULT_FONT_SIZE, WHITE);
+		DrawText(missile->armed ? "ARMED" : "DISARMED", 10, 60, DEFAULT_FONT_SIZE, missile->armed ? GREEN : GRAY);
+		DrawText(launched ? "LAUNCHED!" : "READY", 10, 85, DEFAULT_FONT_SIZE, launched ? YELLOW : WHITE);
+
+		// Hit notification
+		if (hitTarget)
+		{
+			DrawText("TARGET HIT!", SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2, LARGE_FONT_SIZE, YELLOW);
+			DrawText("Press X/R to Reset", SCREEN_WIDTH / 2 - 90, SCREEN_HEIGHT / 2 + 45, DEFAULT_FONT_SIZE, WHITE);
+		}
+
+		// Game Controls
+		DrawText("D-Pad/WASD: Move | A/Space: Arm | B/Enter: Launch | X/R: Reset",
+				 10, SCREEN_HEIGHT - 25, SMALL_FONT_SIZE, WHITE);
+
+		EndDrawing();
+	}
+
+	// Cleanup
+	free(target);
+	free(missile);
+
+	CloseWindow();
+
+	return 0;
+}

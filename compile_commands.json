@@ -1,0 +1,97 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-gcc-10",
+      "-c",
+      "src/command.c",
+      "-o",
+      "build/linux_debug/gpp_linux",
+      "-I/opt/raylib/src",
+      "-Iinclude",
+      "-std=gnu11",
+      "-DPLATFORM_LINUX",
+      "-O0",
+      "-g",
+      "-DDEBUG"
+    ],
+    "directory": "/gpp",
+    "file": "/gpp/src/command.c",
+    "output": "/gpp/src/command.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-gcc-10",
+      "-c",
+      "src/input_manager.c",
+      "-o",
+      "build/linux_debug/gpp_linux",
+      "-I/opt/raylib/src",
+      "-Iinclude",
+      "-std=gnu11",
+      "-DPLATFORM_LINUX",
+      "-O0",
+      "-g",
+      "-DDEBUG"
+    ],
+    "directory": "/gpp",
+    "file": "/gpp/src/input_manager.c",
+    "output": "/gpp/src/input_manager.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-gcc-10",
+      "-c",
+      "src/ip_address.c",
+      "-o",
+      "build/linux_debug/gpp_linux",
+      "-I/opt/raylib/src",
+      "-Iinclude",
+      "-std=gnu11",
+      "-DPLATFORM_LINUX",
+      "-O0",
+      "-g",
+      "-DDEBUG"
+    ],
+    "directory": "/gpp",
+    "file": "/gpp/src/ip_address.c",
+    "output": "/gpp/src/ip_address.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-gcc-10",
+      "-c",
+      "src/main.c",
+      "-o",
+      "build/linux_debug/gpp_linux",
+      "-I/opt/raylib/src",
+      "-Iinclude",
+      "-std=gnu11",
+      "-DPLATFORM_LINUX",
+      "-O0",
+      "-g",
+      "-DDEBUG"
+    ],
+    "directory": "/gpp",
+    "file": "/gpp/src/main.c",
+    "output": "/gpp/src/main.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-gcc-10",
+      "-c",
+      "src/telemetry.c",
+      "-o",
+      "build/linux_debug/gpp_linux",
+      "-I/opt/raylib/src",
+      "-Iinclude",
+      "-std=gnu11",
+      "-DPLATFORM_LINUX",
+      "-O0",
+      "-g",
+      "-DDEBUG"
+    ],
+    "directory": "/gpp",
+    "file": "/gpp/src/telemetry.c",
+    "output": "/gpp/src/telemetry.o"
+  }
+]

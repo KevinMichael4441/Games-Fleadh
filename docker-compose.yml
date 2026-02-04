@@ -1,0 +1,34 @@
+services:
+  gpp:
+  
+    image: r36s-build
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: gpp-r36s
+
+    working_dir: /gpp
+
+    volumes:
+      - ./:/gpp
+      - ~/.ssh:/host_ssh:ro
+
+    ports:
+      - "8080:8080"
+
+    stdin_open: true
+    tty: true
+    command: tail -f /dev/null
+    shm_size: '2gb'
+
+# Allow Ping test to test access R36S from Docker
+    cap_add:
+      - NET_RAW
+# Added for debug
+      - SYS_PTRACE
+
+# Added for debug
+    security_opt:
+      - seccomp:unconfined

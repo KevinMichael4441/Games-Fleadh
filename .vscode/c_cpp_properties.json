@@ -1,0 +1,13 @@
+{
+  "version": 4,
+  "configurations": [
+    {
+      "name": "Linux",
+      "compileCommands": "/gpp/compile_commands.json",
+      "compilerPath": "/usr/bin/x86_64-linux-gnu-gcc-10",
+      "intelliSenseMode": "linux-gcc-x64",
+      "cStandard": "gnu11",
+      "cppStandard": "gnu++17"
+    }
+  ]
+}
