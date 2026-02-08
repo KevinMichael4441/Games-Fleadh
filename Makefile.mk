@@ -242,9 +242,13 @@ release_windows:
 .PHONY: rebuild_component_db
 
 rebuild_component_db:
-	rm -f compile_commands.json && \
-	TMPDIR=/tmp bear -- make -f Makefile.mk PLATFORM=linux CONFIG=debug all -j1
-
+	rm -f compile_commands.json
+    TMPDIR=/tmp bear -- \
+      $(MAKE) -B -f $(firstword $(MAKEFILE_LIST)) \
+      PLATFORM=linux \
+      CONFIG=debug \
+      compile_only \
+      -j1
 # ----------------------------------------
 # Clean targets
 # ----------------------------------------
