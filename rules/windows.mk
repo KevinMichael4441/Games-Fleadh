@@ -1,9 +1,12 @@
+#=================================================================
 # TODO Windows makefile rules
 # Windows specific makefile rules for MinGW
-
+#=================================================================
 .PHONY: __debug_windows __release_windows
 
+#=================================================================
 # Environment fallback variable forcing rendering with Wine
+#=================================================================
 WINE ?= LIBGL_ALWAYS_SOFTWARE=1 wine
 
 __debug_windows: __validate_windows_platform __validate_debug_config $(TARGET)

@@ -15,6 +15,8 @@ For this project **most reliably toolchain on Windows**:
 Docker Desktop can work, but has proven **more brittle** and harder to debug.  
 This README documents the **recommended, tested setup**.
 
+>**NOTE:** Make sure that virtualisation is enabled within BIOS on PC you are running WSL virtual machine.
+
 #### 1. Install WSL Ubuntu (PowerShell)
 
 Powershell WSL Ubuntu Install

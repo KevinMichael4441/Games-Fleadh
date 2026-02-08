@@ -1,12 +1,13 @@
 
-# ----------------------------------------
+#=================================================================
 # Debug target for linux host
 # This should be run inside the Docker that has been launched with
 # GUI support
-#
-# ***************************
+#=================================================================
+
+#=================================================================
 # Run Docker with GUI support
-# ***************************
+#=================================================================
 #
 # Enter the following commands in the host terminal (not in Docker):
 # xhost +local:docker
@@ -17,7 +18,7 @@
 # without a GUI but you won't see game window just terminal output
 # If you want to see game window you need to run with the
 # with the docker run command as shown above
-# ----------------------------------------
+#=================================================================
 
 .PHONY: __debug_linux __release_linux
 

@@ -19,6 +19,7 @@ RUN dpkg --add-architecture arm64 \
 	&& apt-get install -y \
 	# Common packages
 	build-essential \
+	g++ \
 	git \
 	pkg-config \
 	wget \
@@ -28,6 +29,9 @@ RUN dpkg --add-architecture arm64 \
 	iputils-ping \
 	# Debugging and memory profiling
 	valgrind \
+	# C++ standard library x86_64
+	libstdc++6 \
+	libstdc++-10-dev \
 	# AArch64 cross compile tools
 	gcc-aarch64-linux-gnu \
 	g++-aarch64-linux-gnu \
@@ -52,6 +56,9 @@ RUN dpkg --add-architecture arm64 \
 	libdrm2:arm64 \
 	libgbm1:arm64 \
 	libx11-6:arm64 \
+	# C++ standard library ARM64
+	libstdc++6:arm64 \
+	libstdc++-10-dev:arm64 \
 	# Basic editor consider emacs
 	nano \
 	# MinGW-w64 for Windows builds
@@ -85,12 +92,25 @@ RUN dpkg --add-architecture arm64 \
 	# Clean up apt cache
 	&& rm -rf /var/lib/apt/lists/*
 
+# Mark /gpp as safe directory for git operations
+RUN git config --global --add safe.directory /gpp
+
 # Generate SSH keypair
 # This will allow SSH communication with the r36s without password prompts
 RUN mkdir -p /root/.ssh && \
 	ssh-keygen -t rsa -b 4096 -C "r36s-docker" -f /root/.ssh/id_r36s -N "" && \
 	chmod 600 /root/.ssh/id_r36s && \
 	echo "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile=/dev/null" > /root/.ssh/config
+
+# Netcat used to check SSH connectivity
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends netcat-openbsd \
+	&& rm -rf /var/lib/apt/lists/*
+
+# Rsync to copy only required target files and assetts
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends rsync openssh-client \
+	&& rm -rf /var/lib/apt/lists/*
 
 # Install CMake for building raylib
 ARG CMAKE_VERSION=3.27.9
@@ -132,6 +152,7 @@ RUN mkdir -p ${RAYLIB_R36S} \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_VERBOSE_MAKEFILE=ON \
 		-DCMAKE_C_FLAGS="-std=gnu11 -Wno-stringop-overflow -I/usr/include/libdrm" \
+		-DCMAKE_CXX_FLAGS="-std=c++17 -Wno-stringop-overflow -I/usr/include/libdrm" \
 		&& cmake --build . -j$(nproc) --verbose
 
 # Build raylib for GLES2 on Linux
@@ -144,21 +165,7 @@ RUN mkdir -p ${RAYLIB_LINUX} \
 		-DBUILD_EXAMPLES=OFF \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_C_FLAGS="-std=gnu11 -Wno-stringop-overflow" \
-		&& cmake --build . -j$(nproc)
-
-# Build raylib library for Emscripten SDK
-ENV RAYLIB_WEB=${RAYLIB_DIR}/build/web
-RUN mkdir -p ${RAYLIB_WEB} \
-	&& cd ${EMSDK} \
-	&& . ./emsdk_env.sh \
-	&& cd ${RAYLIB_WEB} \
-	&& emcmake cmake ../.. \
-		-DPLATFORM=Web \
-		-DBUILD_EXAMPLES=OFF \
-		-DBUILD_GLFW=OFF \
-		-DUSE_WAYLAND=OFF \
-		-DUSE_X11=OFF \
-		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_CXX_FLAGS="-std=c++17 -Wno-stringop-overflow" \
 		&& cmake --build . -j$(nproc)
 
 # Build raylib for Windows (MinGW-w64 cross compile)
@@ -175,6 +182,23 @@ RUN mkdir -p ${RAYLIB_WINDOWS} \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_C_FLAGS="-std=gnu11 -Wno-stringop-overflow" \
+		-DCMAKE_CXX_FLAGS="-std=c++17 -Wno-stringop-overflow" \
+		&& cmake --build . -j$(nproc)
+
+# Build raylib library for Emscripten SDK
+ENV RAYLIB_WEB=${RAYLIB_DIR}/build/web
+RUN mkdir -p ${RAYLIB_WEB} \
+	&& cd ${EMSDK} \
+	&& . ./emsdk_env.sh \
+	&& cd ${RAYLIB_WEB} \
+	&& emcmake cmake ../.. \
+		-DPLATFORM=Web \
+		-DBUILD_EXAMPLES=OFF \
+		-DBUILD_GLFW=OFF \
+		-DUSE_WAYLAND=OFF \
+		-DUSE_X11=OFF \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_CXX_FLAGS="-std=c++17" \
 		&& cmake --build . -j$(nproc)
 
 # Add raylib include/lib paths to environment

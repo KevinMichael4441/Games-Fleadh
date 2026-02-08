@@ -28,4 +28,9 @@ qemu_test.log
 # Build directories
 build/
 
+# User Configuration
+# Best to ignore the config.mk file which contains user-specific settings
+# but keep the config/ directory for any shared configuration files
+config/config.mk
+
 

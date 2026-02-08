@@ -1,15 +1,21 @@
+#=================================================================
 # Build Messages
+#=================================================================
 MSG_BUILD_START			:= Game Build Started...
 MSG_BUILD_END 			:= Game Build Complete.
 
 MSG_CLEAN_START 		:= Cleaning up...
 MSG_CLEAN_END 			:= Cleaned build target.
 
+#=================================================================
 # Web Messages
+#=================================================================
 MSG_WEB_CLICK_LINK_BELOW:= Click the link BELOW to open in your Web Browser	
 MSG_WEB_CLICK_LINK_ABOVE:= Click the link ABOVE to open in your Web Browser
 
+#=================================================================
 # Error/Warning Messages
+#=================================================================
 MSG_INVALID_PLATFORM 	:= Invalid PLATFORM usage PLATFORM=r36s|linux|web
 MSG_INVALID_CONFIG_DEBUG:= Invalid CONFIG usage CONFIG=debug
 MSG_INVALID_CONFIG_RELEASE:= Invalid CONFIG usage CONFIG=release
@@ -19,19 +25,31 @@ MSG_USAGE_CONFIG_LINUX 	:= Usage: make PLATFORM=linux CONFIG=debug|release
 MSG_USAGE_CONFIG_WEB 	:= Usage: make PLATFORM=web CONFIG=debug|release
 MSG_USAGE_CONFIG_WINDOWS:= Usage: make PLATFORM=windows CONFIG=debug|release
 
+#=================================================================
 # QEMU is like a VM for arm
+#=================================================================
 MSG_QEMU_START 			:= Starting QEMU to test run r36s binary...
 MSG_QEMU_END 			:= QEMU r36s binary test run complete...
 MSG_QEMU_ERROR			:= QEMU stanity test failed
 
+#=================================================================
 # Windows Emulator
+#=================================================================
 MSG_WINE_START 			:= Starting Wine to test run Windows binary...
 MSG_WINE_END 			:= Wine Windows binary test run complete...
 
+#=================================================================
 # SSH/Deployment Messages
-MSG_R36S_CONNECT_ERROR := Unable to connect to R36S\n\n \
+#=================================================================
+MSG_R36S_CONNECT_ERROR	:= Unable to connect to R36S\n\n \
 							Ensure device is powered on and connected to WiFi.\n \
 							Confirm IP address in 'config/config.mk' is correct.
+
+MSG_R36S_SSH_EK_ERROR	:= Unable to connect to R36S\n\n \
+							Ensure SSH is enabled, R36S is powered on and connected to WiFi.\n \
+							Confirm IP address in 'config/config.mk' is correct.\n \
+							Confirm SSH key is installed on R36S device.\n \
+							Run: bash scripts/setup_ssh_r36s.sh
 
 MSG_DEPLOY_START 		:= Deploying r36s binary to R36S device...
 MSG_DEPLOY_END 			:= Deployment complete.
@@ -52,7 +70,9 @@ MSG_DEPLOY_START_GDB 	:= Starting gdbserver on R36S...
 
 MSG_COPY_ASSETS			:= Copying assets for release build...
 
+#=================================================================
 # Help Messages
+#=================================================================
 MSG_HELP_HEADER			:= Available 'make' targets \nEnsure Docker container is running\nRun 'make' inside Docker container
 
 MSG_HELP_DEFAULT		:= make				: Build default (PLATFORM=web CONFIG=debug)\n
@@ -72,4 +92,3 @@ MSG_HELP_RELEASE_WINDOWS:= make release_windows		: Release build and run on Wind
 MSG_HELP_CLEAN			:= make clean			: Clean PLATFORM and CONFIG
 MSG_HELP_CLEAN_ALL		:= make clean_all			: Clean all build targets
 MSG_HELP_HELP			:= make help				: Show help message
-

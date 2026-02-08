@@ -5,12 +5,116 @@
       "name": "GDB: Launch (linux debug)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/linux_debug/gpp_linux",
+      "program": "${workspaceFolder}/build/linux_debug/target_linux",
       "cwd": "${workspaceFolder}",
       "MIMode": "gdb",
       "miDebuggerPath": "/usr/bin/gdb",
-      "preLaunchTask": "Build: debug_linux VSC",
+      "preLaunchTask": "Linux: Debug VSCode",
       "externalConsole": false
+    },
+    {
+      "name": "GDB: Remote Debug R36S (SSH default)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/r36s_debug/target_r36s",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        {
+          "name": "R36S_DEPLOY_MODE",
+          "value": "ssh-default"
+        }
+      ],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb-multiarch",
+      "miDebuggerServerAddress": "${config:r36s.host}:${config:r36s.gdb_port}",
+      "preLaunchTask": "R36S: PreLaunch (VSCode)",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set architecture to aarch64",
+          "text": "set architecture aarch64",
+          "ignoreFailures": false
+        },
+        {
+          "description": "Set sysroot",
+          "text": "set sysroot /",
+          "ignoreFailures": false
+        },
+        {
+          "description": "Set solib search path",
+          "text": "set solib-absolute-prefix /usr/aarch64-linux-gnu",
+          "ignoreFailures": false
+        },
+        {
+          "description": "Disable address randomization",
+          "text": "set disable-randomization off",
+          "ignoreFailures": false
+        }
+      ],
+      "logging": {
+        "engineLogging": false,
+        "trace": false,
+        "traceResponse": false
+      }
+    },
+    {
+      "name": "GDB: Remote Debug R36S (SSH explicit key)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/r36s_debug/target_r36s",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        {
+          "name": "R36S_DEPLOY_MODE",
+          "value": "ssh-explicit-key"
+        }
+      ],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb-multiarch",
+      "miDebuggerServerAddress": "${config:r36s.host}:${config:r36s.gdb_port}",
+      "preLaunchTask": "R36S: PreLaunch (VSCode)",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set architecture to aarch64",
+          "text": "set architecture aarch64",
+          "ignoreFailures": false
+        },
+        {
+          "description": "Set sysroot",
+          "text": "set sysroot /",
+          "ignoreFailures": false
+        },
+        {
+          "description": "Set solib search path",
+          "text": "set solib-absolute-prefix /usr/aarch64-linux-gnu",
+          "ignoreFailures": false
+        },
+        {
+          "description": "Disable address randomization",
+          "text": "set disable-randomization off",
+          "ignoreFailures": false
+        }
+      ],
+      "logging": {
+        "engineLogging": false,
+        "trace": false,
+        "traceResponse": false
+      }
     }
   ]
 }

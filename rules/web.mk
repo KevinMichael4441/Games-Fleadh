@@ -1,13 +1,21 @@
-# ----------------------------------------
+#=================================================================
 # Build target for web (emscripten)
-# ----------------------------------------
+#=================================================================
 .PHONY: __debug_web __release_web __kill_port_8080
 
 __kill_port_8080:
 	$(call INFO_MSG,Freeing port 8080 $(TARGET) (if in use))
 	$(call INFO_MSG,Make sure no critical services are using this port)
 	$(call INFO_MSG,Verify via ip address if running on server)
-	@fuser -k 8080/tcp 2>/dev/null || true
+	@pids=$$(fuser 8080/tcp 2>/dev/null || true); \
+	if [ -n "$$pids" ]; then \
+		$(call WARN_YELLOW_LINE); \
+		$(call WARN_LINE,Killing PID(s): $$pids); \
+		$(call WARN_YELLOW_LINE); \
+		fuser -k 8080/tcp >/dev/null 2>&1 || true; \
+	else \
+		$(call SUCCESS_LINE,Port 8080 is free); \
+	fi
 
 __debug_web: __kill_port_8080 __validate_web_platform __validate_debug_config $(TARGET)
 	$(call INFO_MSG,Starting Debug $(TARGET) for Web)

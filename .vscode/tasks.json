@@ -1,8 +1,11 @@
 {
   "version": "2.0.0",
   "tasks": [
+    // =================================================================
+    // Linux Build Debug Tasks (Binary build only)
+    // =================================================================
     {
-      "label": "Build: debug_linux",
+      "label": "Linux: Build Debug",
       "type": "shell",
       "command": "make",
       "args": [
@@ -11,7 +14,77 @@
         "debug_linux"
       ],
       "group": {
-        "kind": "build",
+        "kind": "test",
+        "isDefault": false
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    // =================================================================
+    // Web Build Debug Tasks (Launch Emscripten build and Web server)
+    // =================================================================
+    {
+      "label": "Web: Build Debug",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "debug_web"
+      ],
+      "group": "test",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    // =================================================================
+    // R36S Build Debug Tasks (Binary build only)
+    // =================================================================
+    {
+      "label": "R36S: Build Debug",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "debug_r36s"
+      ],
+      "group": "test",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    // =================================================================
+    // GDB Debug Build Tasks (explicit PLATFORM/CONFIG)
+    // Todo : unify with above tasks?
+    // =================================================================
+    {
+      "label": "Linux: Debug VSCode",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "PLATFORM=linux",
+        "CONFIG=debug",
+        "all",
+        "-j"
+      ],
+      "group": {
+        "kind": "test",
         "isDefault": true
       },
       "problemMatcher": [
@@ -22,8 +95,66 @@
         "panel": "dedicated"
       }
     },
+    // =================================================================
+    // VS Code build task for Web (explicit PLATFORM/CONFIG)
+    // =================================================================
     {
-      "label": "Build: release_linux",
+      "label": "Web: Debug VS Code",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "PLATFORM=web",
+        "CONFIG=debug",
+        "all",
+        "-j"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    // =================================================================
+    // VS Code build task for R36S (explicit PLATFORM/CONFIG)
+    // Unify with above? TODO
+    // =================================================================
+    {
+      "label": "R36S: Debug VS Code",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "PLATFORM=r36s",
+        "CONFIG=debug",
+        "all",
+        "-j"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    // =================================================================
+    // Linux Build Release Tasks
+    // =================================================================
+    {
+      "label": "Linux: Build Release",
       "type": "shell",
       "command": "make",
       "args": [
@@ -40,26 +171,11 @@
         "panel": "dedicated"
       }
     },
+    // =================================================================
+    // Web Build Release Tasks
+    // =================================================================
     {
-      "label": "Build: debug_web",
-      "type": "shell",
-      "command": "make",
-      "args": [
-        "-f",
-        "Makefile.mk",
-        "debug_web"
-      ],
-      "group": "build",
-      "problemMatcher": [
-        "$gcc"
-      ],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated"
-      }
-    },
-    {
-      "label": "Build: release_web",
+      "label": "Web: Build Release",
       "type": "shell",
       "command": "make",
       "args": [
@@ -76,26 +192,11 @@
         "panel": "dedicated"
       }
     },
+    // =================================================================
+    // R36S Build Release Tasks
+    // =================================================================
     {
-      "label": "Build: debug_r36s",
-      "type": "shell",
-      "command": "make",
-      "args": [
-        "-f",
-        "Makefile.mk",
-        "debug_r36s"
-      ],
-      "group": "build",
-      "problemMatcher": [
-        "$gcc"
-      ],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated"
-      }
-    },
-    {
-      "label": "Build: release_r36s",
+      "label": "R36S: Build Release",
       "type": "shell",
       "command": "make",
       "args": [
@@ -112,6 +213,200 @@
         "panel": "dedicated"
       }
     },
+    // =================================================================
+    // R36S SSH Connection and Deploy Release Tasks
+    // =================================================================
+    {
+      "label": "R36S: SSH Connection Up (SSH default)",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "r36s_ssh_connection_up"
+      ],
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    // =================================================================
+    // R36S SSH Connection and Deploy Release Tasks
+    // =================================================================
+    {
+      "label": "R36S: SSH Connection Down (SSH default)",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "r36s_ssh_connection_down"
+      ],
+      "group": "test",
+      "problemMatcher": []
+    },
+    // =================================================================
+    // R36S SSH Connection Status Task
+    // =================================================================
+    {
+      "label": "R36S: SSH Connection Status (SSH default)",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "r36s_ssh_connection_status"
+      ],
+      "group": "test",
+      "problemMatcher": []
+    },
+    // =================================================================
+    // R36S SSH Explicit Key Enable/Disable Tasks
+    // =================================================================
+    {
+      "label": "R36S: SSH Explicit Key Enable",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "r36s-ssh-explicit-key-enable"
+      ],
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "R36S: SSH Explicit Key Disable",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "r36s-ssh-explicit-key-disable"
+      ],
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    // =================================================================
+    // Terminal Release Deploy Tasks (Build + Deploy only)
+    // =================================================================
+    {
+      "label": "R36S: Deploy Release (SSH default)",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "release_on_r36s_with_ssh_default"
+      ],
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "R36S: Deploy Release (SSH explicit key)",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "release_on_r36s_with_ssh_explicit_key"
+      ],
+      "group": "test",
+      "problemMatcher": []
+    },
+    // =================================================================
+    // VSCode Debug Deploy Tasks (Build + Deploy only)
+    // =================================================================
+    {
+      "label": "R36S: Sync VSCode Settings",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "sync-vscode-settings",
+        "--no-print-directory"
+      ],
+      "presentation": {
+        "reveal": "silent", // Runs invisibly without stealing focus
+        "panel": "shared",
+        "close": true
+      }
+    },
+    // =================================================================
+    // VSCode preLaunch for R36S (mode env var)
+    // =================================================================
+    {
+      "label": "R36S: PreLaunch (VSCode)",
+      "dependsOn": [
+        "R36S: Sync VSCode Settings"
+      ],
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/r36s_ssh_type_prelaunch.sh",
+      "args": [],
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false,
+        "clear": true
+      }
+    },
+    // =================================================================
+    // Terminal Debug Tasks (Build + Deploy + Launch GDB in terminal)
+    // =================================================================
+    {
+      "label": "R36S: Deploy Debug (SSH default)",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "debug_on_r36s_with_ssh_default"
+      ],
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true,
+        "clear": true
+      }
+    },
+    // =================================================================
+    // Terminal Debug Tasks (Build + Deploy + Launch GDB in terminal)
+    // =================================================================
+    {
+      "label": "R36S: Deploy Debug (SSH explicit key)",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "debug_on_r36s_with_ssh_explicit_key"
+      ],
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true,
+        "clear": true
+      }
+    },
+    // =================================================================
+    // Clean Tasks
+    // =================================================================
     {
       "label": "Clean: Current Build",
       "type": "shell",
@@ -124,27 +419,58 @@
       "problemMatcher": []
     },
     {
-      "label": "Clean: all",
+      "label": "Clean: All",
       "type": "shell",
       "command": "make",
       "args": [
         "-f",
         "Makefile.mk",
-        "clean_all"
+        "PLATFORM=linux",
+        "CONFIG=debug",
+        "all",
+        "-j"
       ],
-      "problemMatcher": []
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
     },
+    // =================================================================
+    // Test Task
+    // =================================================================
     {
-      "label": "Build: debug_linux VSC",
+      "label": "Test: All Builds",
       "type": "shell",
       "command": "make",
-      "args": ["-f", "Makefile.mk", "PLATFORM=linux", "CONFIG=debug", "all", "-j"],
-      "group": { "kind": "build", "isDefault": true },
-      "problemMatcher": ["$gcc"],
-      "presentation": { "reveal": "always", "panel": "dedicated" }
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "test_all"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
     },
+    // =================================================================
+    // Bear Tasks (Rebuild compile_commands.json)
+    // =================================================================
     {
-      "label": "Bear: rebuild compile_commands.json",
+      "label": "Bear: Rebuild compile_commands.json",
       "type": "shell",
       "command": "make",
       "args": [

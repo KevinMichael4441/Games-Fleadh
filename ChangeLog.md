@@ -1,3 +1,19 @@
+## v0.19: 06-02-2026
+- Enable / Disable SSH Secure
+- Added symbolic links for debugging
+- Added testing suite for builds
+- Game renaming
+- Debugging through VSCode 
+- GDB Working on Device
+- Clean vscode volume bug fixed
+- Renamed tasks
+- Removed unused profiles
+- Numpad Aiming Fixed
+- Added directional Aiming
+- IP Address lookup moved to telemetry
+- SSH deploy with password and key
+- Virtualization note setting up VM
+
 ## v0.18: 29-01-2026
 - Added Telemetry (toggle Telemetry)
 - CPU Usage

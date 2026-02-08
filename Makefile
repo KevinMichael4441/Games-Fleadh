@@ -1,12 +1,12 @@
-# ----------------------------------------
+#=================================================================
 # Silence command echoing
-# ----------------------------------------
+#=================================================================
 .SILENT:
 
-# ----------------------------------------
+#=================================================================
 # Makefile with project targets
 # (run inside Docker container)
-# ----------------------------------------
+#=================================================================
 MAKEFILE		:= Makefile.mk
 
 # R36S Deployment Configuration
@@ -26,30 +26,45 @@ include $(RESOURCE_DIR)/messages.mk
 CP_SRC_FILES 	:= $(strip $(CP_SRC_FILES))
 CP_DESTINATION	:= $(strip $(CP_DESTINATION))
 
-# ----------------------------------------
+#-----------------------------------------------------------------
+# Strip config values (tabs/spaces)
+#-----------------------------------------------------------------
+R36S_USER		:= $(strip $(R36S_USER))
+R36S_HOST		:= $(strip $(R36S_HOST))
+R36S_PATH		:= $(strip $(R36S_PATH))
+R36S_PATH		:= $(strip $(R36S_PATH))
+
+# For Shell Scripts
+export R36S_USER
+export R36S_HOST
+export CONTROL_SOCKET
+export R36S_PATH
+
+#=================================================================
 # Docker container base name
-# ----------------------------------------
+#=================================================================
 CONTAINER		:= gpp
 
-# ----------------------------------------
+#=================================================================
 # Phony targets
-# ----------------------------------------
+#=================================================================
 .PHONY: up run shell down rebuild help all\
         debug_web release_web \
 		debug_linux release_linux \
 		debug_r36s release_r36s \
 		debug_windows release_windows \
 		clean clean_all \
-		xhost
-
-# ----------------------------------------
+		xhost \
+		clean-vscode
+		
+#=================================================================
 # Default goal
-# ----------------------------------------
+#=================================================================
 .DEFAULT_GOAL 	:= all
 
-# ----------------------------------------
+#=================================================================
 # OS detection (host)
-# ----------------------------------------
+#=================================================================
 UNAME_S      	:= $(shell uname -s)
 IS_WINDOWS   	:= $(if $(findstring MINGW,$(UNAME_S)),TRUE,FALSE)
 IS_LINUX     	:= $(if $(findstring Linux,$(UNAME_S)),TRUE,FALSE)
@@ -62,9 +77,9 @@ export HOST_IS_LINUX   := $(IS_LINUX)
 export HOST_IS_WSL     := $(IS_WSL)
 export HOST_IS_MACOS   := $(IS_MACOS)
 
-# ----------------------------------------
+#=================================================================
 # Docker compose file selection
-# ----------------------------------------
+#=================================================================
 COMPOSE_BASE := docker-compose.yml
 
 # Windows
@@ -93,11 +108,11 @@ COMPOSE_FILES 	:= -f $(COMPOSE_BASE) -f $(COMPOSE_OS) $(GPU_AVAILABLE)
 # Docker Compose
 DC 				:= docker compose $(COMPOSE_FILES)
 
-# ----------------------------------------
+#=================================================================
 # Docker targets
 # Start Docker containers
 # X11 Docker container
-# ----------------------------------------
+#=================================================================
 # Allow X11 connections to Docker container
 # so raylib, GLFW, Wine can create windows.
 #
@@ -114,9 +129,9 @@ xhost:
 up: xhost
 	@$(DC) up -d --build
 
-# ----------------------------------------
+#=================================================================
 # Macro make commands inside Docker container
-# ----------------------------------------
+#=================================================================
 define DOCKER_MAKE
 	@$(DC) exec -e HOST_IS_WINDOWS=$(HOST_IS_WINDOWS) \
 	            -e HOST_IS_MACOS=$(HOST_IS_MACOS) \
@@ -125,9 +140,9 @@ define DOCKER_MAKE
 	            $(CONTAINER) make -f $(MAKEFILE) $(MAKEOVERRIDES) $(1)
 endef
 
-# ----------------------------------------
+#=================================================================
 # Default target
-# ----------------------------------------
+#=================================================================
 all: up
 	@$(DC) exec -e HOST_IS_WINDOWS=$(HOST_IS_WINDOWS) \
 	            -e HOST_IS_MACOS=$(HOST_IS_MACOS) \
@@ -135,9 +150,9 @@ all: up
 	            -e HOST_IS_WSL=$(HOST_IS_WSL) \
 	            $(CONTAINER) make -f $(MAKEFILE) $(MAKEOVERRIDES)
 
-# ----------------------------------------
+#=================================================================
 # Debug and Release targets
-# ----------------------------------------
+#=================================================================
 debug_web: up
 	$(call DOCKER_MAKE,debug_web)
 
@@ -167,7 +182,9 @@ copy_r36s_sd: release_r36s
 	sudo cp -a $(CP_SRC_FILES) $(CP_DESTINATION)
 	$(call SUCCESS_MSG, $(MSG_COPY_TO_SD_END))
 
+#=================================================================
 # TODO : Handle Container Rebuild
+#=================================================================
 setup_ssh: up
 	$(call INFO_MSG_BOX, "Configuring SSH on R36S")
 	$(call INFO_MSG_BOX, "Running shell script ./scripts/setup_ssh_r36s.sh")
@@ -188,37 +205,45 @@ ifeq ($(HOST_IS_WINDOWS),TRUE)
 	@./build/windows_release/gpp_windows.exe
 endif
 
-# ----------------------------------------
+#=================================================================
 # Clean targets
-# ----------------------------------------
+#=================================================================
 clean: up
 	$(call DOCKER_MAKE,clean)
 
 clean_all: up
 	$(call DOCKER_MAKE,clean_all)
 
-# ----------------------------------------
+#=================================================================
 # Help target
-# ----------------------------------------
+#=================================================================
 help:
 	$(call DOCKER_MAKE,help)
 
-# ----------------------------------------
+#=================================================================
 # Open a shell inside Docker container
 # if you want to run make now use
 # "make -f Makefile.mk <target>"
-# ----------------------------------------
+#=================================================================
 shell: up
 	@$(DC) exec -it $(CONTAINER) bash || docker compose exec -it $(CONTAINER) sh
 
-# ----------------------------------------
+#=================================================================
 # Stop Docker container
-# ----------------------------------------
+#=================================================================
 down:
 	@$(DC) down
 
-# ----------------------------------------
+#=================================================================
+# Remove 'vscode' Dev Containers plugin volume(s)
+#=================================================================
+clean-vscode:
+	@docker volume ls | grep -E 'vscode|vsc' || true
+	@docker volume ls --filter "name=vscode" -q | xargs -r docker volume rm
+	@docker volume ls --filter "name=vsc" -q | xargs -r docker volume rm
+
+#=================================================================
 # Rebuild Docker container
-# ----------------------------------------
-rebuild:
+#=================================================================
+rebuild: clean-vscode
 	@$(DC) build --no-cache
