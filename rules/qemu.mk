@@ -22,6 +22,6 @@ __qemu_test: __validate_r36s_platform $(TARGET)
 		$(call ERROR_RED_LINE); \
 		$(call ERROR_LINE, $(strip $(MSG_QEMU_ERROR))); \
 		$(call ERROR_RED_LINE); \
-		tail -n 60 /tmp/qemu_test.log; \
+		tail -n 60 qemu_test.log; \
 		exit 1; \
 	fi
