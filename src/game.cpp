@@ -6,7 +6,13 @@ Game::Game()
 
 void Game::run()
 {
-	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Slilab");
+	// R36S window size is 640x480
+#if defined(GAME_NAME) && defined(GAME_DESCRIPTION)
+	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, GAME_NAME " - " GAME_DESCRIPTION);
+#else
+	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "StarterKit R36S | Linux | Windows | Web");
+#endif
+
 	SetTargetFPS(TARGET_FPS);
 	initGame();
 
@@ -36,15 +42,39 @@ void Game::initGame()
 	float jumpAmount = 0.8;
 	ooze.initialize(springConstant, damp, centrePoint, speed, jumpAmount);
 
+	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
+		// Telemetry Init
+		glRendererStr = (const char *)glGetString(GL_RENDERER);
+		glVersionStr = (const char *)glGetString(GL_VERSION);
+		glslVersionStr = (const char *)glGetString(GL_SHADING_LANGUAGE_VERSION);
+		InitTelemetry(&r36s_telemetry);
+	#endif // Init Telemetry R36S and Linux only
+
 
 }
 
 void Game::update(float t_dt)
 {
 	ooze.update(t_dt);
+
+#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
+	// Telemetry Update
+	UpdateTelemetryFrame(&r36s_telemetry, GetFrameTime(), GetTime(), GetFPS());
+	UpdateTelemetry(&r36s_telemetry, GetTime());
+#endif // TELEMETRY Update R36S and Linux only
+
 }
 
 void Game::draw()
 {
 	ooze.draw();
+
+
+	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
+	// Draw Telemetry
+	if (show_telemetry)
+	{
+		DrawTelemetry(&r36s_telemetry, 8, 8, glRendererStr, glVersionStr, glslVersionStr);
+	}
+	#endif // Draw Telemetry R36S and Linux only
 }

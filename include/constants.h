@@ -8,19 +8,40 @@
 // FPS Target
 #define TARGET_FPS      	60
 
+// For OOZE
 #define MAX_POINTS 			7
 #define MAX_SPRINGS 		21 	// (6 + 5 + 4 + 3 + 2 + 1)
-#define MAX_BEZIER_POINTS	15 	// 7 + 7 + 1
-#define MAX_CONTROL_POINTS	7
-#define MAX_ANGLES			6
-
-#define MAX_MASTER_DISTANCE	36
-#define MIN_MASTER_DISTANCE	12
-
-#define MAX_POINT_DISTANCE	36
-#define MIN_POINT_DISTANCE	12
 
 
-#define RELAPSE_DELAY		5.0f
+//=================================================================
+// Font Sizes
+//=================================================================
+#define SMALL_FONT_SIZE 16
+#define DEFAULT_FONT_SIZE 24
+#define LARGE_FONT_SIZE 32
+
+
+//=================================================================
+// IP ADDRESS Lookup
+//=================================================================
+#define IP_ADDRESS_MAX_RETRIES 5
+#define IP_ADDRESS_MAX_RETRY_INTERVAL 0.5f
+#define IP_ADDRESS_MAX_LEN 16
+
+//=================================================================
+// R32S Device Telemetry
+// Tested on device that returned following from ark@rg351mp:~$ cat /proc/cpuinfo
+// CPU implementer : 0x41 		=> ARM Ltd
+// CPU architecture: 8 			=> ARMv8-A (64-bit capable ARM)
+// CPU part        : 0xd04 		=> ARM Cortex-A35
+// Rockchip RK3326 SoC:
+// 		Quad-core ARM Cortex-A35
+// 		ARM Mali GPU
+// See https://rockchip.fr/RK3326%20datasheet%20V1.1.pdf
+//=================================================================
+#define MAX_CORES 4
+#define CPU_SAMPLE_UNINITIALIZED (-1e9f)
+
+
 
 #endif // CONSTANTS_H
