@@ -1,10 +1,10 @@
-#include "ooze.h"
+#include "ooze.hpp"
 
 Ooze::Ooze() 
 {
 }
 
-void Ooze::initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount)
+void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount)
 {
 	m_springConstant = t_k;
 	m_damp = t_damp;
@@ -73,13 +73,13 @@ void Ooze::initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, 
    	}
 }
 
-void Ooze::update(float t_dt)
+void Ooze::Update(float t_dt)
 {
-	updateSprings();
-	updatePoints(t_dt);
+	UpdateSprings();
+	UpdatePoints(t_dt);
 }
 
-void Ooze::updateSprings()
+void Ooze::UpdateSprings()
 {
 
 	for (int index = 0; index < MAX_SPRINGS; index++)
@@ -119,7 +119,7 @@ void Ooze::updateSprings()
 	}
 }
 
-void Ooze::updatePoints(float t_dt)
+void Ooze::UpdatePoints(float t_dt)
 {
 	for (int index = 0; index < MAX_POINTS; index++)
 	{
@@ -135,12 +135,12 @@ void Ooze::updatePoints(float t_dt)
 
 		if (IsKeyPressed((KEY_X)))
 		{
-			spread();
+			Spread();
 		}
 		
 		if (IsKeyPressed(KEY_Z))
 		{
-			jump();
+			Jump();
 		}
 
 		m_points[index].m_acceleration.y += (m_gravity.y * m_points[index].m_radius / 10);
@@ -154,7 +154,7 @@ void Ooze::updatePoints(float t_dt)
 		m_points[index].m_position.x += m_points[index].m_velocity.x;
 		m_points[index].m_position.y += m_points[index].m_velocity.y;
 
-		clampPlayerOnScreen(index); //deltaTime, index);
+		ClampPlayerOnScreen(index); //deltaTime, index);
 
 		m_points[index].m_acceleration.x = 0;
 		m_points[index].m_acceleration.y = 0;	
@@ -179,7 +179,7 @@ void Ooze::updatePoints(float t_dt)
 }
 
 
-void Ooze::clampPlayerOnScreen(int index)
+void Ooze::ClampPlayerOnScreen(int index)
 {
 	if (m_points[index].m_position.x < m_points[index].m_radius)
 	{
@@ -202,7 +202,7 @@ void Ooze::clampPlayerOnScreen(int index)
 	}
 }
 
-void Ooze::jump()
+void Ooze::Jump()
 {
 	for (int index = 0; index < MAX_POINTS; index++)
 	{
@@ -211,7 +211,7 @@ void Ooze::jump()
 }
 
 
-void Ooze::spread()
+void Ooze::Spread()
 {
 	for (int index = 0; index < MAX_POINTS / 2; index++)
 	{
@@ -224,7 +224,7 @@ void Ooze::spread()
 	}
 }
 
-Vector2 Ooze::calculateCenter()
+Vector2 Ooze::CalculateCenter()
 {
 	float sumX = 0.0f;
 	float sumY = 0.0f;
@@ -241,7 +241,7 @@ Vector2 Ooze::calculateCenter()
 	return (Vector2){x,y};
 }
 
-void Ooze::draw()
+void Ooze::Draw()
 {
 	for (int index = 0; index < MAX_POINTS; index++)
 	{

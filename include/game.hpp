@@ -9,7 +9,7 @@
 #include "math.h"
 #include "rlgl.h"
 
-#include "ooze.h"
+#include "ooze.hpp"
 
 
 
@@ -44,13 +44,13 @@ class Game
 {
 public:
 	Game();
-	void run();
+	void Run();
 
 private:
 
-	void initGame();
-	void update(float t_dt);
-	void draw();
+	void InitGame();
+	void Update(float t_dt);
+	void Draw();
 
 	Ooze ooze;
 };

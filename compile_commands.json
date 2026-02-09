@@ -3,50 +3,6 @@
     "arguments": [
       "/usr/bin/x86_64-linux-gnu-g++-10",
       "-c",
-      "src/example/example.cpp",
-      "-o",
-      "build/linux_debug/obj/example/example.o",
-      "-I/opt/raylib/src",
-      "-Iinclude",
-      "-std=c++17",
-      "-DGAME_NAME=\"Game Name\"",
-      "-DGAME_DESCRIPTION=\"Description of game\"",
-      "-DGAME_VERSION=\"1.0.0\"",
-      "-DPLATFORM_LINUX",
-      "-O0",
-      "-g",
-      "-DDEBUG"
-    ],
-    "directory": "/gpp",
-    "file": "/gpp/src/example/example.cpp",
-    "output": "/gpp/build/linux_debug/obj/example/example.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/x86_64-linux-gnu-g++-10",
-      "-c",
-      "src/game.cpp",
-      "-o",
-      "build/linux_debug/obj/game.o",
-      "-I/opt/raylib/src",
-      "-Iinclude",
-      "-std=c++17",
-      "-DGAME_NAME=\"Game Name\"",
-      "-DGAME_DESCRIPTION=\"Description of game\"",
-      "-DGAME_VERSION=\"1.0.0\"",
-      "-DPLATFORM_LINUX",
-      "-O0",
-      "-g",
-      "-DDEBUG"
-    ],
-    "directory": "/gpp",
-    "file": "/gpp/src/game.cpp",
-    "output": "/gpp/build/linux_debug/obj/game.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/x86_64-linux-gnu-g++-10",
-      "-c",
       "src/main.cpp",
       "-o",
       "build/linux_debug/obj/main.o",
@@ -89,6 +45,28 @@
   },
   {
     "arguments": [
+      "/usr/bin/x86_64-linux-gnu-g++-10",
+      "-c",
+      "src/game.cpp",
+      "-o",
+      "build/linux_debug/obj/game.o",
+      "-I/opt/raylib/src",
+      "-Iinclude",
+      "-std=c++17",
+      "-DGAME_NAME=\"Game Name\"",
+      "-DGAME_DESCRIPTION=\"Description of game\"",
+      "-DGAME_VERSION=\"1.0.0\"",
+      "-DPLATFORM_LINUX",
+      "-O0",
+      "-g",
+      "-DDEBUG"
+    ],
+    "directory": "/gpp",
+    "file": "/gpp/src/game.cpp",
+    "output": "/gpp/build/linux_debug/obj/game.o"
+  },
+  {
+    "arguments": [
       "/usr/bin/x86_64-linux-gnu-gcc-10",
       "-c",
       "src/ip_address.c",
@@ -108,5 +86,27 @@
     "directory": "/gpp",
     "file": "/gpp/src/ip_address.c",
     "output": "/gpp/build/linux_debug/obj/ip_address.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-gcc-10",
+      "-c",
+      "src/telemetry.c",
+      "-o",
+      "build/linux_debug/obj/telemetry.o",
+      "-I/opt/raylib/src",
+      "-Iinclude",
+      "-std=gnu11",
+      "-DGAME_NAME=\"Game Name\"",
+      "-DGAME_DESCRIPTION=\"Description of game\"",
+      "-DGAME_VERSION=\"1.0.0\"",
+      "-DPLATFORM_LINUX",
+      "-O0",
+      "-g",
+      "-DDEBUG"
+    ],
+    "directory": "/gpp",
+    "file": "/gpp/src/telemetry.c",
+    "output": "/gpp/build/linux_debug/obj/telemetry.o"
   }
 ]

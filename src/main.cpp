@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "game.h"
+#include "game.hpp"
 #include "constants.h"
 #include "time.h"
 
@@ -9,7 +9,7 @@ int main(void)
 {
 	srand(time(nullptr));
 	Game game;
-	game.run();
+	game.Run();
 
 	return 1; //success
 }

@@ -1,10 +1,10 @@
-#include "game.h"
+#include "game.hpp"
 
 Game::Game()
 {
 }
 
-void Game::run()
+void Game::Run()
 {
 	// R36S window size is 640x480
 #if defined(GAME_NAME) && defined(GAME_DESCRIPTION)
@@ -14,25 +14,25 @@ void Game::run()
 #endif
 
 	SetTargetFPS(TARGET_FPS);
-	initGame();
+	InitGame();
 
 	// Update Loop
 	while (!WindowShouldClose())
 	{
 		float deltaTime = GetFrameTime(); // Get delta time frame time expressed in seconds
-		update(deltaTime);
+		Update(deltaTime);
 
 		BeginDrawing();
  		// Clear the Frame
  		ClearBackground(RAYWHITE);
  		// Draw the Game Objects
- 		draw();
+ 		Draw();
  		// Raylib End drawing to Frame Buffer
  		EndDrawing();	
 	}
 }
 
-void Game::initGame()
+void Game::InitGame()
 {
 	// OOZEY WHIZY
 	float springConstant = 0.01;
@@ -40,7 +40,7 @@ void Game::initGame()
 	Vector2 centrePoint = {0,0};
 	float speed = 0.5;
 	float jumpAmount = 0.8;
-	ooze.initialize(springConstant, damp, centrePoint, speed, jumpAmount);
+	ooze.Initialize(springConstant, damp, centrePoint, speed, jumpAmount);
 
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 		// Telemetry Init
@@ -49,13 +49,11 @@ void Game::initGame()
 		glslVersionStr = (const char *)glGetString(GL_SHADING_LANGUAGE_VERSION);
 		InitTelemetry(&r36s_telemetry);
 	#endif // Init Telemetry R36S and Linux only
-
-
 }
 
-void Game::update(float t_dt)
+void Game::Update(float t_dt)
 {
-	ooze.update(t_dt);
+	ooze.Update(t_dt);
 
 #if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 	// Telemetry Update
@@ -65,9 +63,9 @@ void Game::update(float t_dt)
 
 }
 
-void Game::draw()
+void Game::Draw()
 {
-	ooze.draw();
+	ooze.Draw();
 
 
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)

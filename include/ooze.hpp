@@ -55,22 +55,21 @@ private:
 
 public:
 	Ooze();
-	void initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount);
+	void Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount);
 	
-	void update(float t_dt);
-	void updatePoints(float t_dt);
-	void updateSprings();
+	void Update(float t_dt);
+	void UpdatePoints(float t_dt);
+	void UpdateSprings();
 
-	void clampPlayerOnScreen(int index);
+	void ClampPlayerOnScreen(int index);
 
-	void jump();
-	void spread();
+	void Jump();
+	void Spread();
 
-	Vector2 calculateCenter();
+	Vector2 CalculateCenter();
 
 
-	void draw();
+	void Draw();
 };
-
 
 #endif
