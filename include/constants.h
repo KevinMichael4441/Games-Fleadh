@@ -6,7 +6,7 @@
 #define SCREEN_HEIGHT   	480
 
 // FPS Target
-#define TARGET_FPS      	60
+#define TARGET_FPS      	30
 
 // For OOZE
 #define MAX_POINTS 			7
