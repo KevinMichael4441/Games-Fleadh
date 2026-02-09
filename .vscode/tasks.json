@@ -425,22 +425,9 @@
       "args": [
         "-f",
         "Makefile.mk",
-        "PLATFORM=linux",
-        "CONFIG=debug",
-        "all",
-        "-j"
+        "clean_all"
       ],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "problemMatcher": [
-        "$gcc"
-      ],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated"
-      }
+      "problemMatcher": []
     },
     // =================================================================
     // Test Task
