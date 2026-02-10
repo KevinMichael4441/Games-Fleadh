@@ -102,6 +102,9 @@ static void ChangeState(SuperMech *mech, SupermechState newState, float dt)
         return;
     }
 
+    mech->currentFrame = 0;
+    mech->animationTimer = 0.0f;
+
     StateConfig *current = &mech->stateConfigs[mech->currentState];
     StateConfig *next = &mech->stateConfigs[newState];
 
@@ -137,6 +140,17 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos)
 
     mech->currentState = MECH_DORMANT;
     mech->previousState = MECH_DORMANT;
+
+    mech->texture = LoadTexture("./assets/supermech/supermech_64x98.png");
+    mech->frameWidth  = 64;
+    mech->frameHeight = 98;
+    mech->scale = 1.0f;
+
+    mech->frameCount = 8;     //frames per row
+    mech->frameTime  = 0.12f; //seconds per frame
+    mech->currentFrame = 0;
+    mech->animationTimer = 0.0f;
+    mech->facingRight = true;
 
     //-------Configure States-------//
 
@@ -199,9 +213,44 @@ void SuperMech_Update(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, 
     UpdateState(mech, dt);
 }
 
-void SuperMech_Draw(const SuperMech *mech) 
+void SuperMech_Draw(SuperMech *mech) 
 {
-    DrawRectangle(200,200,200,200,GREEN);
+    mech->animationTimer += GetFrameTime();
+    if (mech->animationTimer >= mech->frameTime)
+    {
+        mech->animationTimer -= mech->frameTime;
+        mech->currentFrame++;
+
+        if (mech->currentFrame >= mech->frameCount)
+        {
+            mech->currentFrame = 0;
+        }
+    }
+
+    float frameWidth = (float)mech->frameWidth;
+    float sourceX = (float)(mech->currentFrame * mech->frameWidth);
+
+    if (!mech->facingRight)
+    {
+        frameWidth *= -1;
+        sourceX += mech->frameWidth;
+    }
+
+    Rectangle source = { sourceX, 0.0f, frameWidth, (float)mech->frameHeight };
+
+    Vector2 origin = {
+        (mech->frameWidth * mech->scale) / 2.0f,
+        (mech->frameHeight * mech->scale) / 2.0f
+    };
+
+    Rectangle dest = {
+        mech->position.x + origin.x,
+        mech->position.y + origin.y,
+        mech->frameWidth * mech->scale,
+        mech->frameHeight * mech->scale
+    };
+
+    DrawTexturePro( mech->texture, source, dest, origin, 0.0f, WHITE);
 }
 
 const char *SuperMech_GetStateName(SupermechState state) 

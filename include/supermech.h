@@ -28,7 +28,7 @@ typedef void (*EventFunction)(struct SuperMech *, float);
 
 typedef struct {
     const char *name;
-    EventFunction HandleEvent;  // optional, can be NULL
+    EventFunction HandleEvent;  //optional, can be NULL
 
     StateFunction Entry;
     StateFunction Update;
@@ -50,7 +50,20 @@ typedef struct SuperMech {
     Vector2 lastKnownPlayerPos;
     bool playerVisible;
 
-    // FSM data
+    //---Sprite Properties---//
+    Texture2D texture;
+    int frameWidth;
+    int frameHeight;
+    float scale;
+
+    //---Animation---//
+    int frameCount;
+    float frameTime;
+    int currentFrame;
+    float animationTimer;
+    bool facingRight;
+
+    //---FSM---//
     SupermechState currentState;
     SupermechState previousState;
     StateConfig stateConfigs[MECH_STATE_COUNT];
@@ -59,7 +72,7 @@ typedef struct SuperMech {
 void SuperMech_Init(SuperMech *mech, Vector2 startPos);
 
 void SuperMech_Update(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, float dt);
-void SuperMech_Draw(const SuperMech *mech);
+void SuperMech_Draw(SuperMech *mech);
 
 const char *SuperMech_GetStateName(SupermechState state);
 
