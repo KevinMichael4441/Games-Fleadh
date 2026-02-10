@@ -6,6 +6,8 @@ Ooze::Ooze()
 
 void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount)
 {
+	InitInputManager();
+
 	m_springConstant = t_k;
 	m_damp = t_damp;
 	m_centrePoint = t_center;
@@ -75,13 +77,41 @@ void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, 
 
 void Ooze::Update(float t_dt)
 {
+	m_activeCommand = PollInput();
+
+	HandleInput();
 	UpdateSprings();
 	UpdatePoints(t_dt);
 }
 
+void Ooze::HandleInput()
+{
+	for (int index = 0; index < MAX_POINTS; index++)
+	{
+		if (IsCommandActive(MOVE_LEFT, m_activeCommand))
+		{
+			m_points[index].m_velocity.x -= (m_speed * m_points[index].m_radius / 10);
+		}
+
+		if (IsCommandActive(MOVE_RIGHT, m_activeCommand))
+		{
+			m_points[index].m_velocity.x += (m_speed * m_points[index].m_radius / 10);
+		}
+
+		if (IsCommandActive(ACTION_SPECIAL_1, m_activeCommand))
+		{
+			Jump();
+		}
+
+		if (IsCommandActive(ACTION_SPECIAL_2, m_activeCommand))
+		{
+			Spread();
+		}
+	}
+}
+
 void Ooze::UpdateSprings()
 {
-
 	for (int index = 0; index < MAX_SPRINGS; index++)
 	{
 
@@ -123,16 +153,6 @@ void Ooze::UpdatePoints(float t_dt)
 {
 	for (int index = 0; index < MAX_POINTS; index++)
 	{
-		if (IsKeyDown(KEY_LEFT))
-		{
-			m_points[index].m_velocity.x -= (m_speed * m_points[index].m_radius / 10);
-		}	
-		
-		if (IsKeyDown(KEY_RIGHT))
-		{
-			m_points[index].m_velocity.x += (m_speed * m_points[index].m_radius / 10);
-		}
-
 		if (IsKeyPressed((KEY_X)))
 		{
 			Spread();

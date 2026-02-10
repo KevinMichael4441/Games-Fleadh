@@ -55,4 +55,4 @@ private:
 	Ooze ooze;
 };
 
-#endif // GAME_H
+#endif //game.h

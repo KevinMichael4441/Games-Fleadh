@@ -7,6 +7,9 @@
 
 #include "constants.h"
 
+#include "command.h"
+#include "input_manager.h"
+
 
 typedef struct Point
 {
@@ -53,10 +56,13 @@ private:
 
 	Vector2 m_centrePoint;
 
+	Command m_activeCommand;
+
 public:
 	Ooze();
 	void Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount);
 	
+	void HandleInput();
 	void Update(float t_dt);
 	void UpdatePoints(float t_dt);
 	void UpdateSprings();
