@@ -54,6 +54,7 @@ void Game::InitGame()
 void Game::Update(float t_dt)
 {
 	ooze.Update(t_dt);
+	ooze.slimeFSM.update();
 
 #if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 	// Telemetry Update

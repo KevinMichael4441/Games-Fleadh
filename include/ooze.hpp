@@ -9,6 +9,7 @@
 
 #include "command.h"
 #include "input_manager.h"
+#include "fsm.h"
 
 
 typedef struct Point
@@ -76,6 +77,8 @@ public:
 
 
 	void Draw();
+
+	FSM slimeFSM;
 };
 
 #endif

@@ -1,0 +1,14 @@
+#ifndef COMMANDS_H
+#define COMMANDS_H
+
+typedef enum Commands
+{
+	COMMAND_NONE,
+	COMMAND_MOVE_UP,
+	COMMAND_MOVE_DOWN,
+	COMMAND_MOVE_LEFT,
+	COMMAND_MOVE_RIGHT,
+	COMMAND_JUMP,
+} Commands;
+
+#endif
