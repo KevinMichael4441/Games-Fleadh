@@ -227,7 +227,7 @@ void FSM::exitState(){
             // Insert methods to execute upon leaving moving state
         break;
         case STATE_JUMPING:
-            std::cout << "Exiting STATE_MOVING\n";
+            std::cout << "Exiting STATE_JUMPING\n";
             // Insert methods to execute upon leaving jumping state
         break;
     }
