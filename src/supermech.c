@@ -201,6 +201,7 @@ void SuperMech_Update(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, 
 
 void SuperMech_Draw(const SuperMech *mech) 
 {
+    DrawRectangle(200,200,200,200,GREEN);
 }
 
 const char *SuperMech_GetStateName(SupermechState state) 

@@ -9,6 +9,11 @@
 
 #include "raylib.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef enum {
     MECH_DORMANT,
     MECH_IDLE,
@@ -57,5 +62,9 @@ void SuperMech_Update(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, 
 void SuperMech_Draw(const SuperMech *mech);
 
 const char *SuperMech_GetStateName(SupermechState state);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //SUPERMECH_H

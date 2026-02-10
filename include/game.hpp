@@ -10,7 +10,7 @@
 #include "rlgl.h"
 
 #include "ooze.hpp"
-
+#include "supermech.h"
 
 
 #if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
@@ -53,6 +53,7 @@ private:
 	void Draw();
 
 	Ooze ooze;
+	SuperMech mech;
 };
 
 #endif //game.h

@@ -42,6 +42,9 @@ void Game::InitGame()
 	float jumpAmount = 0.8;
 	ooze.Initialize(springConstant, damp, centrePoint, speed, jumpAmount);
 
+	//--------Mech--------------
+	SuperMech_Init(&mech, {0,0});
+
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 		// Telemetry Init
 		glRendererStr = (const char *)glGetString(GL_RENDERER);
@@ -55,6 +58,10 @@ void Game::Update(float t_dt)
 {
 	ooze.Update(t_dt);
 
+
+
+	SuperMech_Update(&mech, {0,0}, true, t_dt);
+
 #if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 	// Telemetry Update
 	UpdateTelemetryFrame(&r36s_telemetry, GetFrameTime(), GetTime(), GetFPS());
@@ -67,6 +74,7 @@ void Game::Draw()
 {
 	ooze.Draw();
 
+	SuperMech_Draw(&mech);
 
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 	// Draw Telemetry
