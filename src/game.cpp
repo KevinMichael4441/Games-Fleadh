@@ -34,6 +34,9 @@ void Game::Run()
 
 void Game::InitGame()
 {
+	// Initial GameState
+	gamestate = GAME_PLAY;
+
 	// OOZEY WHIZY
 	float springConstant = 0.01;
 	float damp = 0.95;
@@ -53,7 +56,10 @@ void Game::InitGame()
 
 void Game::Update(float t_dt)
 {
-	ooze.Update(t_dt);
+	if(gamestate == GAME_PLAY)
+	{
+		ooze.Update(t_dt);
+	}
 
 #if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 	// Telemetry Update
@@ -61,12 +67,29 @@ void Game::Update(float t_dt)
 	UpdateTelemetry(&r36s_telemetry, GetTime());
 #endif // TELEMETRY Update R36S and Linux only
 
+
+	// Temporary --------------------------------------
+	if(IsKeyPressed(KEY_ONE)){
+		printf("GameState = GAME_START\n");
+		gamestate = GAME_START;
+	}
+	if(IsKeyPressed(KEY_TWO)){
+		printf("GameState = GAME_PLAY\n");
+		gamestate = GAME_PLAY;
+	}
+	if(IsKeyPressed(KEY_THREE)){
+		printf("GameState = GAME_END\n");
+		gamestate = GAME_END;
+	}
+	// ------------------------------------------------
 }
 
 void Game::Draw()
 {
-	ooze.Draw();
-
+	if(gamestate == GAME_PLAY)
+	{
+		ooze.Draw();
+	}
 
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 	// Draw Telemetry

@@ -9,6 +9,7 @@
 #include "math.h"
 #include "rlgl.h"
 
+#include "gamestates.hpp"
 #include "ooze.hpp"
 
 
@@ -52,6 +53,7 @@ private:
 	void Update(float t_dt);
 	void Draw();
 
+	GameState gamestate;
 	Ooze ooze;
 };
 
