@@ -12,6 +12,7 @@
 #include "fsm.h"
 
 
+
 typedef struct Point
 {
 	Vector2 m_acceleration;
@@ -56,29 +57,57 @@ private:
 	float m_damp;
 
 	Vector2 m_centrePoint;
+	float m_moveDirection;
 
-	Command m_activeCommand;
+	State m_currentState;
 
 public:
 	Ooze();
 	void Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount);
 	
-	void HandleInput();
-	void Update(float t_dt);
+	void HandleInput(Command t_activeCommand);
+	void HandleEvent(Event t_event);
+
+	void EnterState(State t_state);
+    void EnterIdleState();
+	void EnterMoveState();
+	void EnterJumpState();
+   
+
+
+    void ExitState();
+	void ExitIdleState();
+	void ExitMoveState();
+	void ExitJumpState();
+
+
+
+	void Update(float t_dt, Command t_activeCommand);
+	void DefaultUpdate(float t_dt);
 	void UpdatePoints(float t_dt);
 	void UpdateSprings();
 
+	void UpdateState(float t_dt);
+	void UpdateIdleState(float t_dt);
+	void UpdateMovingState(float t_dt);
+	void UpdateJumpingState(float t_dt);
+	
+
+
+
 	void ClampPlayerOnScreen(int index);
 
+	void Move();
 	void Jump();
 	void Spread();
 
 	Vector2 CalculateCenter();
 
-
 	void Draw();
 
-	FSM slimeFSM;
+
+	
+	FSM fsm;
 };
 
 #endif

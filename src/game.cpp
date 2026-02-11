@@ -34,7 +34,7 @@ void Game::Run()
 
 void Game::InitGame()
 {
-	// OOZEY WHIZY
+	//------------- OOZEY WHIZY------------------//
 	float springConstant = 0.01;
 	float damp = 0.95;
 	Vector2 centrePoint = {0,0};
@@ -42,6 +42,10 @@ void Game::InitGame()
 	float jumpAmount = 0.8;
 	ooze.Initialize(springConstant, damp, centrePoint, speed, jumpAmount);
 
+	//--------Input Manager---------------------//
+	InitInputManager();
+
+	//----------------Telemetry------------------//
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 		// Telemetry Init
 		glRendererStr = (const char *)glGetString(GL_RENDERER);
@@ -53,15 +57,55 @@ void Game::InitGame()
 
 void Game::Update(float t_dt)
 {
-	ooze.Update(t_dt);
-	ooze.slimeFSM.update();
+	m_activeCommand = PollInput();
+	NonGameInputs();
 
-#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
+	ooze.Update(t_dt, m_activeCommand);
+
+// -----------------TELEMETRY UPDATES----------------------------------------//
+
+	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 	// Telemetry Update
 	UpdateTelemetryFrame(&r36s_telemetry, GetFrameTime(), GetTime(), GetFPS());
 	UpdateTelemetry(&r36s_telemetry, GetTime());
-#endif // TELEMETRY Update R36S and Linux only
+	#endif // TELEMETRY Update R36S and Linux only
 
+//-------------------TELEMETRY UPDATES------------------------------------------//
+
+}
+
+void Game::NonGameInputs()
+{
+	if(IsCommandActive(VOLUME_UP, m_activeCommand))
+	{
+		// Increase Volume
+	}
+
+	if (IsCommandActive(VOLUME_DOWN, m_activeCommand))
+	{
+		// Decrease Volume
+	}
+
+	if (IsCommandActive(MENU_TOGGLE, m_activeCommand))
+	{
+		// Toggle Telemetry (for now)
+		show_telemetry = !show_telemetry;
+	}
+
+	if (IsCommandActive(START_GAME, m_activeCommand))
+	{
+		// (?)
+	}
+
+	if (IsCommandActive(EXIT_COMMAND, m_activeCommand))
+	{
+		// (?)
+	}
+
+	if (IsCommandActive(POWER_COMMAND, m_activeCommand))
+	{
+		// (?)
+	}
 }
 
 void Game::Draw()

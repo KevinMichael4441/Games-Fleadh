@@ -6,8 +6,6 @@ Ooze::Ooze()
 
 void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount)
 {
-	InitInputManager();
-
 	m_springConstant = t_k;
 	m_damp = t_damp;
 	m_centrePoint = t_center;
@@ -15,6 +13,8 @@ void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, 
 	m_jumpAmount = t_jumpAmount;
 
 	m_gravity = {0.0f, 0.1f};
+
+	m_currentState = STATE_IDLE;
 
 	for (int index = 0; index < MAX_POINTS; index++)
 	{
@@ -75,39 +75,164 @@ void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, 
    	}
 }
 
-void Ooze::Update(float t_dt)
+void Ooze::Update(float t_dt, Command t_activeCommand)
 {
-	m_activeCommand = PollInput();
+	HandleInput(t_activeCommand);
 
-	HandleInput();
+
+	UpdateState(t_dt);
+}
+
+void Ooze::UpdateState(float t_dt)
+{
+	if (m_currentState == STATE_IDLE)
+	{
+		UpdateIdleState(t_dt);
+	}
+	else if (m_currentState == STATE_MOVING)
+	{
+		UpdateMovingState(t_dt);
+	}
+	else if (m_currentState == STATE_JUMPING)
+	{
+		UpdateJumpingState(t_dt);
+	}
+}
+
+void Ooze::UpdateIdleState(float t_dt)
+{
+	DefaultUpdate(t_dt);
+}
+
+void Ooze::UpdateMovingState(float t_dt)
+{
+	DefaultUpdate(t_dt);
+	Move();
+}
+
+void Ooze::UpdateJumpingState(float t_dt)
+{
+	DefaultUpdate(t_dt);
+	for (int index = 0; index < MAX_POINTS; index++)
+ 	{
+		Jump();
+	}
+
+	HandleEvent(EVENT_INSTANT); 
+}
+
+
+void Ooze::DefaultUpdate(float t_dt)
+{
 	UpdateSprings();
 	UpdatePoints(t_dt);
 }
 
-void Ooze::HandleInput()
+void Ooze::HandleInput(Command t_activeCommand)
 {
-	for (int index = 0; index < MAX_POINTS; index++)
+	float axis = 0.0f;
+
+	if (IsCommandActive(t_activeCommand, MOVE_LEFT))
+		axis += -1.0f;
+
+	if (IsCommandActive(t_activeCommand, MOVE_RIGHT))
+		axis += 1.0f;
+
+
+	// Check if we are moving
+	bool moving = abs(axis) > 0.0f;
+	bool jumping = IsCommandActive(t_activeCommand, ACTION_JUMP);
+
+	// EVENT_MOVE only of not EVENT_ATTACK and NOT EVENT_DEFEND
+	if (!jumping && moving)
 	{
-		if (IsCommandActive(MOVE_LEFT, m_activeCommand))
-		{
-			m_points[index].m_velocity.x -= (m_speed * m_points[index].m_radius / 10);
-		}
+		m_moveDirection = axis;
 
-		if (IsCommandActive(MOVE_RIGHT, m_activeCommand))
-		{
-			m_points[index].m_velocity.x += (m_speed * m_points[index].m_radius / 10);
-		}
-
-		if (IsCommandActive(ACTION_SPECIAL_1, m_activeCommand))
-		{
-			Jump();
-		}
-
-		if (IsCommandActive(ACTION_SPECIAL_2, m_activeCommand))
-		{
-			Spread();
-		}
+		HandleEvent(EVENT_MOVE);
 	}
+	// Send none if not MOVING or Performing and ACTION
+	else if (!moving && !jumping)
+	{
+		HandleEvent(EVENT_NONE);
+	}
+
+	// ATTACK / DEFEND Send last
+	if (jumping)
+	{
+		HandleEvent(EVENT_JUMP);
+	}
+}	
+
+void Ooze::HandleEvent(Event t_event)
+{
+	if (fsm.CheckValidTransition(m_currentState, t_event))
+	{
+		ExitState();
+		m_currentState = fsm.getState();
+		EnterState(m_currentState);
+	}
+}
+
+void Ooze::ExitState()
+{
+	switch (m_currentState)
+	{
+		case STATE_IDLE:
+			ExitIdleState();
+			break;
+		case STATE_MOVING:
+			ExitMoveState();
+			break;
+		case STATE_JUMPING:
+			ExitJumpState();
+			break;
+	}
+}
+
+void Ooze::ExitIdleState()
+{
+	std::cout << "Exited Idle State\n";
+}
+
+void Ooze::ExitJumpState()
+{
+	std::cout << "Exited Jump State\n";
+}
+
+void Ooze::ExitMoveState()
+{
+	std::cout << "Exited Move State\n";
+}
+
+void Ooze::EnterState(State t_stateToEnter)
+{
+	switch (t_stateToEnter)
+	{
+		case STATE_IDLE:
+			EnterIdleState();
+			break;
+		case STATE_MOVING:
+			EnterMoveState();
+			break;
+		case STATE_JUMPING:
+			EnterJumpState();
+			break;
+	}
+}
+
+void Ooze::EnterIdleState()
+{
+	std::cout << "Entered Idle State\n";
+}
+
+void Ooze::EnterMoveState()
+{
+	std::cout << "Entered Move State\n";
+}
+
+void Ooze::EnterJumpState()
+{
+	std::cout << "Entered Jump State\n";
 }
 
 void Ooze::UpdateSprings()
@@ -153,16 +278,6 @@ void Ooze::UpdatePoints(float t_dt)
 {
 	for (int index = 0; index < MAX_POINTS; index++)
 	{
-		if (IsKeyPressed((KEY_X)))
-		{
-			Spread();
-		}
-		
-		if (IsKeyPressed(KEY_Z))
-		{
-			Jump();
-		}
-
 		m_points[index].m_acceleration.y += (m_gravity.y * m_points[index].m_radius / 10);
 
 		m_points[index].m_velocity.x *= m_damp;
@@ -191,10 +306,6 @@ void Ooze::UpdatePoints(float t_dt)
 			m_points[index].m_newRadius = rand() % 20 + 20;
 			m_points[index].lerpTimeElapsed = 0;
 		}
-		
-		//printf("index: %d ", index);
-		//printf("x: %f ", data->points[index].m_position.x);
-		//printf("y: %f\n", data->points[index].m_position.y);
 	}
 }
 
@@ -230,6 +341,13 @@ void Ooze::Jump()
 	}
 }
 
+void Ooze::Move()
+{
+	for (int index = 0; index < MAX_POINTS; index++)
+ 	{
+		m_points[index].m_velocity.x += (m_moveDirection * m_speed * m_points[index].m_radius / 10);
+	}
+}
 
 void Ooze::Spread()
 {

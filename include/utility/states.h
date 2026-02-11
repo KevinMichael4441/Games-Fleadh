@@ -5,7 +5,7 @@ typedef enum State
 {
 	STATE_IDLE,
 	STATE_MOVING,
-	STATE_JUMPING
+	STATE_JUMPING,
 } State;
 
 #endif
