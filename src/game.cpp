@@ -88,8 +88,10 @@ void Game::NonGameInputs()
 
 	if (IsCommandActive(MENU_TOGGLE, m_activeCommand))
 	{
+		#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 		// Toggle Telemetry (for now)
 		show_telemetry = !show_telemetry;
+		#endif
 	}
 
 	if (IsCommandActive(START_GAME, m_activeCommand))
