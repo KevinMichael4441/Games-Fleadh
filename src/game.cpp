@@ -34,6 +34,10 @@ void Game::Run()
 
 void Game::InitGame()
 {
+
+	// Initial GameState
+	gamestate = GAME_PLAY;
+
 	//------------- OOZEY WHIZY------------------//
 	float springConstant = 0.01;
 	float damp = 0.95;
@@ -60,7 +64,10 @@ void Game::Update(float t_dt)
 	m_activeCommand = PollInput();
 	NonGameInputs();
 
-	ooze.Update(t_dt, m_activeCommand);
+	if(gamestate == GAME_PLAY)
+	{
+		ooze.Update(t_dt, m_activeCommand);
+	}
 
 // -----------------TELEMETRY UPDATES----------------------------------------//
 
@@ -112,8 +119,10 @@ void Game::NonGameInputs()
 
 void Game::Draw()
 {
-	ooze.Draw();
-
+	if(gamestate == GAME_PLAY)
+	{
+		ooze.Draw();
+	}
 
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 	// Draw Telemetry

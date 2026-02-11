@@ -9,6 +9,7 @@
 #include "math.h"
 #include "rlgl.h"
 
+#include "gamestates.hpp"
 #include "ooze.hpp"
 #include "command.h"
 #include "input_manager.h"
@@ -54,6 +55,7 @@ private:
 	void NonGameInputs();
 	void Draw();
 
+	GameState gamestate;
 	Ooze ooze;
 	Command m_activeCommand;
 };
