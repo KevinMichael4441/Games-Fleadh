@@ -51,7 +51,11 @@ typedef struct SuperMech {
     bool playerVisible;
 
     //---Sprite Properties---//
-    Texture2D texture;
+    Texture2D* currentTexture;
+    Texture2D textureDormant;
+    Texture2D textureIdle;
+    Texture2D textureHunt;
+    Texture2D textureSearch;
     int frameWidth;
     int frameHeight;
     float scale;

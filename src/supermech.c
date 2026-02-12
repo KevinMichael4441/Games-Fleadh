@@ -102,6 +102,15 @@ static void ChangeState(SuperMech *mech, SupermechState newState, float dt)
         return;
     }
 
+    switch (newState)
+    {
+        case MECH_DORMANT: mech->currentTexture = &mech->textureDormant; break;
+        case MECH_IDLE:    mech->currentTexture = &mech->textureIdle;    break;
+        case MECH_HUNT:    mech->currentTexture = &mech->textureHunt;    break;
+        case MECH_SEARCH:  mech->currentTexture = &mech->textureSearch;  break;
+        default:           mech->currentTexture = &mech->textureIdle;    break;
+    }
+
     mech->currentFrame = 0;
     mech->animationTimer = 0.0f;
 
@@ -141,7 +150,10 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos)
     mech->currentState = MECH_DORMANT;
     mech->previousState = MECH_DORMANT;
 
-    mech->texture = LoadTexture("./assets/supermech/supermech_64x98.png");
+    mech->textureDormant = LoadTexture("./assets/supermech/supermech_sleep_64x98.png");
+    mech->textureIdle = LoadTexture("./assets/supermech/supermech_64x98.png");
+    mech->textureHunt = LoadTexture("./assets/supermech/supermech_64x98.png");
+    mech->textureSearch = LoadTexture("./assets/supermech/supermech_64x98.png");
     mech->frameWidth  = 64;
     mech->frameHeight = 98;
     mech->scale = 1.0f;
@@ -208,7 +220,10 @@ void SuperMech_Update(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, 
         ChangeState(mech, MECH_HUNT, dt);
     }
 
-    mech->lastKnownPlayerPos = playerPos;
+    if (mech->playerVisible)
+    {
+        mech->lastKnownPlayerPos = playerPos;
+    }
 
     UpdateState(mech, dt);
 }
@@ -250,7 +265,7 @@ void SuperMech_Draw(SuperMech *mech)
         mech->frameHeight * mech->scale
     };
 
-    DrawTexturePro( mech->texture, source, dest, origin, 0.0f, WHITE);
+    DrawTexturePro( *mech->currentTexture, source, dest, origin, 0.0f, WHITE);
 }
 
 const char *SuperMech_GetStateName(SupermechState state) 
@@ -273,7 +288,10 @@ static void Dormant_Entry(SuperMech *mech, float dt)
 
 static void Dormant_Update(SuperMech *mech, float dt)
 {
-    // do nothing
+    if (mech->playerVisible)
+    {
+        ChangeState(mech, MECH_HUNT, dt);
+    }
 }
 
 static void Dormant_Exit(SuperMech *mech, float dt)
@@ -284,10 +302,24 @@ static void Dormant_Exit(SuperMech *mech, float dt)
 
 static void Idle_Entry(SuperMech *mech, float dt)
 {
+    mech->stateTimer = 0.0f;
+    mech->velocity = (Vector2){0,0};
 }
 
 static void Idle_Update(SuperMech *mech, float dt)
 {
+    mech->stateTimer += dt;
+
+    if (mech->playerVisible)
+    {
+        ChangeState(mech, MECH_HUNT, dt);
+        return;
+    }
+
+    if (mech->stateTimer > 5.0f)
+    {
+        ChangeState(mech, MECH_DORMANT, dt);
+    }
 }
 
 static void Idle_Exit(SuperMech *mech, float dt)
@@ -302,7 +334,14 @@ static void Hunt_Entry(SuperMech *mech, float dt)
 
 static void Hunt_Update(SuperMech *mech, float dt)
 {
-    MoveTowards(mech, mech->lastKnownPlayerPos, mech->speedHunt);
+    if (mech->playerVisible)
+    {
+        MoveTowards(mech, mech->lastKnownPlayerPos, mech->speedHunt);
+    }
+    else
+    {
+        ChangeState(mech, MECH_SEARCH, dt);
+    }    
 }
 
 static void Hunt_Exit(SuperMech *mech, float dt)
@@ -313,10 +352,33 @@ static void Hunt_Exit(SuperMech *mech, float dt)
 
 static void Search_Entry(SuperMech *mech, float dt)
 {
+    mech->stateTimer = 0.0f;
+    mech->velocity = (Vector2){0,0};
 }
 
 static void Search_Update(SuperMech *mech, float dt)
 {
+    mech->stateTimer += dt;
+
+    if (mech->playerVisible)
+    {
+        ChangeState(mech, MECH_HUNT, dt);
+        return;
+    }
+
+    if (mech->stateTimer < 1.0f)
+    {
+        mech->facingRight = true;
+    }
+    else if (mech->stateTimer < 2.0f)
+    {
+        mech->facingRight = false;
+    }
+
+    if (mech->stateTimer > 3.0f)
+    {
+        ChangeState(mech, MECH_IDLE, dt);
+    }
 }
 
 static void Search_Exit(SuperMech *mech, float dt)
