@@ -226,6 +226,10 @@ void SuperMech_Update(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, 
     }
 
     UpdateState(mech, dt);
+
+    const char *stateName = SuperMech_GetStateName(mech->currentState);
+
+    DrawText( stateName, (int)mech->position.x, (int)(mech->position.y - 20), 16, RED );
 }
 
 void SuperMech_Draw(SuperMech *mech) 

@@ -43,7 +43,7 @@ void Game::InitGame()
 	ooze.Initialize(springConstant, damp, centrePoint, speed, jumpAmount);
 
 	//--------Mech--------------
-	SuperMech_Init(&mech, {0,0});
+	SuperMech_Init(&mech, {200,200});
 
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 		// Telemetry Init
