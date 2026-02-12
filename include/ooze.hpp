@@ -19,11 +19,16 @@ typedef struct Point
 	Vector2 m_velocity;
 	Vector2 m_position;
 
-	float m_radius;		
-	float m_newRadius;
+	float m_radiusX;		
+	float m_newRadiusX;
+	
+	float m_radiusY;		
+	float m_newRadiusY;
+	
 	float m_mass;
 
-	float lerpTimeElapsed;
+	float lerpTimeElapsedX;
+	float lerpTimeElapsedY;
 	float lerpTime;
 } Point;
 
@@ -31,7 +36,9 @@ typedef struct Point
 typedef struct Spring
 {
 	float springConstant;
-	float restLength;
+	float spawnedRestLength;
+	float currentRestLength;
+	
 
 	Point *a;
 	Point *b;

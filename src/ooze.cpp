@@ -25,13 +25,18 @@ void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, 
 
 			((float)(rand() % 20 + 20)),
 			((float)(rand() % 20 + 20)),
+
+			((float)(rand() % 20 + 20)),
+			((float)(rand() % 20 + 20)),
 			0.0f,
 
 			0.0f,
+			0.0f,
+
 			7.5f
 		};
 
-		point.m_mass = point.m_radius * point.m_radius;
+		point.m_mass = point.m_radiusX * point.m_radiusX;
 
 		m_points[index] = point;
 	}
@@ -47,7 +52,7 @@ void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, 
 			float xDistance = {b->m_position.x - a->m_position.x};
 			float yDistance = {b->m_position.y - a->m_position.y};
 			float magnitudeOfDistance = sqrt((xDistance * xDistance) + (yDistance * yDistance));
-			Spring spring =  { m_springConstant, magnitudeOfDistance, a, b} ;
+			Spring spring =  { m_springConstant, magnitudeOfDistance, magnitudeOfDistance, a, b} ;
 
 
 			switch (currentPoint)
@@ -249,7 +254,7 @@ void Ooze::UpdateSprings()
 		float xForce = m_springs[index].b->m_position.x - m_springs[index].a->m_position.x;
 		float yForce = m_springs[index].b->m_position.y - m_springs[index].a->m_position.y;
 		float magnitudeOfForce = sqrt((xForce * xForce) + (yForce * yForce));
-		float displacement = magnitudeOfForce - m_springs[index].restLength;
+		float displacement = magnitudeOfForce - m_springs[index].currentRestLength;
 
 		Vector2 normalizedForce;
 		if (magnitudeOfForce == 0)
@@ -277,6 +282,7 @@ void Ooze::UpdateSprings()
 
 		m_springs[index].b->m_acceleration.x += normalizedForce.x * weightOfB;
 		m_springs[index].b->m_acceleration.y += normalizedForce.y * weightOfB;
+
 	}
 }
 
@@ -284,7 +290,7 @@ void Ooze::UpdatePoints(float t_dt)
 {
 	for (int index = 0; index < MAX_POINTS; index++)
 	{
-		m_points[index].m_acceleration.y += (m_gravity.y * m_points[index].m_radius / 10);
+		m_points[index].m_acceleration.y += (m_gravity.y * m_points[index].m_radiusX / 10);
 
 		m_points[index].m_velocity.x *= m_damp;
 		m_points[index].m_velocity.y *= m_damp;
@@ -302,15 +308,28 @@ void Ooze::UpdatePoints(float t_dt)
 
 
 
-		m_points[index].lerpTimeElapsed += t_dt;
-		m_points[index].m_radius = Lerp(m_points[index].m_radius, m_points[index].m_newRadius,
-			m_points[index].lerpTimeElapsed / m_points[index].lerpTime);
+		m_points[index].lerpTimeElapsedX += t_dt;
+		m_points[index].lerpTimeElapsedY += t_dt;
 
-		float difference = m_points[index].m_newRadius - m_points[index].m_radius;
-		if (difference < 0.01 && difference > -0.01)
+		m_points[index].m_radiusX = Lerp(m_points[index].m_radiusX, m_points[index].m_newRadiusX,
+			m_points[index].lerpTimeElapsedX / m_points[index].lerpTime);
+
+		m_points[index].m_radiusY = Lerp(m_points[index].m_radiusY, m_points[index].m_newRadiusY,
+			m_points[index].lerpTimeElapsedY / m_points[index].lerpTime);
+
+		float differenceX = m_points[index].m_newRadiusX - m_points[index].m_radiusX;
+		float differenceY = m_points[index].m_newRadiusY - m_points[index].m_radiusY;
+
+		if (differenceX < 0.01 && differenceX > -0.01)
 		{
-			m_points[index].m_newRadius = rand() % 20 + 20;
-			m_points[index].lerpTimeElapsed = 0;
+			m_points[index].m_newRadiusX = rand() % 20 + 20;
+			m_points[index].lerpTimeElapsedX = 0;
+		}
+
+		if (differenceY < 0.01 && differenceY > -0.01)
+		{
+			m_points[index].m_newRadiusY = rand() % 20 + 20;
+			m_points[index].lerpTimeElapsedY = 0;
 		}
 	}
 }
@@ -318,53 +337,72 @@ void Ooze::UpdatePoints(float t_dt)
 
 void Ooze::ClampPlayerOnScreen(int index)
 {
-	if (m_points[index].m_position.x < m_points[index].m_radius)
+	if (m_points[index].m_position.x < m_points[index].m_radiusX)
 	{
-		m_points[index].m_position.x = m_points[index].m_radius;
+		m_points[index].m_position.x = m_points[index].m_radiusX;
 	}	
 			
-	if (m_points[index].m_position.x > SCREEN_WIDTH - m_points[index].m_radius)
+	if (m_points[index].m_position.x > SCREEN_WIDTH - m_points[index].m_radiusX)
 	{
-		m_points[index].m_position.x = SCREEN_WIDTH - m_points[index].m_radius;
+		m_points[index].m_position.x = SCREEN_WIDTH - m_points[index].m_radiusX;
 	}
 			
-	if (m_points[index].m_position.y < m_points[index].m_radius)
+	if (m_points[index].m_position.y < m_points[index].m_radiusY)
 	{
-		m_points[index].m_position.y = m_points[index].m_radius;
+		m_points[index].m_position.y = m_points[index].m_radiusY;
 	}
 			
-	if (m_points[index].m_position.y > SCREEN_HEIGHT - m_points[index].m_radius)
+	if (m_points[index].m_position.y > SCREEN_HEIGHT - m_points[index].m_radiusY)
 	{
-		m_points[index].m_position.y = SCREEN_HEIGHT - m_points[index].m_radius;
+		m_points[index].m_position.y = SCREEN_HEIGHT - m_points[index].m_radiusY;
 	}
 }
 
 void Ooze::Jump()
 {
+	float avgRadii = 0.0f;
 	for (int index = 0; index < MAX_POINTS; index++)
 	{
-		m_points[index].m_velocity.y -= (m_jumpAmount * m_points[index].m_radius / 10);;
+		avgRadii = (m_points[index].m_radiusX + m_points[index].m_radiusY) / 2;
+		m_points[index].m_velocity.y -= (m_jumpAmount * avgRadii / 10);;
 	}
 }
 
 void Ooze::Move()
 {
+	float avgRadii;
 	for (int index = 0; index < MAX_POINTS; index++)
  	{
-		m_points[index].m_velocity.x += (m_moveDirection * m_speed * m_points[index].m_radius / 10);
+		avgRadii = (m_points[index].m_radiusX + m_points[index].m_radiusY) / 2;
+		m_points[index].m_velocity.x += (m_moveDirection * m_speed * avgRadii / 10);
 	}
 }
 
 void Ooze::Spread()
 {
+	float avgRadii;
 	for (int index = 0; index < MAX_POINTS / 2; index++)
 	{
-		m_points[index].m_velocity.x -= (m_jumpAmount*5 * m_points[index].m_radius / 10);;
+		avgRadii = (m_points[index].m_radiusX + m_points[index].m_radiusY) / 2;
+		m_points[index].m_velocity.x -= (m_jumpAmount *2 * avgRadii / 5);
 	}
 	
 	for (int index = MAX_POINTS / 2; index < MAX_POINTS; index++)
 	{
-		m_points[index].m_velocity.x += (m_jumpAmount*5 * m_points[index].m_radius / 10);;
+		float avgRadii;
+		m_points[index].m_velocity.x += (m_jumpAmount *2 * avgRadii / 5);
+	}
+
+
+	for (int index = 0; index < MAX_POINTS; index++)
+	{
+		m_points[index].m_newRadiusY = 15;
+		m_points[index].m_newRadiusX = 55;
+	}
+
+	for (int index = 0; index < MAX_SPRINGS; index++)
+	{
+		m_springs[index].currentRestLength = m_springs[index].spawnedRestLength + 50; 
 	}
 }
 
@@ -389,32 +427,33 @@ void Ooze::Draw()
 {
 	for (int index = 0; index < MAX_POINTS; index++)
 	{
-		DrawCircle(m_points[index].m_position.x, m_points[index].m_position.y, m_points[index].m_radius, (Color){ 0, 210, 0, 255 });
-		if (index < MAX_POINTS - 1)
-		{
-			DrawLineEx(m_points[index].m_position, m_points[index + 1].m_position, m_points[index].m_radius* 1.3, (Color){ 0, 210, 0, 255 });
-		}
+		DrawEllipse(m_points[index].m_position.x, m_points[index].m_position.y, m_points[index].m_radiusX, m_points[index].m_radiusY, (Color){ 0, 210, 0, 255 });
+		// if (index < MAX_POINTS - 1)
+		// {
+		// 	DrawLineEx(m_points[index].m_position, m_points[index + 1].m_position, m_points[index].m_radius* 1.3, (Color){ 0, 210, 0, 255 });
+		// }
 	}
 
 	for (int index = 0; index < MAX_POINTS; index++)
 	{
-		DrawCircle(m_points[index].m_position.x, m_points[index].m_position.y, m_points[index].m_radius / 1.5, (Color){ 0, 190, 0, 255 });
-		if (index < MAX_POINTS - 1)
-		{
-			DrawLineEx(m_points[index].m_position, m_points[index + 1].m_position, m_points[index].m_radius* 1.3 / 1.5, (Color){ 0, 190, 0, 255 });
-		}
+		DrawEllipse(m_points[index].m_position.x, m_points[index].m_position.y, m_points[index].m_radiusX / 1.5,  m_points[index].m_radiusY / 1.5, (Color){ 0, 190, 0, 255 });
+		// if (index < MAX_POINTS - 1)
+		// {
+		// 	DrawLineEx(m_points[index].m_position, m_points[index + 1].m_position, m_points[index].m_radius* 1.3 / 1.5, (Color){ 0, 190, 0, 255 });
+		// }
 	}
 
 	
 	for (int index = 0; index < MAX_POINTS; index++)
 	{
-		DrawCircle(m_points[index].m_position.x, m_points[index].m_position.y, m_points[index].m_radius / 3, (Color){ 0, 180, 0, 255 });
+		DrawEllipse(m_points[index].m_position.x, m_points[index].m_position.y, m_points[index].m_radiusX / 3,  m_points[index].m_radiusY / 3, (Color){ 0, 180, 0, 255 });
 	
-		if (index < MAX_POINTS - 1)
-		{
-			DrawLineEx(m_points[index].m_position, m_points[index + 1].m_position,  m_points[index].m_radius* 1.3 / 3, (Color){ 0, 180, 0, 255 });
-		}
+		// if (index < MAX_POINTS - 1)
+		// {
+		// 	DrawLineEx(m_points[index].m_position, m_points[index + 1].m_position,  m_points[index].m_radius* 1.3 / 3, (Color){ 0, 180, 0, 255 });
+		// }
 	
+
 	}
 
 
