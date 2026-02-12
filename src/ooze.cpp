@@ -81,6 +81,12 @@ void Ooze::Update(float t_dt, Command t_activeCommand)
 
 
 	UpdateState(t_dt);
+
+	if (IsKeyPressed(KEY_X))
+	{
+		Spread();
+	}
+	
 }
 
 void Ooze::UpdateState(float t_dt)
@@ -353,12 +359,12 @@ void Ooze::Spread()
 {
 	for (int index = 0; index < MAX_POINTS / 2; index++)
 	{
-		m_points[index].m_velocity.x -= (m_jumpAmount * m_points[index].m_radius / 10);;
+		m_points[index].m_velocity.x -= (m_jumpAmount*5 * m_points[index].m_radius / 10);;
 	}
 	
 	for (int index = MAX_POINTS / 2; index < MAX_POINTS; index++)
 	{
-		m_points[index].m_velocity.x += (m_jumpAmount * m_points[index].m_radius / 10);;
+		m_points[index].m_velocity.x += (m_jumpAmount*5 * m_points[index].m_radius / 10);;
 	}
 }
 
@@ -384,16 +390,33 @@ void Ooze::Draw()
 	for (int index = 0; index < MAX_POINTS; index++)
 	{
 		DrawCircle(m_points[index].m_position.x, m_points[index].m_position.y, m_points[index].m_radius, (Color){ 0, 210, 0, 255 });
+		if (index < MAX_POINTS - 1)
+		{
+			DrawLineEx(m_points[index].m_position, m_points[index + 1].m_position, m_points[index].m_radius* 1.3, (Color){ 0, 210, 0, 255 });
+		}
 	}
 
 	for (int index = 0; index < MAX_POINTS; index++)
 	{
 		DrawCircle(m_points[index].m_position.x, m_points[index].m_position.y, m_points[index].m_radius / 1.5, (Color){ 0, 190, 0, 255 });
+		if (index < MAX_POINTS - 1)
+		{
+			DrawLineEx(m_points[index].m_position, m_points[index + 1].m_position, m_points[index].m_radius* 1.3 / 1.5, (Color){ 0, 190, 0, 255 });
+		}
 	}
 
 	
 	for (int index = 0; index < MAX_POINTS; index++)
 	{
 		DrawCircle(m_points[index].m_position.x, m_points[index].m_position.y, m_points[index].m_radius / 3, (Color){ 0, 180, 0, 255 });
+	
+		if (index < MAX_POINTS - 1)
+		{
+			DrawLineEx(m_points[index].m_position, m_points[index + 1].m_position,  m_points[index].m_radius* 1.3 / 3, (Color){ 0, 180, 0, 255 });
+		}
+	
 	}
+
+
+	
 }
