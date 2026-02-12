@@ -80,7 +80,7 @@ public:
 	void ExitMoveState();
 	void ExitJumpState();
 
-
+	Vector2 position();
 
 	void Update(float t_dt, Command t_activeCommand);
 	void DefaultUpdate(float t_dt);

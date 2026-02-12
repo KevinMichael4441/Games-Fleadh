@@ -274,6 +274,11 @@ void Ooze::UpdateSprings()
 	}
 }
 
+Vector2 Ooze::position()
+{
+	return m_points[5].m_position;
+}
+
 void Ooze::UpdatePoints(float t_dt)
 {
 	for (int index = 0; index < MAX_POINTS; index++)

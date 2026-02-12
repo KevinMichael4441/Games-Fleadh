@@ -25,11 +25,17 @@ void Game::Run()
 		BeginDrawing();
  		// Clear the Frame
  		ClearBackground(RAYWHITE);
+		camera.begin();
+
+		DrawTexture(temp_background, 0, 0, WHITE);
+
  		// Draw the Game Objects
  		Draw();
  		// Raylib End drawing to Frame Buffer
+		camera.end();
  		EndDrawing();	
 	}
+	UnloadTexture(temp_background);
 }
 
 void Game::InitGame()
@@ -37,6 +43,10 @@ void Game::InitGame()
 
 	// Initial GameState
 	gamestate = GAME_PLAY;
+
+	// Temporary ----------------------------------------------------
+	temp_background = LoadTexture("./assets/1280x960_temp.jpg");
+	// --------------------------------------------------------------
 
 	//------------- OOZEY WHIZY------------------//
 	float springConstant = 0.01;
@@ -67,6 +77,7 @@ void Game::Update(float t_dt)
 	if(gamestate == GAME_PLAY)
 	{
 		ooze.Update(t_dt, m_activeCommand);
+		camera.update(ooze.position());
 	}
 
 // -----------------TELEMETRY UPDATES----------------------------------------//

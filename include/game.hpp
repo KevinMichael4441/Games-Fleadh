@@ -13,6 +13,7 @@
 #include "ooze.hpp"
 #include "command.h"
 #include "input_manager.h"
+#include "camera_manager.hpp"
 
 
 #if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
@@ -58,6 +59,9 @@ private:
 	GameState gamestate;
 	Ooze ooze;
 	Command m_activeCommand;
+
+	CameraManager camera;
+	Texture2D temp_background;
 };
 
 #endif //game.h
