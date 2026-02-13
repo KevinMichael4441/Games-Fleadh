@@ -23,8 +23,8 @@ void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, 
 			{0,0},
 			{(float)(rand() % 30 + SCREEN_WIDTH/2 - 15), (float)(rand() % 30 + SCREEN_HEIGHT/2 - 15)},
 
-			((float)(rand() % 20 + 20)),
-			((float)(rand() % 20 + 20)),
+			((float)(rand() % 12 + 12)),
+			((float)(rand() % 12 + 12)),
 			0.0f,
 
 			0.0f,
@@ -188,7 +188,7 @@ void Ooze::UpdatePoints(float t_dt)
 		float difference = m_points[index].m_newRadius - m_points[index].m_radius;
 		if (difference < 0.01 && difference > -0.01)
 		{
-			m_points[index].m_newRadius = rand() % 20 + 20;
+			m_points[index].m_newRadius = rand() % 12 + 12;
 			m_points[index].lerpTimeElapsed = 0;
 		}
 		
