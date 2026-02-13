@@ -129,7 +129,7 @@ void Ooze::UpdateJumpingState(float t_dt)
 		Jump();
 	}
 
-	HandleEvent(EVENT_INSTANT); 
+	HandleEvent(EVENT_TIMER); 
 }
 
 

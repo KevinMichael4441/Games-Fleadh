@@ -19,25 +19,41 @@ class FSM
         bool CheckValidTransition(State t_currentState, Event t_event);
         State getState();
 
-        private:
+    private:
 
         State m_currentState;
+        State m_previousState;
 
         // Array of states that the current state can transition into
-        std::pair<Event, State> validIdleTransitions[2];
-        int const m_numIdleTransitions = 2;
+        static int const m_numIdleTransitions = 2;
+        std::pair<Event, State> validIdleTransitions[m_numIdleTransitions];
+       
+        static int const m_numMovingTransitions = 3;
+        std::pair<Event, State> validMovingTransitions[m_numMovingTransitions];
 
-        std::pair<Event, State> validMovingTransitions[2];
-        int const m_numMovingTransitions = 2;
+        static int const m_numJumpingTransitions = 3;
+        std::pair<Event, State> validJumpingTransitions[m_numJumpingTransitions];
 
-        std::pair<Event, State> validJumpingTransitions[2];
-        int const m_numJumpingTransitions = 2;
+        static int const m_numCollideDownTransitions = 2;
+        std::pair<Event, State> validCollideDownTransitions[2];
+
+        static int const m_numCollideUpTransitions = 1;
+        std::pair<Event, State> validCollideUpTransitions[m_numCollideUpTransitions];
+
+        static int const m_numCollideHorizontalTransitions = 2;
+        std::pair<Event, State> validCollideHorizontalTransitions[m_numCollideUpTransitions];
+        
+        
+        
 
 
         void initialize();
         void initIdleTransitions();
         void initMovingTransitions();
         void initJumpingTransitions();
+        void initCollideDownTransitions();
+        void initCollideUpTransitions();
+        void initCollideHorizontalTransitions();
         
 };
 
