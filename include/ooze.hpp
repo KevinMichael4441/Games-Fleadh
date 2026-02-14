@@ -66,8 +66,7 @@ private:
 	Vector2 m_centrePoint;
 	float m_moveDirection;
 
-	State m_currentState;
-
+	float m_collisionTimer;
 public:
 	Ooze();
 	void Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount);
@@ -79,6 +78,9 @@ public:
     void EnterIdleState();
 	void EnterMoveState();
 	void EnterJumpState();
+	void EnterCollideHorizontalState();
+	void EnterCollideUpState();
+	void EnterCollideDownState();
    
 
 
@@ -86,6 +88,9 @@ public:
 	void ExitIdleState();
 	void ExitMoveState();
 	void ExitJumpState();
+	void ExitCollideHorizontalState();
+	void ExitCollideUpState();
+	void ExitCollideDownState();
 
 
 
@@ -96,13 +101,13 @@ public:
 
 	void UpdateState(float t_dt);
 	void UpdateIdleState(float t_dt);
-	void UpdateMovingState(float t_dt);
-	void UpdateJumpingState(float t_dt);
-	
+	void UpdateMoveState(float t_dt);
+	void UpdateJumpState(float t_dt);
+	void UpdateCollideHorizontalState(float t_dt);
+	void UpdateCollideUpState(float t_dt);
+	void UpdateCollideDownState(float t_dt);
 
-
-
-	void ClampPlayerOnScreen(int index);
+	void ClampPointsOnScreen();
 
 	void Move();
 	void Jump();

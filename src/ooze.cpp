@@ -14,8 +14,6 @@ void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, 
 
 	m_gravity = {0.0f, 0.1f};
 
-	m_currentState = STATE_IDLE;
-
 	for (int index = 0; index < MAX_POINTS; index++)
 	{
 		Point point = {
@@ -80,6 +78,47 @@ void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, 
    	}
 }
 
+void Ooze::HandleInput(Command t_activeCommand)
+{
+	float axis = 0.0f;
+
+	if (IsCommandActive(t_activeCommand, MOVE_LEFT))
+		axis += -1.0f;
+
+	if (IsCommandActive(t_activeCommand, MOVE_RIGHT))
+		axis += 1.0f;
+
+
+	// Check if we are moving
+	bool moving = abs(axis) > 0.0f;
+	bool jumping = IsCommandActive(t_activeCommand, ACTION_JUMP);
+
+	m_moveDirection = axis;
+
+	if (!jumping && moving)
+	{
+		HandleEvent(EVENT_MOVE);
+	}
+	else if (!moving && !jumping)
+	{
+		HandleEvent(EVENT_NONE);
+	}
+
+	if (jumping)
+	{
+		HandleEvent(EVENT_JUMP);
+	}
+}	
+
+void Ooze::HandleEvent(Event t_event)
+{
+	if (fsm.CheckValidTransition(fsm.m_currentState, t_event))
+	{
+		ExitState();
+		EnterState(fsm.m_currentState);
+	}
+}
+
 void Ooze::Update(float t_dt, Command t_activeCommand)
 {
 	HandleInput(t_activeCommand);
@@ -96,17 +135,26 @@ void Ooze::Update(float t_dt, Command t_activeCommand)
 
 void Ooze::UpdateState(float t_dt)
 {
-	if (m_currentState == STATE_IDLE)
+	switch (fsm.m_currentState)
 	{
-		UpdateIdleState(t_dt);
-	}
-	else if (m_currentState == STATE_MOVING)
-	{
-		UpdateMovingState(t_dt);
-	}
-	else if (m_currentState == STATE_JUMPING)
-	{
-		UpdateJumpingState(t_dt);
+		case STATE_IDLE:
+			UpdateIdleState(t_dt);
+			break;
+		case STATE_MOVING:
+			UpdateMoveState(t_dt);
+			break;
+		case STATE_JUMPING:
+			UpdateJumpState(t_dt);
+			break;
+		case STATE_COLLIDE_HORIZONTAL:
+			UpdateCollideHorizontalState(t_dt);
+			break;
+		case STATE_COLLIDE_DOWN:
+			UpdateCollideDownState(t_dt);
+			break;
+		case STATE_COLLIDE_UP:
+			UpdateCollideUpState(t_dt);
+			break;
 	}
 }
 
@@ -115,23 +163,47 @@ void Ooze::UpdateIdleState(float t_dt)
 	DefaultUpdate(t_dt);
 }
 
-void Ooze::UpdateMovingState(float t_dt)
+void Ooze::UpdateMoveState(float t_dt)
 {
 	DefaultUpdate(t_dt);
 	Move();
 }
 
-void Ooze::UpdateJumpingState(float t_dt)
+void Ooze::UpdateJumpState(float t_dt)
 {
 	DefaultUpdate(t_dt);
-	for (int index = 0; index < MAX_POINTS; index++)
- 	{
-		Jump();
-	}
-
-	HandleEvent(EVENT_TIMER); 
+	Move();
 }
 
+void Ooze::UpdateCollideHorizontalState(float t_dt)
+{
+	m_collisionTimer += t_dt;
+
+	if (m_collisionTimer > 0.1f)
+	{
+		HandleEvent(EVENT_TIMER);
+	}
+}
+
+void Ooze::UpdateCollideUpState(float t_dt)
+{
+	m_collisionTimer += t_dt;
+
+	if (m_collisionTimer > 0.1f)
+	{
+		HandleEvent(EVENT_TIMER);
+	}
+}
+
+void Ooze::UpdateCollideDownState(float t_dt)
+{
+	m_collisionTimer += t_dt;
+
+	if (m_collisionTimer > 0.1f)
+	{
+		HandleEvent(EVENT_TIMER);
+	}
+}
 
 void Ooze::DefaultUpdate(float t_dt)
 {
@@ -139,54 +211,10 @@ void Ooze::DefaultUpdate(float t_dt)
 	UpdatePoints(t_dt);
 }
 
-void Ooze::HandleInput(Command t_activeCommand)
-{
-	float axis = 0.0f;
-
-	if (IsCommandActive(t_activeCommand, MOVE_LEFT))
-		axis += -1.0f;
-
-	if (IsCommandActive(t_activeCommand, MOVE_RIGHT))
-		axis += 1.0f;
-
-
-	// Check if we are moving
-	bool moving = abs(axis) > 0.0f;
-	bool jumping = IsCommandActive(t_activeCommand, ACTION_JUMP);
-
-	// EVENT_MOVE only of not EVENT_ATTACK and NOT EVENT_DEFEND
-	if (!jumping && moving)
-	{
-		m_moveDirection = axis;
-
-		HandleEvent(EVENT_MOVE);
-	}
-	// Send none if not MOVING or Performing and ACTION
-	else if (!moving && !jumping)
-	{
-		HandleEvent(EVENT_NONE);
-	}
-
-	// ATTACK / DEFEND Send last
-	if (jumping)
-	{
-		HandleEvent(EVENT_JUMP);
-	}
-}	
-
-void Ooze::HandleEvent(Event t_event)
-{
-	if (fsm.CheckValidTransition(m_currentState, t_event))
-	{
-		ExitState();
-		m_currentState = fsm.getState();
-		EnterState(m_currentState);
-	}
-}
 
 void Ooze::ExitState()
 {
-	switch (m_currentState)
+	switch (fsm.m_currentState)
 	{
 		case STATE_IDLE:
 			ExitIdleState();
@@ -196,6 +224,15 @@ void Ooze::ExitState()
 			break;
 		case STATE_JUMPING:
 			ExitJumpState();
+			break;
+		case STATE_COLLIDE_HORIZONTAL:
+			ExitCollideHorizontalState();
+			break;
+		case STATE_COLLIDE_DOWN:
+			ExitCollideDownState();
+			break;
+		case STATE_COLLIDE_UP:
+			ExitCollideUpState();
 			break;
 	}
 }
@@ -215,6 +252,24 @@ void Ooze::ExitMoveState()
 	std::cout << "Exited Move State\n";
 }
 
+void Ooze::ExitCollideHorizontalState()
+{
+	std::cout << "Exited CollideHorizontal State\n";
+	m_collisionTimer = 0.0f;
+}
+
+void Ooze::ExitCollideUpState()
+{
+	std::cout << "Exited Collide Up State\n";
+	m_collisionTimer = 0.0f;
+}
+
+void Ooze::ExitCollideDownState()
+{
+	std::cout << "Exited Collide Down State\n";
+	m_collisionTimer = 0.0f;
+}
+
 void Ooze::EnterState(State t_stateToEnter)
 {
 	switch (t_stateToEnter)
@@ -227,6 +282,15 @@ void Ooze::EnterState(State t_stateToEnter)
 			break;
 		case STATE_JUMPING:
 			EnterJumpState();
+			break;
+		case STATE_COLLIDE_HORIZONTAL:
+			EnterCollideHorizontalState();
+			break;
+		case STATE_COLLIDE_DOWN:
+			EnterCollideDownState();
+			break;
+		case STATE_COLLIDE_UP:
+			EnterCollideUpState();
 			break;
 	}
 }
@@ -243,8 +307,31 @@ void Ooze::EnterMoveState()
 
 void Ooze::EnterJumpState()
 {
+	for (int index = 0; index < MAX_POINTS; index++)
+ 	{
+		Jump();
+	}
 	std::cout << "Entered Jump State\n";
 }
+
+void Ooze::EnterCollideHorizontalState()
+{
+	std::cout << "Entered CollideHorizontal State\n";
+	m_collisionTimer = 0.0f;
+}
+
+void Ooze::EnterCollideUpState()
+{
+	std::cout << "Entered Collide Up State\n";
+	m_collisionTimer = 0.0f;
+}
+
+void Ooze::EnterCollideDownState()
+{
+	std::cout << "Entered Collide Down State\n";
+	m_collisionTimer = 0.0f;
+}
+
 
 void Ooze::UpdateSprings()
 {
@@ -301,8 +388,6 @@ void Ooze::UpdatePoints(float t_dt)
 		m_points[index].m_position.x += m_points[index].m_velocity.x;
 		m_points[index].m_position.y += m_points[index].m_velocity.y;
 
-		ClampPlayerOnScreen(index); //deltaTime, index);
-
 		m_points[index].m_acceleration.x = 0;
 		m_points[index].m_acceleration.y = 0;	
 
@@ -332,29 +417,47 @@ void Ooze::UpdatePoints(float t_dt)
 			m_points[index].lerpTimeElapsedY = 0;
 		}
 	}
+
+	ClampPointsOnScreen();
 }
 
 
-void Ooze::ClampPlayerOnScreen(int index)
+void Ooze::ClampPointsOnScreen()
 {
-	if (m_points[index].m_position.x < m_points[index].m_radiusX)
+	for (int index = 0; index < MAX_POINTS; index++)
 	{
-		m_points[index].m_position.x = m_points[index].m_radiusX;
-	}	
+		if (m_points[index].m_position.x < m_points[index].m_radiusX)
+		{
+
+			m_points[index].m_position.x = m_points[index].m_radiusX;
+			HandleEvent(EVENT_COLLIDE_HORIZONTAL);
+			if (fsm.m_currentState == STATE_COLLIDE_DOWN)
+				return;
+		}	
 			
-	if (m_points[index].m_position.x > SCREEN_WIDTH - m_points[index].m_radiusX)
-	{
-		m_points[index].m_position.x = SCREEN_WIDTH - m_points[index].m_radiusX;
-	}
+		if (m_points[index].m_position.x > SCREEN_WIDTH - m_points[index].m_radiusX)
+		{
+			m_points[index].m_position.x = SCREEN_WIDTH - m_points[index].m_radiusX;
+			HandleEvent(EVENT_COLLIDE_HORIZONTAL);
+			if (fsm.m_currentState == STATE_COLLIDE_DOWN)
+				return;
+		}
 			
-	if (m_points[index].m_position.y < m_points[index].m_radiusY)
-	{
-		m_points[index].m_position.y = m_points[index].m_radiusY;
-	}
+		if (m_points[index].m_position.y < m_points[index].m_radiusY)
+		{
+			m_points[index].m_position.y = m_points[index].m_radiusY;
+			HandleEvent(EVENT_COLLIDE_UP);
+			if (fsm.m_currentState == STATE_COLLIDE_DOWN)
+				return;
+		}
 			
-	if (m_points[index].m_position.y > SCREEN_HEIGHT - m_points[index].m_radiusY)
-	{
-		m_points[index].m_position.y = SCREEN_HEIGHT - m_points[index].m_radiusY;
+		if (m_points[index].m_position.y > SCREEN_HEIGHT - m_points[index].m_radiusY)
+		{
+			m_points[index].m_position.y = SCREEN_HEIGHT - m_points[index].m_radiusY;
+			HandleEvent(EVENT_COLLIDE_DOWN);
+			if (fsm.m_currentState == STATE_COLLIDE_DOWN)
+				return;
+		}
 	}
 }
 

@@ -36,7 +36,7 @@ void FSM::initMovingTransitions(){
 void FSM::initJumpingTransitions(){
     validJumpingTransitions[0] = {EVENT_COLLIDE_UP, STATE_COLLIDE_UP};
     validJumpingTransitions[1] = {EVENT_COLLIDE_DOWN, STATE_COLLIDE_DOWN};
-    validMovingTransitions[2] = {EVENT_COLLIDE_HORIZONTAL, STATE_COLLIDE_HORIZONTAL};
+    validJumpingTransitions[2] = {EVENT_COLLIDE_HORIZONTAL, STATE_COLLIDE_HORIZONTAL};
 }
 
 void FSM::initCollideUpTransitions()
@@ -47,14 +47,13 @@ void FSM::initCollideUpTransitions()
 
 void FSM::initCollideDownTransitions()
 {
-    validCollideUpTransitions[0] = {EVENT_TIMER, STATE_IDLE};
-    validCollideUpTransitions[0] = {EVENT_TIMER, STATE_MOVING};
+    validCollideDownTransitions[0] = {EVENT_TIMER, STATE_IDLE};
 }
 
 void FSM::initCollideHorizontalTransitions()
 {
-    validCollideUpTransitions[0] = {EVENT_TIMER, STATE_JUMPING};
-    validCollideUpTransitions[0] = {EVENT_TIMER, STATE_MOVING};
+    validCollideHorizontalTransitions[0] = {EVENT_TIMER, STATE_JUMPING};
+    validCollideHorizontalTransitions[1] = {EVENT_TIMER, STATE_MOVING};
 }
 
 
@@ -62,6 +61,9 @@ bool FSM::CheckValidTransition(State t_currentState, Event t_event)
 {
     switch (t_currentState)
     {
+        // For all states except collide Horizontal, they don't care about check for previous states
+        // We only update previous states in what Horizontal collide need - moving and jumping
+
         case STATE_IDLE:
             for (int index = 0; index < m_numIdleTransitions; index++)
             {
@@ -79,6 +81,7 @@ bool FSM::CheckValidTransition(State t_currentState, Event t_event)
             {
                 if (validMovingTransitions[index].first == t_event)
                 {
+                    m_previousState = m_currentState;
                     m_currentState = validMovingTransitions[index].second;
                     return true;
                     break;
@@ -91,6 +94,7 @@ bool FSM::CheckValidTransition(State t_currentState, Event t_event)
             {
                 if (validJumpingTransitions[index].first == t_event)
                 {
+                    m_previousState = m_currentState;
                     m_currentState = validJumpingTransitions[index].second;
                     return true;
                     break;
@@ -100,33 +104,28 @@ bool FSM::CheckValidTransition(State t_currentState, Event t_event)
 
 
         case STATE_COLLIDE_UP:
-            for (int index = 0; index < m_numCollideUpTransitions; index++)
-            {
-                if (validCollideUpTransitions[index].first == t_event)
+                if (validCollideUpTransitions[0].first == t_event)
                 {
-                    m_currentState = validCollideUpTransitions[index].second;
+                    m_currentState = validCollideUpTransitions[0].second;
                     return true;
                     break;
                 }
-            }
         break;
 
         case STATE_COLLIDE_DOWN:
-            for (int index = 0; index < m_numCollideDownTransitions; index++)
-            {
-                if (validCollideDownTransitions[index].first == t_event)
+            if (validCollideDownTransitions[0].first == t_event)
                 {
-                    m_currentState = validCollideDownTransitions[index].second;
+                    m_currentState = validCollideDownTransitions[0].second;
                     return true;
                     break;
                 }
-            }
         break;
 
         case STATE_COLLIDE_HORIZONTAL:
             for (int index = 0; index < m_numCollideHorizontalTransitions; index++)
             {
-                if (validCollideHorizontalTransitions[index].first == t_event)
+                if (validCollideHorizontalTransitions[index].first == t_event 
+                    && m_previousState == validCollideHorizontalTransitions[index].second)
                 {
                     m_currentState = validCollideHorizontalTransitions[index].second;
                     return true;
@@ -138,9 +137,4 @@ bool FSM::CheckValidTransition(State t_currentState, Event t_event)
     }
 
     return false;
-}
-
-State FSM::getState()
-{
-    return m_currentState;
 }
