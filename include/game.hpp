@@ -13,6 +13,8 @@
 #include "ooze.hpp"
 #include "command.h"
 #include "input_manager.h"
+#include "level_loader.h"
+#include "cJSON.h"
 
 
 #if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
@@ -58,6 +60,8 @@ private:
 	GameState gamestate;
 	Ooze ooze;
 	Command m_activeCommand;
+
+	LevelData m_level{};
 };
 
 #endif //game.h

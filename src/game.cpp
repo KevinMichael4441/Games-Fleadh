@@ -38,6 +38,13 @@ void Game::InitGame()
 	// Initial GameState
 	gamestate = GAME_PLAY;
 
+	//-------------Level Loading-----------------//
+
+	if (!Level_Load(&m_level, "./assets/maps/MyFirstMap.json", "./assets/maps/", "./assets/images/LabTilesTest.png"))
+    {
+        TraceLog(LOG_ERROR, "Failed to load level");
+    }
+
 	//------------- OOZEY WHIZY------------------//
 	float springConstant = 0.01;
 	float damp = 0.95;
@@ -121,7 +128,17 @@ void Game::Draw()
 {
 	if(gamestate == GAME_PLAY)
 	{
+		if (m_level.levelLayer)
+		{
+			DrawTileLayer(&m_level, m_level.levelLayer);
+		}
+
 		ooze.Draw();
+
+		if (m_level, m_level.foregroundLayer);
+		{
+			DrawTileLayer(&m_level, m_level.foregroundLayer);
+		}
 	}
 
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)

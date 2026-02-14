@@ -1,0 +1,14 @@
+{ "columns":6,
+ "image":"../images/LabTilesTest.png",
+ "imageheight":96,
+ "imagewidth":192,
+ "margin":0,
+ "name":"test",
+ "spacing":0,
+ "tilecount":18,
+ "tiledversion":"1.11.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}
