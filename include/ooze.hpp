@@ -12,6 +12,7 @@
 #include "fsm.h"
 
 
+enum class Position{TOP, RIGHT, DOWN, LEFT, MIDDLE};
 
 typedef struct Point
 {
@@ -30,14 +31,15 @@ typedef struct Point
 	float lerpTimeElapsedX;
 	float lerpTimeElapsedY;
 	float lerpTime;
+	Position m_extremePos;
+	
 } Point;
 
 
 typedef struct Spring
 {
 	float springConstant;
-	float spawnedRestLength;
-	float currentRestLength;
+	float restLength;
 	
 
 	Point *a;
@@ -67,6 +69,12 @@ private:
 	float m_moveDirection;
 
 	float m_collisionTimer;
+
+	bool part1;
+	bool part2;
+	bool part3;
+	bool part4;
+	
 public:
 	Ooze();
 	void Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount);
@@ -108,12 +116,14 @@ public:
 	void UpdateCollideDownState(float t_dt);
 
 	void ClampPointsOnScreen();
+	void SetNewLerp(int index, int t_randX, int t_baseX, int t_randY, int t_baseY);
 
 	void Move();
 	void Jump();
 	void Spread();
 
 	Vector2 CalculateCenter();
+	void calculateExtremePos();
 
 	void Draw();
 
