@@ -12,6 +12,7 @@
 #include "camera_manager.hpp"
 #include "gamestates.hpp"
 #include "ooze.hpp"
+#include "supermech.h"
 #include "command.h"
 #include "input_manager.h"
 
@@ -59,6 +60,8 @@ private:
 	void Update(float t_dt);
 	void NonGameInputs();
 	void Draw();
+	
+	void Respawn();
 
 	GameState gamestate;
 	Ooze ooze;
@@ -69,6 +72,12 @@ private:
 
 
 	LevelData m_level{};
+
+	SuperMech mech;
+
+	bool isDeathActive;
+	float deathTimer;
+	float deathTimerDuration;
 };
 
 #endif //game.h
