@@ -74,8 +74,13 @@ public:
 
 	Vector2 CalculateCenter();
 
-
 	void Draw();
+
+	void Reset(Vector2 startPos);
+
+	Vector2 getPosition();
+	const Point* GetPoints() const;
+	int GetPointCount() const;
 };
 
 #endif

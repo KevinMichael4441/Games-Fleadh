@@ -42,8 +42,12 @@ void Game::InitGame()
 	float jumpAmount = 0.8;
 	ooze.Initialize(springConstant, damp, centrePoint, speed, jumpAmount);
 
-	//--------Mech--------------
-	SuperMech_Init(&mech, {200,200});
+	//--------Mech--------------//
+	SuperMech_Init(&mech, {100,380});
+
+	isDeathActive = false;
+    deathTimer = 0.0f;
+    deathTimerDuration = 2.0f;
 
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 		// Telemetry Init
@@ -56,22 +60,74 @@ void Game::InitGame()
 
 void Game::Update(float t_dt)
 {
+	if (isDeathActive)
+    {
+        deathTimer += t_dt;
+
+        if (deathTimer >= deathTimerDuration)
+        {
+            Respawn();
+        }
+
+        return;
+    }
+
 	ooze.Update(t_dt);
 
+	SuperMech_Update(&mech, ooze.getPosition(), true, t_dt);
 
+	const Point* points = ooze.GetPoints();
+    int count = ooze.GetPointCount();
 
-	SuperMech_Update(&mech, {0,0}, true, t_dt);
+    for (int i = 0; i < count; i++)
+    {
+        if (SuperMech_CheckCollision_Player( &mech, points[i].m_position, points[i].m_radius))
+        {
+			isDeathActive = true;
+			deathTimer = 0.0f;
+            break;
+        }
+    }
 
 #if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 	// Telemetry Update
 	UpdateTelemetryFrame(&r36s_telemetry, GetFrameTime(), GetTime(), GetFPS());
 	UpdateTelemetry(&r36s_telemetry, GetTime());
 #endif // TELEMETRY Update R36S and Linux only
+}
 
+void Game::Respawn()
+{
+    ooze.Reset({SCREEN_WIDTH/2, SCREEN_HEIGHT/2});
+    SuperMech_Reset(&mech, {100,380});
+
+    isDeathActive = false;
 }
 
 void Game::Draw()
 {
+	if (isDeathActive)
+    {
+        float alpha = (sinf(deathTimer * 10.0f) * 0.5f + 0.5f) * 0.6f;
+
+        DrawRectangle(
+            0, 0,
+            GetScreenWidth(),
+            GetScreenHeight(),
+            Fade(RED, alpha)
+        );
+
+        DrawText(
+            "DEATH BY SUPERMECH",
+            GetScreenWidth()/2 - 180,
+            GetScreenHeight()/2,
+            40,
+            WHITE
+        );
+
+		return;
+    }
+
 	ooze.Draw();
 
 	SuperMech_Draw(&mech);

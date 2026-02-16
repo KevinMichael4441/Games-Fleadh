@@ -52,8 +52,14 @@ private:
 	void Update(float t_dt);
 	void Draw();
 
+	void Respawn();
+
 	Ooze ooze;
 	SuperMech mech;
+
+	bool isDeathActive;
+	float deathTimer;
+	float deathTimerDuration;
 };
 
 #endif //game.h

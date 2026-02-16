@@ -78,6 +78,9 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos);
 void SuperMech_Update(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, float dt);
 void SuperMech_Draw(SuperMech *mech);
 
+bool SuperMech_CheckCollision_Player(const SuperMech *mech, Vector2 center, float radius);
+void SuperMech_Reset(SuperMech *mech, Vector2 startPos);
+
 const char *SuperMech_GetStateName(SupermechState state);
 
 #ifdef __cplusplus

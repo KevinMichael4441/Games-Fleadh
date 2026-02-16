@@ -62,20 +62,68 @@ static bool CanSeePlayer(const SuperMech *mech, Vector2 playerPos)
     return dist <= mech->visionRange;
 }
 
-static void MoveTowards(SuperMech *mech, Vector2 target, float speed) 
+static void MoveTowards(SuperMech *mech, Vector2 target, float speed, float dt)
 {
     Vector2 dir = Vec2Sub(target, mech->position);
+    float dist = Vec2Length(dir);
 
-    if (Vec2Length(dir) > 1.0f) 
+    if (dist > 1.0f)
     {
         dir = Vec2Normalize(dir);
-        mech->velocity = Vec2Scale(dir, speed);
-        mech->position = Vec2Add(mech->position, mech->velocity);
-    } 
-    else 
-    {
-        mech->velocity = (Vector2){0, 0};
+
+        Vector2 desiredVelocity = Vec2Scale(dir, speed);
+        Vector2 steering = Vec2Sub(desiredVelocity, mech->velocity);
+
+        mech->velocity = Vec2Add(mech->velocity, Vec2Scale(steering, 4.0f * dt));
+        mech->position = Vec2Add(mech->position, Vec2Scale(mech->velocity, dt));
+
+        mech->facingRight = (mech->velocity.x > 0);
     }
+}
+
+static float ClampFloat(float value, float min, float max)
+{
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
+
+bool SuperMech_CheckCollision_Player(const SuperMech *mech, Vector2 center, float radius)
+{
+    float mechWidth  = mech->frameWidth  * mech->scale;
+    float mechHeight = mech->frameHeight * mech->scale;
+
+    //mech rectangle top-left corner
+    float rectX = mech->position.x;
+    float rectY = mech->position.y;
+
+    //find closest point on rectangle to circle center
+    float closestX = ClampFloat(center.x, rectX, rectX + mechWidth);
+    float closestY = ClampFloat(center.y, rectY, rectY + mechHeight);
+
+    float dx = center.x - closestX;
+    float dy = center.y - closestY;
+
+    float distanceSquared = dx*dx + dy*dy;
+
+    return distanceSquared <= radius * radius;
+}
+
+void SuperMech_Reset(SuperMech *mech, Vector2 startPos)
+{
+    mech->position = startPos;
+    mech->velocity = (Vector2){0,0};
+
+    mech->playerVisible = false;
+    mech->stateTimer = 0.0f;
+
+    mech->currentState = MECH_DORMANT;
+    mech->previousState = MECH_DORMANT;
+
+    mech->currentTexture = &mech->textureDormant;
+
+    mech->currentFrame = 0;
+    mech->animationTimer = 0.0f;
 }
 
 //------------------FSM Functions------------------//
@@ -139,8 +187,8 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos)
     mech->position = startPos;
     mech->velocity = (Vector2){0,0};
 
-    mech->speedIdle = 1.2f;
-    mech->speedHunt = 3.5f;
+    mech->speedIdle = 60.0f;
+    mech->speedHunt = 120.0f;
     mech->visionRange = 300.0f;
 
     mech->stateTimer = 0.0f;
@@ -340,7 +388,7 @@ static void Hunt_Update(SuperMech *mech, float dt)
 {
     if (mech->playerVisible)
     {
-        MoveTowards(mech, mech->lastKnownPlayerPos, mech->speedHunt);
+        MoveTowards(mech, mech->lastKnownPlayerPos, mech->speedHunt, dt);
     }
     else
     {
