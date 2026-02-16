@@ -38,66 +38,68 @@ void CameraManager::update(Vector2 position)
 
 void CameraManager::updateDirection()
 {
-	if(screen.target.x > SCREEN_WIDTH / 2)
+	if(slimePos.x < screen.target.x - WINDOW)
 	{
-		if(slimePos.x < screen.target.x - WINDOW)
+		if(direction.x > -1.0f)
 		{
-			if(direction.x > -1.0f)
-			{
-				direction.x -= 0.05f;
-			}
+			direction.x -= increment;
 		}
 	}
-	if(screen.target.x <= (SCREEN_WIDTH / 2) + 5)
-	{
-		direction.x = 0.0f;
-	}
-
 	if(slimePos.x > screen.target.x + WINDOW)
 	{
 		if(direction.x < 1.0f)
 		{
-			direction.x += 0.05f;
+			direction.x += increment;
 		}
 	}
-
-	if(screen.target.y > SCREEN_HEIGHT)
+	if(slimePos.y < screen.target.y - WINDOW)
 	{
-		if(slimePos.y < screen.target.y - WINDOW)
+		if(direction.y > -1.0f)
 		{
-			if(direction.y > -1.0f)
-			{
-				direction.y -= 0.05f;
-			}
+			direction.y -= increment;
 		}
 	}
-	if(screen.target.y <= (SCREEN_HEIGHT / 2) + 5)
-	{
-		direction.y = 0.0f;
-	}
-
 	if(slimePos.y > screen.target.y + WINDOW)
 	{
 		if(direction.y < 1.0f)
 		{
-			direction.y += 0.05f;
+			direction.y += increment;
 		}
+	}
+
+	if(slimePos.x > screen.target.x - WINDOW &&
+	   slimePos.x < screen.target.x + WINDOW)
+	{
+		direction.x = 0.0f;
+	}
+
+	if(slimePos.y > screen.target.y - WINDOW &&
+	   slimePos.y < screen.target.y + WINDOW)
+	{
+		direction.y = 0.0f;
 	}
 }
 
 void CameraManager::move()
 {
-	if(screen.target.x < slimePos.x - WINDOW || screen.target.x > slimePos.x + WINDOW)
+	Vector2 newPos = screen.target;
+
+	if(newPos.x >= SCREEN_WIDTH / 2)
 	{
-		screen.target.x += direction.x * speed;
+		newPos.x += direction.x * speed;
 	}
-	else
+	if(newPos.y >= SCREEN_HEIGHT / 2)
 	{
-		direction.x = 0.0f;
+		newPos.y += direction.y * vertSpeed;
+	}
+	if(newPos.x < SCREEN_WIDTH / 2)
+	{
+		newPos.x = SCREEN_WIDTH / 2;
+	}
+	if(newPos.y < SCREEN_HEIGHT / 2)
+	{
+		newPos.y = SCREEN_HEIGHT / 2;
 	}
 
-	if(screen.target.y < slimePos.y - (WINDOW / 2) || screen.target.y > slimePos.y + (WINDOW / 2))
-	{
-		screen.target.y += direction.y * speed;
-	}
+	screen.target = newPos;
 }

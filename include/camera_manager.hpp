@@ -38,9 +38,12 @@ class CameraManager
 		Vector2 slimePos;
 		Vector2 direction;
 
-		float speed = 10.0f;
+		float speed = 15.0f;
+		float vertSpeed = 5.0f;
 		float offset = 50.0f;
 		float WINDOW = 30.0f; // Space around slime before camera starts to move
+
+		float increment = 0.1f;
 };
 
 #endif
