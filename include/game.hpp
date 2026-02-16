@@ -9,8 +9,13 @@
 #include "math.h"
 #include "rlgl.h"
 
+#include "gamestates.hpp"
 #include "ooze.hpp"
 #include "supermech.h"
+#include "command.h"
+#include "input_manager.h"
+#include "level_loader.h"
+#include "cJSON.h"
 
 
 #if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
@@ -35,7 +40,7 @@
 	static const char *glRendererStr = NULL;
 	static const char *glVersionStr = NULL;
 	static const char *glslVersionStr = NULL;
-	static bool show_telemetry = true;
+	static bool show_telemetry = false;
 	static bool action_special_2_was_pressed = false;
 #endif
 
@@ -50,11 +55,17 @@ private:
 
 	void InitGame();
 	void Update(float t_dt);
+	void NonGameInputs();
 	void Draw();
-
+	
 	void Respawn();
 
+	GameState gamestate;
 	Ooze ooze;
+	Command m_activeCommand;
+
+	LevelData m_level{};
+
 	SuperMech mech;
 
 	bool isDeathActive;

@@ -34,7 +34,18 @@ void Game::Run()
 
 void Game::InitGame()
 {
-	// OOZEY WHIZY
+
+	// Initial GameState
+	gamestate = GAME_PLAY;
+
+	//-------------Level Loading-----------------//
+
+	if (!Level_Load(&m_level, "./assets/maps/MyFirstMap.json", "./assets/maps/", "./assets/images/LabTilesTest.png"))
+    {
+        TraceLog(LOG_ERROR, "Failed to load level");
+    }
+
+	//------------- OOZEY WHIZY------------------//
 	float springConstant = 0.01;
 	float damp = 0.95;
 	Vector2 centrePoint = {0,0};
@@ -49,6 +60,10 @@ void Game::InitGame()
     deathTimer = 0.0f;
     deathTimerDuration = 2.0f;
 
+	//--------Input Manager---------------------//
+	InitInputManager();
+
+	//----------------Telemetry------------------//
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 		// Telemetry Init
 		glRendererStr = (const char *)glGetString(GL_RENDERER);
@@ -60,40 +75,88 @@ void Game::InitGame()
 
 void Game::Update(float t_dt)
 {
-	if (isDeathActive)
-    {
-        deathTimer += t_dt;
+	m_activeCommand = PollInput();
+	NonGameInputs();
 
-        if (deathTimer >= deathTimerDuration)
-        {
-            Respawn();
-        }
+	if(gamestate == GAME_PLAY)
+	{
+		if (isDeathActive)
+    	{
+        	deathTimer += t_dt;
 
-        return;
-    }
+        	if (deathTimer >= deathTimerDuration)
+        	{
+            	Respawn();
+        	}
 
-	ooze.Update(t_dt);
+        	return;
+    	}
 
-	SuperMech_Update(&mech, ooze.getPosition(), true, t_dt);
+		ooze.Update(t_dt, m_activeCommand);
 
-	const Point* points = ooze.GetPoints();
-    int count = ooze.GetPointCount();
+		SuperMech_Update(&mech, ooze.getPosition(), true, t_dt);
 
-    for (int i = 0; i < count; i++)
-    {
-        if (SuperMech_CheckCollision_Player( &mech, points[i].m_position, points[i].m_radius))
-        {
-			isDeathActive = true;
-			deathTimer = 0.0f;
-            break;
-        }
-    }
+		const Point* points = ooze.GetPoints();
+    	int count = ooze.GetPointCount();
 
-#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
+    	for (int i = 0; i < count; i++)
+    	{
+        	if (SuperMech_CheckCollision_Player( &mech, points[i].m_position, points[i].m_radius))
+    	    {
+				isDeathActive = true;
+				deathTimer = 0.0f;
+            	break;
+        	}
+    	}
+
+	}
+
+// -----------------TELEMETRY UPDATES----------------------------------------//
+
+	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 	// Telemetry Update
 	UpdateTelemetryFrame(&r36s_telemetry, GetFrameTime(), GetTime(), GetFPS());
 	UpdateTelemetry(&r36s_telemetry, GetTime());
-#endif // TELEMETRY Update R36S and Linux only
+	#endif // TELEMETRY Update R36S and Linux only
+
+//-------------------TELEMETRY UPDATES------------------------------------------//
+
+}
+
+void Game::NonGameInputs()
+{
+	if(IsCommandActive(VOLUME_UP, m_activeCommand))
+	{
+		// Increase Volume
+	}
+
+	if (IsCommandActive(VOLUME_DOWN, m_activeCommand))
+	{
+		// Decrease Volume
+	}
+
+	if (IsCommandActive(MENU_TOGGLE, m_activeCommand))
+	{
+		#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
+		// Toggle Telemetry (for now)
+		show_telemetry = !show_telemetry;
+		#endif
+	}
+
+	if (IsCommandActive(START_GAME, m_activeCommand))
+	{
+		// (?)
+	}
+
+	if (IsCommandActive(EXIT_COMMAND, m_activeCommand))
+	{
+		// (?)
+	}
+
+	if (IsCommandActive(POWER_COMMAND, m_activeCommand))
+	{
+		// (?)
+	}
 }
 
 void Game::Respawn()
@@ -106,31 +169,43 @@ void Game::Respawn()
 
 void Game::Draw()
 {
-	if (isDeathActive)
-    {
-        float alpha = (sinf(deathTimer * 10.0f) * 0.5f + 0.5f) * 0.6f;
+	if(gamestate == GAME_PLAY)
+	{
+		if (isDeathActive)
+    	{
+    	    float alpha = (sinf(deathTimer * 10.0f) * 0.5f + 0.5f) * 0.6f;
 
-        DrawRectangle(
-            0, 0,
-            GetScreenWidth(),
-            GetScreenHeight(),
-            Fade(RED, alpha)
-        );
+        	DrawRectangle(
+            	0, 0,
+            	GetScreenWidth(),
+            	GetScreenHeight(),
+            	Fade(RED, alpha)
+        	);
 
-        DrawText(
-            "DEATH BY SUPERMECH",
-            GetScreenWidth()/2 - 180,
-            GetScreenHeight()/2,
-            40,
-            WHITE
-        );
+        	DrawText(
+            	"DEATH BY SUPERMECH",
+            	GetScreenWidth()/2 - 180,
+            	GetScreenHeight()/2,
+            	40,
+            	WHITE
+        	);
 
-		return;
-    }
+			return;
+    	}
 
-	ooze.Draw();
+		if (m_level.levelLayer)
+		{
+			DrawTileLayer(&m_level, m_level.levelLayer);
+		}
 
-	SuperMech_Draw(&mech);
+		ooze.Draw();
+		SuperMech_Draw(&mech);
+
+		if (m_level, m_level.foregroundLayer)
+		{
+			DrawTileLayer(&m_level, m_level.foregroundLayer);
+		}
+	}
 
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 	// Draw Telemetry
