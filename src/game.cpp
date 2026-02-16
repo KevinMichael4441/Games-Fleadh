@@ -86,7 +86,7 @@ void Game::Update(float t_dt)
 	if(gamestate == GAME_PLAY)
 	{
 		ooze.Update(t_dt, m_activeCommand);
-		camera.update(ooze.position());
+		camera.update(ooze.CalculateCenter());
 	}
 
 // -----------------TELEMETRY UPDATES----------------------------------------//
@@ -148,7 +148,7 @@ void Game::Draw()
 
 		ooze.Draw();
 
-		if (m_level, m_level.foregroundLayer);
+		if (m_level, m_level.foregroundLayer)
 		{
 			DrawTileLayer(&m_level, m_level.foregroundLayer);
 		}

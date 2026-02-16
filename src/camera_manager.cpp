@@ -15,7 +15,10 @@ void CameraManager::initialize(){
 	screen.rotation = 0.0f; // Degrees
 	screen.zoom = 1.0f; // Scale
 
-	cameraSpeed = 6.0f;
+	state = MOVING;
+
+	slimePos = {0.0f,0.0f};
+	direction = {0.0f,0.0f};
 }
 
 void CameraManager::begin(){
@@ -26,23 +29,75 @@ void CameraManager::end(){
 	EndMode2D();
 }
 
-void CameraManager::update(Vector2 position){
-	if(screen.target.x < position.x){
-		screen.target.x += cameraSpeed;
-	}
-	if(screen.target.x > position.x){
-		if(screen.target.x > SCREEN_WIDTH / 2)
+void CameraManager::update(Vector2 position)
+{
+	slimePos = position;
+	updateDirection();
+	move();
+}
+
+void CameraManager::updateDirection()
+{
+	if(screen.target.x > SCREEN_WIDTH / 2)
+	{
+		if(slimePos.x < screen.target.x - WINDOW)
 		{
-			screen.target.x -= cameraSpeed;
+			if(direction.x > -1.0f)
+			{
+				direction.x -= 0.05f;
+			}
 		}
 	}
-	if(screen.target.y < position.y){
-		screen.target.y += cameraSpeed;
+	if(screen.target.x <= (SCREEN_WIDTH / 2) + 5)
+	{
+		direction.x = 0.0f;
 	}
-	if(screen.target.y > position.y){
-		if(screen.target.y > SCREEN_HEIGHT / 2)
+
+	if(slimePos.x > screen.target.x + WINDOW)
+	{
+		if(direction.x < 1.0f)
 		{
-			screen.target.y -= cameraSpeed;
+			direction.x += 0.05f;
 		}
+	}
+
+	if(screen.target.y > SCREEN_HEIGHT)
+	{
+		if(slimePos.y < screen.target.y - WINDOW)
+		{
+			if(direction.y > -1.0f)
+			{
+				direction.y -= 0.05f;
+			}
+		}
+	}
+	if(screen.target.y <= (SCREEN_HEIGHT / 2) + 5)
+	{
+		direction.y = 0.0f;
+	}
+
+	if(slimePos.y > screen.target.y + WINDOW)
+	{
+		if(direction.y < 1.0f)
+		{
+			direction.y += 0.05f;
+		}
+	}
+}
+
+void CameraManager::move()
+{
+	if(screen.target.x < slimePos.x - WINDOW || screen.target.x > slimePos.x + WINDOW)
+	{
+		screen.target.x += direction.x * speed;
+	}
+	else
+	{
+		direction.x = 0.0f;
+	}
+
+	if(screen.target.y < slimePos.y - (WINDOW / 2) || screen.target.y > slimePos.y + (WINDOW / 2))
+	{
+		screen.target.y += direction.y * speed;
 	}
 }
