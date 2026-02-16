@@ -9,11 +9,15 @@
 #include "math.h"
 #include "rlgl.h"
 
+#include "camera_manager.hpp"
 #include "gamestates.hpp"
 #include "ooze.hpp"
 #include "command.h"
 #include "input_manager.h"
-#include "camera_manager.hpp"
+
+#include "level_loader.h"
+#include "cJSON.h"
+
 
 
 #if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
@@ -62,6 +66,9 @@ private:
 
 	CameraManager camera;
 	Texture2D temp_background;
+
+
+	LevelData m_level{};
 };
 
 #endif //game.h
