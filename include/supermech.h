@@ -9,6 +9,8 @@
 
 #include "raylib.h"
 
+#include "spine/spine-sdl-c.h"
+
 #ifdef __cplusplus
 extern "C"
 {
