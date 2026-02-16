@@ -53,6 +53,9 @@ void Game::InitGame()
 	float jumpAmount = 0.8;
 	ooze.Initialize(springConstant, damp, centrePoint, speed, jumpAmount);
 
+	//---------------Security System------------//
+	m_securitySystem.initialize();
+
 	//--------Input Manager---------------------//
 	InitInputManager();
 
@@ -74,6 +77,7 @@ void Game::Update(float t_dt)
 	if(gamestate == GAME_PLAY)
 	{
 		ooze.Update(t_dt, m_activeCommand);
+		m_securitySystem.update(t_dt);
 	}
 
 // -----------------TELEMETRY UPDATES----------------------------------------//
@@ -139,6 +143,8 @@ void Game::Draw()
 		{
 			DrawTileLayer(&m_level, m_level.foregroundLayer);
 		}
+
+		m_securitySystem.draw();
 	}
 
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)

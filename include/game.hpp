@@ -15,6 +15,7 @@
 #include "input_manager.h"
 #include "level_loader.h"
 #include "cJSON.h"
+#include "security_system.h"
 
 
 #if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
@@ -60,6 +61,7 @@ private:
 	GameState gamestate;
 	Ooze ooze;
 	Command m_activeCommand;
+	SecuritySystem m_securitySystem;
 
 	LevelData m_level{};
 };
