@@ -12,10 +12,10 @@ void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, 
 	m_speed = t_speed;
 	m_jumpAmount = t_jumpAmount;
 
-	part1 = false;
-	part2 = false;
-	part3 = false;
-	part4 = false;
+	for (int index = 0; index < MAX_COLLISION_PARTS; index++)
+	{
+		collisionParts[index] = false;
+	}
 
 
 	m_gravity = {0.0f, 0.1f};
@@ -216,7 +216,7 @@ void Ooze::UpdateCollideUpState(float t_dt)
 		HandleEvent(EVENT_TIMER);
 		return;
 	}
-	else if (m_collisionTimer > 0.75f && !part4)
+	else if (m_collisionTimer > 0.75f && !collisionParts[3])
 	{
 		// X and Y reset back
 		// Circles pushed down
@@ -233,54 +233,51 @@ void Ooze::UpdateCollideUpState(float t_dt)
 			//m_points[index].m_position.y += 5;
 		}
 
-		part4 = true;
+		collisionParts[3] = true;
 	}
-	else if (m_collisionTimer > 0.5f && !part3)
+	else if (m_collisionTimer > 0.5f && !collisionParts[2])
 	{
 		// X is slightly more than normal
 		// Y is higher
 		for (int index = 0; index < MAX_POINTS; index++)
 		{
 			//SetNewLerp(index, 5, 25, 10, 15);
-			float value = (15.0 + abs(m_points[index].m_velocity.y)) / 2;
-			m_points[index].m_newRadiusX = rand() % 5 + Clamp(value, 15, abs(m_points[index].m_velocity.y));
-			m_points[index].m_newRadiusY = rand() % 10 + 15;
+			m_points[index].m_newRadiusX = rand() % 5 + 25;
+			m_points[index].m_newRadiusY = rand() % 10 + 25;
 			m_points[index].lerpTimeElapsedX = 0;
 			m_points[index].lerpTimeElapsedY = 0;
 		}
 
-		part3 = true;
+		collisionParts[2] = true;
 	}
-	else if (m_collisionTimer > 0.25f && !part2)
+	else if (m_collisionTimer > 0.25f && !collisionParts[1])
 	{
 		// X is reducing and Y is increasing
 		//calculateExtremePos();
 		for (int index = 0; index < MAX_POINTS; index++)
 		{
 			//SetNewLerp(index, 10, 30, 10, 10);
-			float value = (35.0 + abs(m_points[index].m_velocity.y)) / 2;
-			m_points[index].m_newRadiusX = rand() % 10 + Clamp(value, 35, abs(m_points[index].m_velocity.y));	// 35-45
-			m_points[index].m_newRadiusY = rand() % 10 + 10;
+			m_points[index].m_newRadiusX = rand() % 10 + 50;	// 35-45
+			m_points[index].m_newRadiusY = rand() % 10 + 20;
 			m_points[index].lerpTimeElapsedX = 0;
 			m_points[index].lerpTimeElapsedY = 0;
 		}
 
-		part2 = true;
+		collisionParts[1] = true;
 	}
-	else if (!part1)
+	else if (!collisionParts[0])
 	{
 		for (int index = 0; index < MAX_POINTS; index++)
 		{
-			float value = (65.0 + abs(m_points[index].m_velocity.y)) / 2;
-			m_points[index].m_newRadiusX = rand() % 20 + Clamp(value, 65, abs(m_points[index].m_velocity.y)) ;	// 65 - 85
-			m_points[index].m_newRadiusY = rand() % 5 + 5;
+			m_points[index].m_newRadiusX = rand() % 20 + 100;	// 65 - 85
+			m_points[index].m_newRadiusY = rand() % 5;
 			m_points[index].lerpTimeElapsedX = 0;
 			m_points[index].lerpTimeElapsedY = 0;
 
 			//SetNewLerp(index, 20, 40, 5, 5);
 		}
 		
-		part1 = true;
+		collisionParts[0] = true;
 	}
 
 	DefaultUpdate(t_dt);
@@ -400,15 +397,9 @@ void Ooze::ExitCollideUpState()
 	// RESET REST LENGTH
 
 	// reset collision part flag
-	part1 = false;
-	part2 = false;
-	part3 = false;
-	part4 = false;
-
-
-	for (int index = 0; index < MAX_SPRINGS; index++)
+	for (int index = 0; index < MAX_COLLISION_PARTS; index++)
 	{
-		m_springs[index].restLength -= 10;	
+		collisionParts[index] = false;
 	}
 }
 
@@ -515,16 +506,16 @@ void Ooze::EnterCollideUpState()
 
 	for (int index = 0; index < MAX_POINTS; index++)
 	{
+		if (abs(m_points[index].m_velocity.y) < 20)
+		{
+			HandleEvent(EVENT_TIMER);
+		}
+
 		m_points[index].lerpTime = 0.5f;
 		m_points[index].lerpTimeElapsedX = 0;
 		m_points[index].lerpTimeElapsedY = 0;
 
 		m_points[index].m_extremePos = Position::MIDDLE;
-	}
-
-	for (int index = 0; index < MAX_SPRINGS; index++)
-	{
-		m_springs[index].restLength += 10;	
 	}
 
 }

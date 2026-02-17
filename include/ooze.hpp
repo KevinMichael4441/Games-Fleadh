@@ -13,6 +13,7 @@
 
 
 enum class Position{TOP, RIGHT, DOWN, LEFT, MIDDLE};
+static const int MAX_COLLISION_PARTS = 4;
 
 typedef struct Point
 {
@@ -70,11 +71,7 @@ private:
 
 	float m_collisionTimer;
 
-	bool part1;
-	bool part2;
-	bool part3;
-	bool part4;
-	
+	bool collisionParts[MAX_COLLISION_PARTS];
 public:
 	Ooze();
 	void Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount);
