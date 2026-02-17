@@ -242,7 +242,8 @@ void Ooze::UpdateCollideUpState(float t_dt)
 		for (int index = 0; index < MAX_POINTS; index++)
 		{
 			//SetNewLerp(index, 5, 25, 10, 15);
-			m_points[index].m_newRadiusX = rand() % 5 + 25;
+			float value = (15.0 + abs(m_points[index].m_velocity.y)) / 2;
+			m_points[index].m_newRadiusX = rand() % 5 + Clamp(value, 15, abs(m_points[index].m_velocity.y));
 			m_points[index].m_newRadiusY = rand() % 10 + 15;
 			m_points[index].lerpTimeElapsedX = 0;
 			m_points[index].lerpTimeElapsedY = 0;
@@ -257,7 +258,8 @@ void Ooze::UpdateCollideUpState(float t_dt)
 		for (int index = 0; index < MAX_POINTS; index++)
 		{
 			//SetNewLerp(index, 10, 30, 10, 10);
-			m_points[index].m_newRadiusX = rand() % 10 + 30;
+			float value = (35.0 + abs(m_points[index].m_velocity.y)) / 2;
+			m_points[index].m_newRadiusX = rand() % 10 + Clamp(value, 35, abs(m_points[index].m_velocity.y));	// 35-45
 			m_points[index].m_newRadiusY = rand() % 10 + 10;
 			m_points[index].lerpTimeElapsedX = 0;
 			m_points[index].lerpTimeElapsedY = 0;
@@ -269,15 +271,15 @@ void Ooze::UpdateCollideUpState(float t_dt)
 	{
 		for (int index = 0; index < MAX_POINTS; index++)
 		{
-			m_points[index].m_newRadiusX = rand() % 20 + 40;
+			float value = (65.0 + abs(m_points[index].m_velocity.y)) / 2;
+			m_points[index].m_newRadiusX = rand() % 20 + Clamp(value, 65, abs(m_points[index].m_velocity.y)) ;	// 65 - 85
 			m_points[index].m_newRadiusY = rand() % 5 + 5;
 			m_points[index].lerpTimeElapsedX = 0;
 			m_points[index].lerpTimeElapsedY = 0;
 
-			
 			//SetNewLerp(index, 20, 40, 5, 5);
 		}
-
+		
 		part1 = true;
 	}
 

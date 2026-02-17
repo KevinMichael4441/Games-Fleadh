@@ -43,7 +43,7 @@ void Game::InitGame()
 	float damp = 0.95;
 	Vector2 centrePoint = {0,0};
 	float speed = 5;
-	float jumpAmount = 5;	// 0.8
+	float jumpAmount = 2;	// 0.8
 	ooze.Initialize(springConstant, damp, centrePoint, speed, jumpAmount);
 
 	//--------Input Manager---------------------//
