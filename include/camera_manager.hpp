@@ -29,6 +29,9 @@ class CameraManager
 		void move();
 		void updateDirection();
 
+		void updateCamCenter(Vector2& t_position);
+		void moveCamInsideMap(Vector2& t_position);
+
 
 
 		Camera2D screen;
