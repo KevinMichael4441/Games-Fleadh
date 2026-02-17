@@ -6,15 +6,15 @@
 #include "constants.h"
 #include "command.h"
 
-typedef enum CamState
+typedef enum CamMode
 {
-	STATIC,
-	MOVING
-} CamState;
+	EXACT,
+	FOLLOW,
+	DEADZONE
+} CamMode;
 
 class CameraManager
 {
-
 	public:
 		CameraManager();
 		~CameraManager();
@@ -22,31 +22,19 @@ class CameraManager
 		void begin();
 		void end();
 
-		void update(Vector2 position);
+		void update(Vector2 positionCommand);
 
 	private:
 		void initialize();
-		void move();
-		void updateDirection();
 
 		void updateCamCenter(Vector2& t_position);
 		void moveCamInsideMap(Vector2& t_position);
 
-
-
+	
 		Camera2D screen;
+		CamMode mode;
 
-		CamState state;
-
-		Vector2 slimePos;
-		Vector2 direction;
-
-		float speed = 15.0f;
-		float vertSpeed = 5.0f;
-		float offset = 50.0f;
-		float WINDOW = 30.0f; // Space around slime before camera starts to move
-
-		float increment = 0.1f;
+		float WINDOW = 70.0f; // Space around slime before camera starts to move
 };
 
 #endif

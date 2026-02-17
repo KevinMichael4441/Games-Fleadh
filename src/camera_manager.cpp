@@ -14,11 +14,6 @@ void CameraManager::initialize(){
 	screen.target = Vector2({SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2});; // Window origin position in World Space
 	screen.rotation = 0.0f; // Degrees
 	screen.zoom = 1.0f; // Scale
-
-	state = MOVING;
-
-	slimePos = {0.0f,0.0f};
-	direction = {0.0f,0.0f};
 }
 
 void CameraManager::begin(){
@@ -31,8 +26,8 @@ void CameraManager::end(){
 
 void CameraManager::updateCamCenter(Vector2& t_position)
 {
-	screen.offset = (Vector2){ SCREEN_WIDTH/2.0f, SCREEN_HEIGHT/2.0f };
-    screen.target = t_position;
+	screen.offset = (Vector2){ (SCREEN_WIDTH/2.0f), (SCREEN_HEIGHT/2.0f)};
+	screen.target = (Vector2){t_position.x, t_position.y};
 }
 
 void CameraManager::moveCamInsideMap(Vector2& t_position)
