@@ -4,103 +4,98 @@ UI_Manager::UI_Manager(){
 	initialize();
 	std::cout << "UI_Manager Object Created\n";
 }
-
 UI_Manager::~UI_Manager(){
 	std::cout << "UI_Manager Object Destroyed\n";
 }
 
-void UI_Manager::initialize(){
-	screen = GAMEPLAY;
+void UI_Manager::UIdevToggle(){
+	if(IsKeyPressed(KEY_ONE)){
+		changeUI(GAME_START);
+	}
+	else if(IsKeyPressed(KEY_TWO)){
+		changeUI(GAME_PLAY);
+	}
+	else if(IsKeyPressed(KEY_THREE)){
+		changeUI(GAME_PAUSE);
+	}
+	else if(IsKeyPressed(KEY_FOUR)){
+		changeUI(GAME_END);
+	}
 }
 
-void UI_Manager::changeUI(Screen t_newScreen){
+void UI_Manager::changeUI(GameState t_newScreen){
 	if(t_newScreen != screen){
 		unloadUI();
 		screen = t_newScreen;
 		loadUI();
 	}
 }
-
-void UI_Manager::loadUI(){
-	switch (screen){
-		case START:
-			loadStartUI();
-		break;
-		case GAMEPLAY:
-			loadGameplayUI();
-		break;
-		case PAUSE:
-			loadPauseUI();
-		break;
-		case END:
-			loadEndUI();
-		break;
-	}
-}
-
 void UI_Manager::updateUI(){
 	switch (screen){
-		case START:
+		case GAME_START:
 			updateStartUI();
 		break;
-		case GAMEPLAY:
+		case GAME_PLAY:
 			updateGameplayUI();
 		break;
-		case PAUSE:
+		case GAME_PAUSE:
 			updatePauseUI();
 		break;
-		case END:
+		case GAME_END:
 			updateEndUI();
 		break;
 	}
 }
-
 void UI_Manager::drawUI(){
 	switch (screen){
-		case START:
+		case GAME_START:
 			drawStartUI();
 		break;
-		case GAMEPLAY:
+		case GAME_PLAY:
 			drawGameplayUI();
 		break;
-		case PAUSE:
+		case GAME_PAUSE:
 			drawPauseUI();
 		break;
-		case END:
+		case GAME_END:
 			drawEndUI();
 		break;
 	}
 }
 
-void UI_Manager::unloadUI(){
+void UI_Manager::initialize(){
+	screen = GAME_PLAY;
+}
+void UI_Manager::loadUI(){
 	switch (screen){
-		case START:
-			unloadStartUI();
+		case GAME_START:
+			loadStartUI();
 		break;
-		case GAMEPLAY:
-			unloadGameplayUI();
+		case GAME_PLAY:
+			loadGameplayUI();
 		break;
-		case PAUSE:
-			unloadPauseUI();
+		case GAME_PAUSE:
+			loadPauseUI();
 		break;
-		case END:
-			unloadEndUI();
+		case GAME_END:
+			loadEndUI();
 		break;
 	}
 }
-
-void UI_Manager::UIdevToggle(){
-	if(IsKeyPressed(KEY_ONE)){
-		changeUI(START);
-	}
-	else if(IsKeyPressed(KEY_TWO)){
-		changeUI(GAMEPLAY);
-	}
-	else if(IsKeyPressed(KEY_THREE)){
-		changeUI(PAUSE);
-	}
-	else if(IsKeyPressed(KEY_FOUR)){
-		changeUI(END);
+void UI_Manager::unloadUI(){
+	switch (screen){
+		case GAME_START:
+			unloadStartUI();
+		break;
+		case GAME_PLAY:
+			unloadGameplayUI();
+		break;
+		case GAME_PAUSE:
+			unloadPauseUI();
+		break;
+		case GAME_END:
+			unloadEndUI();
+		break;
 	}
 }
 

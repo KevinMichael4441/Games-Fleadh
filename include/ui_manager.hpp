@@ -4,7 +4,7 @@
 #include <raylib.h>
 #include <iostream>
 
-#include "utility/screens.hpp"
+#include "gamestates.hpp"
 
 class UI_Manager
 {
@@ -12,18 +12,19 @@ class UI_Manager
 		UI_Manager();
 		~UI_Manager();
 
-		void UIdevToggle();
+		void UIdevToggle(); // TEMPORARY : Switch between the different UI interfaces
 
-		void changeUI(Screen t_newScreen);
+		void changeUI(GameState t_newScreen);
 		void updateUI();
 		void drawUI();
+		
 	private:
 		
-		Screen screen;
+		GameState screen;
 
 		void initialize();
-		void unloadUI();
 		void loadUI();
+		void unloadUI();
 
 		void loadStartUI();
 		void updateStartUI();
