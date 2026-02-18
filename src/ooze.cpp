@@ -163,10 +163,8 @@ void Ooze::UpdateState(float t_dt)
 			UpdateCollideHorizontalState(t_dt);
 			break;
 		case STATE_COLLIDE_DOWN:
-			UpdateCollideDownState(t_dt);
-			break;
 		case STATE_COLLIDE_UP:
-			UpdateCollideUpState(t_dt);
+			UpdateCollideVerticalState(t_dt);
 			break;
 	}
 }
@@ -199,6 +197,176 @@ void Ooze::UpdateCollideHorizontalState(float t_dt)
 	}
 
 	DefaultUpdate(t_dt);
+}
+
+
+void Ooze::LowHorizontalCollisionAnimation()
+{
+	if (m_collisionTimer > 0.6f)
+	{
+		for (int index = 0; index < MAX_POINTS; index++)
+		{
+			m_points[index].m_velocity.x = 0;
+		}
+		HandleEvent(EVENT_TIMER);
+		return;
+	}
+	else if (m_collisionTimer > 0.4f && !collisionParts[2])
+	{
+		for (int index = 0; index < MAX_POINTS; index++)
+		{
+			m_points[index].m_newRadiusY = rand() % 20 + 20;
+			m_points[index].m_newRadiusX = rand() % 20 + 20;
+			m_points[index].lerpTimeElapsedX = 0;
+			m_points[index].lerpTimeElapsedY = 0;
+		}
+
+		collisionParts[2] = true;
+	}
+	else if (m_collisionTimer > 0.2f && !collisionParts[1])
+	{
+		// X is reducing and Y is increasing
+		//calculateExtremePos();
+		for (int index = 0; index < MAX_POINTS; index++)
+		{
+			m_points[index].m_newRadiusY = rand() % 10 + 30;
+			m_points[index].m_newRadiusX = rand() % 10 + 25;
+			m_points[index].lerpTimeElapsedX = 0;
+			m_points[index].lerpTimeElapsedY = 0;
+		}
+
+		collisionParts[1] = true;
+	}
+	else if (!collisionParts[0])
+	{
+		for (int index = 0; index < MAX_POINTS; index++)
+		{
+			m_points[index].m_newRadiusY = rand() % 20 + 60;
+			m_points[index].m_newRadiusX = rand() % 5 + 15;
+			m_points[index].lerpTimeElapsedX = 0;
+			m_points[index].lerpTimeElapsedY = 0;
+		}
+		
+		collisionParts[0] = true;
+	}
+}
+
+void Ooze::MediumHorizontalCollisionAnimation()
+{
+	if (m_collisionTimer > 0.6f)
+	{
+		for (int index = 0; index < MAX_POINTS; index++)
+		{
+			m_points[index].m_velocity.x = 0;
+		}
+		HandleEvent(EVENT_TIMER);
+		return;
+	}
+	else if (m_collisionTimer > 0.4f && !collisionParts[2])
+	{
+		for (int index = 0; index < MAX_POINTS; index++)
+		{
+			m_points[index].m_newRadiusY = rand() % 20 + 20;
+			m_points[index].m_newRadiusX = rand() % 20 + 20;
+			m_points[index].lerpTimeElapsedX = 0;
+			m_points[index].lerpTimeElapsedY = 0;
+		}
+
+		collisionParts[2] = true;
+	}
+	else if (m_collisionTimer > 0.2f && !collisionParts[1])
+	{
+		// X is reducing and Y is increasing
+		//calculateExtremePos();
+		for (int index = 0; index < MAX_POINTS; index++)
+		{
+			m_points[index].m_newRadiusY = rand() % 10 + 40;
+			m_points[index].m_newRadiusX = rand() % 5 + 25;
+			m_points[index].lerpTimeElapsedX = 0;
+			m_points[index].lerpTimeElapsedY = 0;
+		}
+
+		collisionParts[1] = true;
+	}
+	else if (!collisionParts[0])
+	{
+		for (int index = 0; index < MAX_POINTS; index++)
+		{
+			m_points[index].m_newRadiusY = rand() % 20 + 80;
+			m_points[index].m_newRadiusX = rand() % 5 + 10;
+			m_points[index].lerpTimeElapsedX = 0;
+			m_points[index].lerpTimeElapsedY = 0;
+		}
+		
+		collisionParts[0] = true;
+	}
+}
+
+void Ooze::HighHorizontalCollisionAnimation()
+{
+	if (m_collisionTimer > 0.8f)
+	{
+		for (int index = 0; index < MAX_POINTS; index++)
+		{
+			m_points[index].m_velocity.x = 0;
+		}
+		HandleEvent(EVENT_TIMER);
+		return;
+	}
+	else if (m_collisionTimer > 0.6f && !collisionParts[3])
+	{
+		// X and Y reset back
+		// Circles pushed down
+		for (int index = 0; index < MAX_POINTS; index++)
+		{
+			m_points[index].m_newRadiusY = rand() % 20 + 20;
+			m_points[index].m_newRadiusX = rand() % 20 + 20;
+			m_points[index].lerpTimeElapsedX = 0;
+			m_points[index].lerpTimeElapsedY = 0;
+		}
+
+		collisionParts[3] = true;
+	}
+	else if (m_collisionTimer > 0.4f && !collisionParts[2])
+	{
+		// X is slightly more than normal
+		// Y is higher
+		for (int index = 0; index < MAX_POINTS; index++)
+		{
+			m_points[index].m_newRadiusY= rand() % 5 + 25;
+			m_points[index].m_newRadiusX = rand() % 10 + 25;
+			m_points[index].lerpTimeElapsedX = 0;
+			m_points[index].lerpTimeElapsedY = 0;
+		}
+
+		collisionParts[2] = true;
+	}
+	else if (m_collisionTimer > 0.2f && !collisionParts[1])
+	{
+		// X is reducing and Y is increasing
+		//calculateExtremePos();
+		for (int index = 0; index < MAX_POINTS; index++)
+		{
+			m_points[index].m_newRadiusY = rand() % 10 + 50;
+			m_points[index].m_newRadiusX = rand() % 10 + 20;
+			m_points[index].lerpTimeElapsedX = 0;
+			m_points[index].lerpTimeElapsedY = 0;
+		}
+
+		collisionParts[1] = true;
+	}
+	else if (!collisionParts[0])
+	{
+		for (int index = 0; index < MAX_POINTS; index++)
+		{
+			m_points[index].m_newRadiusY = rand() % 20 + 100;
+			m_points[index].m_newRadiusX = 5;
+			m_points[index].lerpTimeElapsedX = 0;
+			m_points[index].lerpTimeElapsedY = 0;
+		}
+		
+		collisionParts[0] = true;
+	}
 }
 
 void Ooze::LowVerticalCollisionAnimation()
@@ -370,7 +538,7 @@ void Ooze::HighVerticalCollisionAnimation()
 	}
 }
 
-void Ooze::UpdateCollideUpState(float t_dt)
+void Ooze::UpdateCollideVerticalState(float t_dt)
 {
 	m_collisionTimer += t_dt;
 	
@@ -385,25 +553,12 @@ void Ooze::UpdateCollideUpState(float t_dt)
 		case SQUISH_AMOUNT::HIGH:
 			HighVerticalCollisionAnimation();
 			break;
+		case SQUISH_AMOUNT::NOP:
+			break;
 	}
 
 	DefaultUpdate(t_dt);
 	Move();
-}
-
-void Ooze::UpdateCollideDownState(float t_dt)
-{
-	m_collisionTimer += t_dt;
-
-	if (m_collisionTimer > 1.0f)
-	{
-		HandleEvent(EVENT_TIMER);
-		return;
-	}
-
-	DefaultUpdate(t_dt);
-
-	//Spread();
 }
 
 void Ooze::DefaultUpdate(float t_dt)
@@ -430,10 +585,8 @@ void Ooze::ExitState()
 			ExitCollideHorizontalState();
 			break;
 		case STATE_COLLIDE_DOWN:
-			ExitCollideDownState();
-			break;
 		case STATE_COLLIDE_UP:
-			ExitCollideUpState();
+			ExitCollideVerticalState();
 			break;
 	}
 }
@@ -483,7 +636,7 @@ void Ooze::ExitCollideHorizontalState()
 	}
 }
 
-void Ooze::ExitCollideUpState()
+void Ooze::ExitCollideVerticalState()
 {
 	std::cout << "Exited Collide Up State\n";
 
@@ -509,19 +662,6 @@ void Ooze::ExitCollideUpState()
 	}
 }
 
-void Ooze::ExitCollideDownState()
-{
-	std::cout << "Exited Collide Down State\n";
-	m_collisionTimer = 0.0f;
-	for (int index = 0; index < MAX_POINTS; index++)
-	{
-		m_points[index].lerpTime = 7.5f;
-		m_points[index].lerpTimeElapsedX = 0;
-		m_points[index].lerpTimeElapsedY = 0;
-	}
-
-}
-
 void Ooze::EnterState(State t_stateToEnter)
 {
 	switch (t_stateToEnter)
@@ -539,10 +679,8 @@ void Ooze::EnterState(State t_stateToEnter)
 			EnterCollideHorizontalState();
 			break;
 		case STATE_COLLIDE_DOWN:
-			EnterCollideDownState();
-			break;
 		case STATE_COLLIDE_UP:
-			EnterCollideUpState();
+			EnterCollideVerticalState();
 			break;
 	}
 }
@@ -605,9 +743,9 @@ void Ooze::EnterCollideHorizontalState()
 	// }
 }
 
-void Ooze::EnterCollideUpState()
+void Ooze::EnterCollideVerticalState()
 {
-	std::cout << "Entered Collide Up State\n";
+	std::cout << "Entered Collide Up or Down State\n";
 	m_collisionTimer = 0.0f;
 
 	float avgVelocity = 0.0f;
@@ -642,50 +780,6 @@ void Ooze::EnterCollideUpState()
 		m_squishiness = SQUISH_AMOUNT::HIGH;
 	}
 }
-
-void Ooze::EnterCollideDownState()
-{
-	std::cout << "Entered Collide Down State\n";
-	m_collisionTimer = 0.0f;
-
-	// for(int index = 0; index < MAX_POINTS; index++)
-	// {
-	// 	float velocityMagnitude = abs(m_points[index].m_velocity.y);
-	// 	if (velocityMagnitude > 20)
-	// 	{
-	// 		m_points[index].m_newRadiusX = rand() % 20 + 60;
-	// 		m_points[index].lerpTimeElapsedX = 0;
-
-	// 		m_points[index].m_newRadiusY = rand() %  5 + 15;
-	// 		m_points[index].lerpTimeElapsedY = 0;
-
-	// 		m_points[index].lerpTime = 0.4;
-	// 	}
-	// 	else if (velocityMagnitude > 10)
-	// 	{
-	// 		m_points[index].m_newRadiusX = rand() % 10 + 40;
-	// 		m_points[index].lerpTimeElapsedX = 0;
-
-	// 		m_points[index].m_newRadiusY = rand() % 5 + 20;
-	// 		m_points[index].lerpTimeElapsedY = 0;
-
-	// 		m_points[index].lerpTime = 0.8;
-	// 	}
-	// 	else if (velocityMagnitude < 5)
-	// 	{
-	// 		m_points[index].m_newRadiusX = rand() % 10 + 30;
-	// 		m_points[index].lerpTimeElapsedX = 0;
-
-	// 		m_points[index].m_newRadiusY = rand() % 5 + 25;
-	// 		m_points[index].lerpTimeElapsedY = 0;
-
-	// 		m_points[index].lerpTime = 1.2;
-	// 	}
-	// }
-
-	
-}
-
 
 void Ooze::UpdateSprings()
 {

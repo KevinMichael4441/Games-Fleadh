@@ -86,8 +86,7 @@ public:
 	void EnterMoveState();
 	void EnterJumpState();
 	void EnterCollideHorizontalState();
-	void EnterCollideUpState();
-	void EnterCollideDownState();
+	void EnterCollideVerticalState();
    
 
 
@@ -96,8 +95,7 @@ public:
 	void ExitMoveState();
 	void ExitJumpState();
 	void ExitCollideHorizontalState();
-	void ExitCollideUpState();
-	void ExitCollideDownState();
+	void ExitCollideVerticalState();
 
 
 
@@ -111,8 +109,7 @@ public:
 	void UpdateMoveState(float t_dt);
 	void UpdateJumpState(float t_dt);
 	void UpdateCollideHorizontalState(float t_dt);
-	void UpdateCollideUpState(float t_dt);
-	void UpdateCollideDownState(float t_dt);
+	void UpdateCollideVerticalState(float t_dt);
 
 	void ClampPointsOnScreen();
 	void SetNewLerp(int index, int t_randX, int t_baseX, int t_randY, int t_baseY);
