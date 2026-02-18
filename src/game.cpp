@@ -115,7 +115,7 @@ void Game::Update(float t_dt)
 
 		camera.update(ooze.CalculateCenter());
 
-		//SuperMech_Update(&mech, ooze.getPosition(), true, t_dt);
+		SuperMech_Update(&mech, ooze.getPosition(), true, t_dt);
 
 		const Point* points = ooze.GetPoints();
     	int count = ooze.GetPointCount();
