@@ -18,6 +18,7 @@
 
 #include "level_loader.h"
 #include "cJSON.h"
+#include "security_system.h"
 
 
 
@@ -66,6 +67,7 @@ private:
 	GameState gamestate;
 	Ooze ooze;
 	Command m_activeCommand;
+	SecuritySystem m_securitySystem;
 
 	CameraManager camera;
 	Texture2D temp_background;

@@ -72,6 +72,9 @@ void Game::InitGame()
     deathTimer = 0.0f;
     deathTimerDuration = 2.0f;
 
+	//---------------Security System------------//
+	m_securitySystem.initialize();
+
 	//--------Input Manager---------------------//
 	InitInputManager();
 
@@ -122,6 +125,8 @@ void Game::Update(float t_dt)
             	break;
         	}
     	}
+		
+		m_securitySystem.update(t_dt);
 	}
 
 // -----------------TELEMETRY UPDATES----------------------------------------//
@@ -218,6 +223,8 @@ void Game::Draw()
 		{
 			DrawTileLayer(&m_level, m_level.foregroundLayer);
 		}
+
+		m_securitySystem.draw();
 	}
 
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
