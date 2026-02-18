@@ -16,6 +16,9 @@ extern "C" {
 }
 
 
+static const int MAX_COLLISION_PARTS = 4;
+
+enum class SQUISH_AMOUNT{HIGH, MEDIUM, LOW, NOP};
 
 typedef struct Point
 {
@@ -23,12 +26,18 @@ typedef struct Point
 	Vector2 m_velocity;
 	Vector2 m_position;
 
-	float m_radius;		
-	float m_newRadius;
+	float m_radiusX;		
+	float m_newRadiusX;
+	
+	float m_radiusY;		
+	float m_newRadiusY;
+	
 	float m_mass;
 
-	float lerpTimeElapsed;
+	float lerpTimeElapsedX;
+	float lerpTimeElapsedY;
 	float lerpTime;
+	
 } Point;
 
 
@@ -36,6 +45,7 @@ typedef struct Spring
 {
 	float springConstant;
 	float restLength;
+	
 
 	Point *a;
 	Point *b;
@@ -63,7 +73,10 @@ private:
 	Vector2 m_centrePoint;
 	float m_moveDirection;
 
-	State m_currentState;
+	float m_collisionTimer;
+
+	bool collisionParts[MAX_COLLISION_PARTS];
+	SQUISH_AMOUNT m_squishiness;
 
 	LevelData* m_level = nullptr;
 	static const int MAX_BOUNDARY_RECTS = 16;
@@ -80,6 +93,8 @@ public:
     void EnterIdleState();
 	void EnterMoveState();
 	void EnterJumpState();
+	void EnterCollideHorizontalState();
+	void EnterCollideVerticalState();
    
 
 
@@ -87,8 +102,7 @@ public:
 	void ExitIdleState();
 	void ExitMoveState();
 	void ExitJumpState();
-
-
+	void ExitCollideState();
 
 	void Update(float t_dt, Command t_activeCommand);
 	void DefaultUpdate(float t_dt);
@@ -97,17 +111,25 @@ public:
 
 	void UpdateState(float t_dt);
 	void UpdateIdleState(float t_dt);
-	void UpdateMovingState(float t_dt);
-	void UpdateJumpingState(float t_dt);
-	
+	void UpdateMoveState(float t_dt);
+	void UpdateJumpState(float t_dt);
+	void UpdateCollideHorizontalState(float t_dt);
+	void UpdateCollideVerticalState(float t_dt);
 
-
-
-	void ClampPlayerOnScreen(int index);
+	void ClampPointsOnScreen();
+	void SetNewLerp(int index, int t_randX, int t_baseX, int t_randY, int t_baseY);
 
 	void Move();
 	void Jump();
 	void Spread();
+
+	void LowHorizontalCollisionAnimation();
+	void MediumHorizontalCollisionAnimation();
+	void HighHorizontalCollisionAnimation();
+
+	void LowVerticalCollisionAnimation();
+	void MediumVerticalCollisionAnimation();
+	void HighVerticalCollisionAnimation();
 
 	Vector2 CalculateCenter();
 
@@ -116,6 +138,12 @@ public:
 	void SetLevel(LevelData* level);
 	void ResolveBoundaryCollision_C2();
 	int FindBoundaryAABBs(Vector2 centerPos, float radius, c2AABB outRects[MAX_BOUNDARY_RECTS]) const;
+	void ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str, float friction);
+	void Reset(Vector2 startPos);
+
+	Vector2 getPosition();
+	const Point* GetPoints() const;
+	int GetPointCount() const;
 	
 	FSM fsm;
 };

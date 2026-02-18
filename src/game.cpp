@@ -29,11 +29,17 @@ void Game::Run()
 		BeginDrawing();
  		// Clear the Frame
  		ClearBackground(RAYWHITE);
+		camera.begin();
+
+		DrawTexture(temp_background, 0, 0, WHITE);
+
  		// Draw the Game Objects
  		Draw();
  		// Raylib End drawing to Frame Buffer
+		camera.end();
  		EndDrawing();	
 	}
+	UnloadTexture(temp_background);
 }
 
 void Game::InitGame()
@@ -41,6 +47,8 @@ void Game::InitGame()
 
 	// Initial GameState
 	gamestate = GAME_PLAY;
+
+
 
 	//-------------Level Loading-----------------//
 
@@ -51,14 +59,26 @@ void Game::InitGame()
 	DebugCountBoundaryTiles(&m_level);
 
 
+	// Temporary ----------------------------------------------------
+	temp_background = LoadTexture("./assets/1280x960_temp.jpg");
+	// --------------------------------------------------------------
+
 	//------------- OOZEY WHIZY------------------//
 	float springConstant = 0.01;
-	float damp = 0.95;
+	float damp = 0.9;
 	Vector2 centrePoint = {0,0};
-	float speed = 0.5;
-	float jumpAmount = 0.8;
+	float speed = 0.6f;		// 1.2
+	float jumpAmount = 0.8f;	// 0.8
 	ooze.Initialize(springConstant, damp, centrePoint, speed, jumpAmount);
 	ooze.SetLevel(&m_level);
+
+	//--------Mech--------------//
+	SuperMech_Init(&mech, {100,380});
+
+	isDeathActive = false;
+    deathTimer = 0.0f;
+    deathTimerDuration = 2.0f;
+
 	//--------Input Manager---------------------//
 	InitInputManager();
 
@@ -79,7 +99,36 @@ void Game::Update(float t_dt)
 
 	if(gamestate == GAME_PLAY)
 	{
+		if (isDeathActive)
+    	{
+        	deathTimer += t_dt;
+
+        	if (deathTimer >= deathTimerDuration)
+        	{
+            	Respawn();
+        	}
+
+        	return;
+    	}
+
 		ooze.Update(t_dt, m_activeCommand);
+
+		camera.update(ooze.CalculateCenter());
+
+		//SuperMech_Update(&mech, ooze.getPosition(), true, t_dt);
+
+		const Point* points = ooze.GetPoints();
+    	int count = ooze.GetPointCount();
+
+    	for (int i = 0; i < count; i++)
+    	{
+        	if (SuperMech_CheckCollision_Player( &mech, points[i].m_position, points[i].m_radiusX))
+    	    {
+				isDeathActive = true;
+				deathTimer = 0.0f;
+            	break;
+        	}
+    	}
 	}
 
 // -----------------TELEMETRY UPDATES----------------------------------------//
@@ -130,16 +179,47 @@ void Game::NonGameInputs()
 	}
 }
 
+void Game::Respawn()
+{
+    ooze.Reset({SCREEN_WIDTH/2, SCREEN_HEIGHT/2});
+    SuperMech_Reset(&mech, {100,380});
+
+    isDeathActive = false;
+}
+
 void Game::Draw()
 {
 	if(gamestate == GAME_PLAY)
 	{
+		if (isDeathActive)
+    	{
+    	    float alpha = (sinf(deathTimer * 10.0f) * 0.5f + 0.5f) * 0.6f;
+
+        	DrawRectangle(
+            	0, 0,
+            	GetScreenWidth(),
+            	GetScreenHeight(),
+            	Fade(RED, alpha)
+        	);
+
+        	DrawText(
+            	"DEATH BY SUPERMECH",
+            	GetScreenWidth()/2 - 180,
+            	GetScreenHeight()/2,
+            	40,
+            	WHITE
+        	);
+
+			return;
+    	}
+
 		if (m_level.levelLayer)
 		{
 			DrawTileLayer(&m_level, m_level.levelLayer);
 		}
 
 		ooze.Draw();
+		SuperMech_Draw(&mech);
 
 		if (m_level.foregroundLayer)
 		{
