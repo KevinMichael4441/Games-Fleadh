@@ -26,7 +26,7 @@ void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, 
 		Point point = {
 			{0,0},
 			{0,0},
-			{(float)(80), (float)(rand() % 30 + SCREEN_HEIGHT/2 - 15)},
+			{(float)((float)(rand() % 30 + SCREEN_WIDTH/2 - 15)), (float)(rand() % 30 + SCREEN_HEIGHT/2 - 15)},
 
 			((float)(rand() % 20 + 20)),
 			((float)(rand() % 20 + 20)),
@@ -177,28 +177,35 @@ void Ooze::UpdateIdleState(float t_dt)
 void Ooze::UpdateMoveState(float t_dt)
 {
 	DefaultUpdate(t_dt);
-	Move();
 }
 
 void Ooze::UpdateJumpState(float t_dt)
 {
 	DefaultUpdate(t_dt);
-	Move();
 }
+
 
 void Ooze::UpdateCollideHorizontalState(float t_dt)
 {
 	m_collisionTimer += t_dt;
-
-	if (m_collisionTimer > 0.1f)
+	
+	switch (m_squishiness)
 	{
-		HandleEvent(EVENT_TIMER);
-		return;
+		case SQUISH_AMOUNT::LOW:
+			LowHorizontalCollisionAnimation();
+			break;
+		case SQUISH_AMOUNT::MEDIUM:
+			MediumHorizontalCollisionAnimation();
+			break;
+		case SQUISH_AMOUNT::HIGH:
+			HighHorizontalCollisionAnimation();
+			break;
+		case SQUISH_AMOUNT::NOP:
+			break;
 	}
 
 	DefaultUpdate(t_dt);
 }
-
 
 void Ooze::LowHorizontalCollisionAnimation()
 {
@@ -368,6 +375,7 @@ void Ooze::HighHorizontalCollisionAnimation()
 		collisionParts[0] = true;
 	}
 }
+
 
 void Ooze::LowVerticalCollisionAnimation()
 {
@@ -558,13 +566,15 @@ void Ooze::UpdateCollideVerticalState(float t_dt)
 	}
 
 	DefaultUpdate(t_dt);
-	Move();
 }
+
+
 
 void Ooze::DefaultUpdate(float t_dt)
 {
 	UpdateSprings();
 	UpdatePoints(t_dt);
+	Move();
 }
 
 
@@ -582,11 +592,9 @@ void Ooze::ExitState()
 			ExitJumpState();
 			break;
 		case STATE_COLLIDE_HORIZONTAL:
-			ExitCollideHorizontalState();
-			break;
 		case STATE_COLLIDE_DOWN:
 		case STATE_COLLIDE_UP:
-			ExitCollideVerticalState();
+			ExitCollideState();
 			break;
 	}
 }
@@ -606,37 +614,7 @@ void Ooze::ExitMoveState()
 	std::cout << "Exited Move State\n";
 }
 
-void Ooze::ExitCollideHorizontalState()
-{
-	std::cout << "Exited CollideHorizontal State\n";
-	m_collisionTimer = 0.0f;
-
-	for (int index = 0; index < MAX_POINTS; index++)
-	{
-		m_points[index].lerpTime = 7.5f;
-		m_points[index].lerpTimeElapsedX = 0;
-		m_points[index].lerpTimeElapsedY = 0;
-	}
-
-	if (CalculateCenter().x > SCREEN_WIDTH / 2)
-	// If collided on right side
-	// MUST REFACTOR WHEN LEVEL LOADING IS DONE
-	{
-		for (int index = 0; index < MAX_POINTS; index++)
-		{
-			m_points[index].m_velocity.x -= 2.0f; 
-		}
-	}
-	else
-	{
-		for (int index = 0; index < MAX_POINTS; index++)
-		{
-			m_points[index].m_velocity.x += 2.0f; 
-		}
-	}
-}
-
-void Ooze::ExitCollideVerticalState()
+void Ooze::ExitCollideState()
 {
 	std::cout << "Exited Collide Up State\n";
 
@@ -702,45 +680,41 @@ void Ooze::EnterJumpState()
 
 void Ooze::EnterCollideHorizontalState()
 {
-	std::cout << "Entered CollideHorizontal State\n";
+	std::cout << "Entered Collide Left or Right State\n";
 	m_collisionTimer = 0.0f;
 
-	// for(int index = 0; index < MAX_POINTS; index++)
-	// {
-	// 	float velocityMagnitude = abs(m_points[index].m_velocity.x);
+	float avgVelocity = 0.0f;
 
-	// 	if (velocityMagnitude > 100)
-	// 	{
-	// 		m_points[index].m_newRadiusY = rand() % 20 + 60;
-	// 		m_points[index].lerpTimeElapsedY = 0;
+	for (int index = 0; index < MAX_POINTS; index++)
+	{
 
-	// 		m_points[index].m_newRadiusX = rand() %  5 + 15;
-	// 		m_points[index].lerpTimeElapsedX = 0;
+		avgVelocity += abs(m_points[index].m_velocity.x);
 
-	// 		m_points[index].lerpTime = 0.4;
-	// 	}
-	// 	else if (velocityMagnitude > 50)
-	// 	{
-	// 		m_points[index].m_newRadiusY = rand() % 10 + 40;
-	// 		m_points[index].lerpTimeElapsedY = 0;
+		m_points[index].lerpTime = 0.4f;
+		m_points[index].lerpTimeElapsedX = 0;
+		m_points[index].lerpTimeElapsedY = 0;
+	}
 
-	// 		m_points[index].m_newRadiusX = rand() % 5 + 20;
-	// 		m_points[index].lerpTimeElapsedX = 0;
+	avgVelocity /= MAX_POINTS;
 
-	// 		m_points[index].lerpTime = 0.8;
-	// 	}
-	// 	else if (velocityMagnitude > 50)
-	// 	{
-	// 		m_points[index].m_newRadiusY = rand() % 10 + 30;
-	// 		m_points[index].lerpTimeElapsedY = 0;
-
-	// 		m_points[index].m_newRadiusX = rand() % 5 + 25;
-	// 		m_points[index].lerpTimeElapsedX = 0;
-
-	// 		m_points[index].lerpTime = 1.2;
-	// 	}
-
-	// }
+	if (avgVelocity < 50)
+	{
+		for (int index = 0; index < MAX_POINTS; index++)
+		{
+			SetNewLerp(index, 20, 20, 20, 20);
+		}
+			
+		HandleEvent(EVENT_TIMER);		
+		return;
+	}
+	else if (avgVelocity < 100)
+	{
+		m_squishiness = SQUISH_AMOUNT::LOW;
+	}
+	else 
+	{
+		m_squishiness = SQUISH_AMOUNT::HIGH;
+	}
 }
 
 void Ooze::EnterCollideVerticalState()
@@ -880,7 +854,6 @@ void Ooze::SetNewLerp(int index, int t_randX, int t_baseX, int t_randY, int t_ba
 		m_points[index].lerpTimeElapsedY = 0;
 	}
 }
-
 
 void Ooze::ClampPointsOnScreen()
 {

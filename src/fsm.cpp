@@ -53,7 +53,6 @@ void FSM::initCollideDownTransitions()
 void FSM::initCollideHorizontalTransitions()
 {
     validCollideHorizontalTransitions[0] = {EVENT_TIMER, STATE_JUMPING};
-    validCollideHorizontalTransitions[1] = {EVENT_TIMER, STATE_MOVING};
 }
 
 
@@ -122,15 +121,11 @@ bool FSM::CheckValidTransition(State t_currentState, Event t_event)
         break;
 
         case STATE_COLLIDE_HORIZONTAL:
-            for (int index = 0; index < m_numCollideHorizontalTransitions; index++)
+            if (validCollideHorizontalTransitions[0].first == t_event) 
             {
-                if (validCollideHorizontalTransitions[index].first == t_event 
-                    && m_previousState == validCollideHorizontalTransitions[index].second)
-                {
-                    m_currentState = validCollideHorizontalTransitions[index].second;
-                    return true;
-                    break;
-                }
+                m_currentState = validCollideHorizontalTransitions[0].second;
+                return true;
+                break;
             }
         break;
             

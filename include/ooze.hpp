@@ -94,8 +94,7 @@ public:
 	void ExitIdleState();
 	void ExitMoveState();
 	void ExitJumpState();
-	void ExitCollideHorizontalState();
-	void ExitCollideVerticalState();
+	void ExitCollideState();
 
 
 

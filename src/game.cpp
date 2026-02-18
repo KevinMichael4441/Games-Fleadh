@@ -40,10 +40,10 @@ void Game::InitGame()
 
 	//------------- OOZEY WHIZY------------------//
 	float springConstant = 0.01;
-	float damp = 0.95;
+	float damp = 0.9;
 	Vector2 centrePoint = {0,0};
-	float speed = 0.8f;
-	float jumpAmount = 3;	// 0.8
+	float speed = 4.0f;		// 1.2
+	float jumpAmount = 5.0f;	// 0.8
 	ooze.Initialize(springConstant, damp, centrePoint, speed, jumpAmount);
 
 	//--------Input Manager---------------------//

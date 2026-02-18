@@ -41,7 +41,7 @@ class FSM
         static int const m_numCollideDownTransitions = 1;
         std::pair<Event, State> validCollideDownTransitions[m_numCollideDownTransitions];
 
-        static int const m_numCollideHorizontalTransitions = 2;
+        static int const m_numCollideHorizontalTransitions = 1;
         std::pair<Event, State> validCollideHorizontalTransitions[m_numCollideHorizontalTransitions];
         
         
