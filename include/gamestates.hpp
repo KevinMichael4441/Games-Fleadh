@@ -5,6 +5,7 @@ typedef enum GameState
 {
 	GAME_START,
 	GAME_PLAY,
+	GAME_PAUSE,
 	GAME_END
 } GameState;
 

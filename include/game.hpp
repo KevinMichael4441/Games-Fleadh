@@ -9,6 +9,7 @@
 #include "math.h"
 #include "rlgl.h"
 
+#include "ui_manager.hpp"
 #include "camera_manager.hpp"
 #include "gamestates.hpp"
 #include "ooze.hpp"
@@ -66,7 +67,7 @@ private:
 	GameState gamestate;
 	Ooze ooze;
 	Command m_activeCommand;
-
+	UI_Manager ui_manager;
 	CameraManager camera;
 	Texture2D temp_background;
 

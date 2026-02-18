@@ -90,6 +90,9 @@ void Game::Update(float t_dt)
 	m_activeCommand = PollInput();
 	NonGameInputs();
 
+	ui_manager.UIdevToggle();
+	ui_manager.updateUI();
+
 	if(gamestate == GAME_PLAY)
 	{
 		if (isDeathActive)
