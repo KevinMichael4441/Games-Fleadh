@@ -96,8 +96,6 @@ public:
 	void ExitJumpState();
 	void ExitCollideState();
 
-
-
 	void Update(float t_dt, Command t_activeCommand);
 	void DefaultUpdate(float t_dt);
 	void UpdatePoints(float t_dt);
@@ -129,7 +127,11 @@ public:
 
 	void Draw();
 
+	void Reset(Vector2 startPos);
 
+	Vector2 getPosition();
+	const Point* GetPoints() const;
+	int GetPointCount() const;
 	
 	FSM fsm;
 };

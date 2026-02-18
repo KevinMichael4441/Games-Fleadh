@@ -9,10 +9,16 @@
 #include "math.h"
 #include "rlgl.h"
 
+#include "camera_manager.hpp"
 #include "gamestates.hpp"
 #include "ooze.hpp"
+#include "supermech.h"
 #include "command.h"
 #include "input_manager.h"
+
+#include "level_loader.h"
+#include "cJSON.h"
+
 
 
 #if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
@@ -54,10 +60,24 @@ private:
 	void Update(float t_dt);
 	void NonGameInputs();
 	void Draw();
+	
+	void Respawn();
 
 	GameState gamestate;
 	Ooze ooze;
 	Command m_activeCommand;
+
+	CameraManager camera;
+	Texture2D temp_background;
+
+
+	LevelData m_level{};
+
+	SuperMech mech;
+
+	bool isDeathActive;
+	float deathTimer;
+	float deathTimerDuration;
 };
 
 #endif //game.h

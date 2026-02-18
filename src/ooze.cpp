@@ -984,7 +984,43 @@ void Ooze::Draw()
 	
 
 	}
+}
 
+void Ooze::Reset(Vector2 startPos)
+{
+    m_centrePoint = startPos;
 
-	
+    float angleStep = 2.0f * PI / MAX_POINTS;
+    float radius = 20.0f;
+
+    for (int i = 0; i < MAX_POINTS; i++)
+    {
+        float angle = i * angleStep;
+
+        Vector2 offset =
+        {
+            cosf(angle) * radius,
+            sinf(angle) * radius
+        };
+
+        m_points[i].m_position = Vector2Add(startPos, offset);
+
+        m_points[i].m_velocity = (Vector2){0,0};
+        m_points[i].m_acceleration = (Vector2){0,0};
+    }
+}
+
+Vector2 Ooze::getPosition()
+{
+    return CalculateCenter();
+}
+
+const Point* Ooze::GetPoints() const
+{
+    return m_points;
+}
+
+int Ooze::GetPointCount() const
+{
+    return MAX_POINTS;
 }
