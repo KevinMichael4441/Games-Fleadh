@@ -12,8 +12,9 @@
 #include "fsm.h"
 
 
-enum class Position{TOP, RIGHT, DOWN, LEFT, MIDDLE};
 static const int MAX_COLLISION_PARTS = 4;
+
+enum class SQUISH_AMOUNT{HIGH, MEDIUM, LOW, NOP};
 
 typedef struct Point
 {
@@ -32,7 +33,6 @@ typedef struct Point
 	float lerpTimeElapsedX;
 	float lerpTimeElapsedY;
 	float lerpTime;
-	Position m_extremePos;
 	
 } Point;
 
@@ -72,6 +72,8 @@ private:
 	float m_collisionTimer;
 
 	bool collisionParts[MAX_COLLISION_PARTS];
+	SQUISH_AMOUNT m_squishiness;
+
 public:
 	Ooze();
 	void Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount);
@@ -119,8 +121,15 @@ public:
 	void Jump();
 	void Spread();
 
+	void LowHorizontalCollisionAnimation();
+	void MediumHorizontalCollisionAnimation();
+	void HighHorizontalCollisionAnimation();
+
+	void LowVerticalCollisionAnimation();
+	void MediumVerticalCollisionAnimation();
+	void HighVerticalCollisionAnimation();
+
 	Vector2 CalculateCenter();
-	void calculateExtremePos();
 
 	void Draw();
 
