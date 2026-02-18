@@ -2,6 +2,10 @@
 
 #include "supermech.h"
 
+static void TryJump(SuperMech *mech, Vector2 target);
+static bool AtLedge(SuperMech *mech, Vector2 target);
+static void ApplyGravity(SuperMech *mech, float dt);
+
 static void Dormant_Entry(SuperMech *mech, float dt);
 static void Dormant_Update(SuperMech *mech, float dt);
 static void Dormant_Exit(SuperMech *mech, float dt);
@@ -64,20 +68,61 @@ static bool CanSeePlayer(const SuperMech *mech, Vector2 playerPos)
 
 static void MoveTowards(SuperMech *mech, Vector2 target, float speed, float dt)
 {
-    Vector2 dir = Vec2Sub(target, mech->position);
-    float dist = Vec2Length(dir);
+    float dx = target.x - mech->position.x;
 
-    if (dist > 1.0f)
+    if(!AtLedge(mech, target))
     {
-        dir = Vec2Normalize(dir);
+        if (fabsf(dx) > 5.0f)
+        {
+            float dir = (dx > 0) ? 1.0f : -1.0f;
 
-        Vector2 desiredVelocity = Vec2Scale(dir, speed);
-        Vector2 steering = Vec2Sub(desiredVelocity, mech->velocity);
+            mech->velocity.x = dir * speed;
 
-        mech->velocity = Vec2Add(mech->velocity, Vec2Scale(steering, 4.0f * dt));
-        mech->position = Vec2Add(mech->position, Vec2Scale(mech->velocity, dt));
+            mech->facingRight = (dir > 0);
+        }
+        else
+        {
+            mech->velocity.x = 0;
+        }
+    }
 
-        mech->facingRight = (mech->velocity.x > 0);
+    TryJump(mech, target);
+    ApplyGravity(mech, dt);
+}
+
+static void TryJump(SuperMech *mech, Vector2 target)
+{
+    float xDist = fabsf(target.x - mech->position.x);
+    float yDiff = mech->position.y - target.y;
+
+    if ((yDiff > 40.0f) && (xDist < 120.0f) && mech->isGrounded)
+    {
+        mech->velocity.y = -mech->jumpForce;
+        mech->isGrounded = false;
+    }
+}
+
+static bool AtLedge(SuperMech *mech, Vector2 target)
+{
+    return false;
+}
+
+static void ApplyGravity(SuperMech *mech, float dt)
+{
+    if (!mech->isGrounded)
+    {
+        mech->velocity.y += mech->gravity * dt;
+    }
+
+    mech->position.x += mech->velocity.x * dt;
+    mech->position.y += mech->velocity.y * dt;
+
+    //ground collision
+    if (mech->position.y >= mech->groundY)
+    {
+        mech->position.y = mech->groundY;
+        mech->velocity.y = 0;
+        mech->isGrounded = true;
     }
 }
 
@@ -191,6 +236,11 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos)
     mech->speedHunt = 120.0f;
     mech->visionRange = 300.0f;
 
+    mech->gravity = 900.0f;
+    mech->isGrounded = true;
+    mech->jumpForce = 450.0f;
+    mech->groundY = startPos.y;
+
     mech->stateTimer = 0.0f;
     mech->lastKnownPlayerPos = startPos;
     mech->playerVisible = false;
@@ -259,11 +309,11 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos)
     };
 }
 
-void SuperMech_Update(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, float dt) 
+void SuperMech_Uppdate(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, float dt) 
 {
     mech->playerVisible = CanSeePlayer(mech, playerPos);
 
-    if (cameraTriggered && mech->currentState == MECH_DORMANT)
+    if (cameraTriggered && (mech->currentState != MECH_HUNT))
     {
         ChangeState(mech, MECH_HUNT, dt);
     }
@@ -274,10 +324,6 @@ void SuperMech_Update(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, 
     }
 
     UpdateState(mech, dt);
-
-    const char *stateName = SuperMech_GetStateName(mech->currentState);
-
-    DrawText( stateName, (int)mech->position.x, (int)(mech->position.y - 20), 16, RED );
 }
 
 void SuperMech_Draw(SuperMech *mech) 
@@ -318,6 +364,9 @@ void SuperMech_Draw(SuperMech *mech)
     };
 
     DrawTexturePro( *mech->currentTexture, source, dest, origin, 0.0f, WHITE);
+
+    const char *stateName = SuperMech_GetStateName(mech->currentState);
+    DrawText( stateName, (int)mech->position.x, (int)(mech->position.y - 20), 16, RED );
 }
 
 const char *SuperMech_GetStateName(SupermechState state) 
@@ -344,6 +393,8 @@ static void Dormant_Update(SuperMech *mech, float dt)
     {
         ChangeState(mech, MECH_HUNT, dt);
     }
+    
+    ApplyGravity(mech, dt);
 }
 
 static void Dormant_Exit(SuperMech *mech, float dt)
@@ -372,6 +423,8 @@ static void Idle_Update(SuperMech *mech, float dt)
     {
         ChangeState(mech, MECH_DORMANT, dt);
     }
+    
+    ApplyGravity(mech, dt);
 }
 
 static void Idle_Exit(SuperMech *mech, float dt)
@@ -393,7 +446,7 @@ static void Hunt_Update(SuperMech *mech, float dt)
     else
     {
         ChangeState(mech, MECH_SEARCH, dt);
-    }    
+    }
 }
 
 static void Hunt_Exit(SuperMech *mech, float dt)
@@ -431,6 +484,8 @@ static void Search_Update(SuperMech *mech, float dt)
     {
         ChangeState(mech, MECH_IDLE, dt);
     }
+    
+    ApplyGravity(mech, dt);
 }
 
 static void Search_Exit(SuperMech *mech, float dt)

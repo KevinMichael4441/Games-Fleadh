@@ -46,6 +46,11 @@ typedef struct SuperMech {
     float speedHunt;
     float visionRange;
 
+    float gravity;
+    bool isGrounded;
+    float jumpForce;
+    float groundY;
+
     float stateTimer;
     Vector2 lastKnownPlayerPos;
     bool playerVisible;
@@ -75,7 +80,7 @@ typedef struct SuperMech {
 
 void SuperMech_Init(SuperMech *mech, Vector2 startPos);
 
-void SuperMech_Update(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, float dt);
+void SuperMech_Uppdate(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, float dt);
 void SuperMech_Draw(SuperMech *mech);
 
 bool SuperMech_CheckCollision_Player(const SuperMech *mech, Vector2 center, float radius);
