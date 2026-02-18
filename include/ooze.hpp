@@ -10,6 +10,10 @@
 #include "command.h"
 #include "input_manager.h"
 #include "fsm.h"
+#include "level_loader.h"
+extern "C" {
+#include "cute_c2.h"
+}
 
 
 
@@ -61,6 +65,10 @@ private:
 
 	State m_currentState;
 
+	LevelData* m_level = nullptr;
+	static const int MAX_BOUNDARY_RECTS = 16;
+
+
 public:
 	Ooze();
 	void Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount);
@@ -105,7 +113,9 @@ public:
 
 	void Draw();
 
-
+	void SetLevel(LevelData* level);
+	void ResolveBoundaryCollision_C2();
+	int FindBoundaryAABBs(Vector2 centerPos, float radius, c2AABB outRects[MAX_BOUNDARY_RECTS]) const;
 	
 	FSM fsm;
 };

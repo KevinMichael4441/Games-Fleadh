@@ -15,6 +15,7 @@
 #include "input_manager.h"
 #include "level_loader.h"
 #include "cJSON.h"
+#include "cute_c2.h"
 
 
 #if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)

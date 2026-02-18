@@ -227,7 +227,9 @@ bool Level_Load(LevelData* level, const char* mapPath, const char* mapBaseDir, c
     level->boundaryLayer = FindTileLayerDataArray(level->mapRoot, "Boundary");
 
     if (!level->levelLayer)
+    {
         return false;
+    }
 
     return true;
 }
@@ -252,4 +254,32 @@ void Level_Unload(LevelData* level)
     }
 
     *level = (LevelData){0};
+}
+
+bool Level_IsBoundaryPos(const LevelData* level, float posX, float posY)
+{
+    if (!level || !level->boundaryLayer)
+        return false;
+
+    int tx = (int)(posX / level->tileWidth);
+    int ty = (int)(posY / level->tileHeight);
+
+    int index = ty * level->levelWidth + tx;
+
+    cJSON* tileItem = cJSON_GetArrayItem(level->boundaryLayer, index);
+    if (!tileItem || !cJSON_IsNumber(tileItem))
+    {
+        return false;
+    }
+
+    int gid = tileItem->valueint;
+
+    if (gid == 0)
+    {
+        return false;
+    }
+
+    gid = gid & 0x1FFFFFFF; // remove Tiled flip flags
+
+    return true;
 }

@@ -1,4 +1,8 @@
 #include "game.hpp"
+#include "cJSON.h"
+
+static void DebugDrawBoundaryRects(const LevelData* level);
+static void DebugCountBoundaryTiles(const LevelData* level);
 
 Game::Game()
 {
@@ -44,6 +48,8 @@ void Game::InitGame()
     {
         TraceLog(LOG_ERROR, "Failed to load level");
     }
+	DebugCountBoundaryTiles(&m_level);
+
 
 	//------------- OOZEY WHIZY------------------//
 	float springConstant = 0.01;
@@ -52,7 +58,7 @@ void Game::InitGame()
 	float speed = 0.5;
 	float jumpAmount = 0.8;
 	ooze.Initialize(springConstant, damp, centrePoint, speed, jumpAmount);
-
+	ooze.SetLevel(&m_level);
 	//--------Input Manager---------------------//
 	InitInputManager();
 
@@ -135,10 +141,12 @@ void Game::Draw()
 
 		ooze.Draw();
 
-		if (m_level, m_level.foregroundLayer);
+		if (m_level.foregroundLayer)
 		{
 			DrawTileLayer(&m_level, m_level.foregroundLayer);
 		}
+		DebugDrawBoundaryRects(&m_level);
+
 	}
 
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
@@ -148,4 +156,53 @@ void Game::Draw()
 		DrawTelemetry(&r36s_telemetry, 8, 8, glRendererStr, glVersionStr, glslVersionStr);
 	}
 	#endif // Draw Telemetry R36S and Linux only
+}
+
+static void DebugCountBoundaryTiles(const LevelData* level)
+{
+    if (!level || !level->boundaryLayer)
+    {
+        TraceLog(LOG_INFO, "Boundary layer missing");
+        return;
+    }
+
+    int nonZero = 0;
+    int total = level->levelWidth * level->levelHeight;
+
+    for (int i = 0; i < total; i++)
+    {
+        cJSON* tileItem = cJSON_GetArrayItem(level->boundaryLayer, i);
+        if (tileItem && cJSON_IsNumber(tileItem) && tileItem->valueint != 0)
+            nonZero++;
+    }
+
+    TraceLog(LOG_INFO, "Boundary tiles: %d / %d non-zero", nonZero, total);
+}
+
+static void DebugDrawBoundaryRects(const LevelData* level)
+{
+    if (!level || !level->boundaryLayer) return;
+
+    for (int y = 0; y < level->levelHeight; y++)
+    {
+        for (int x = 0; x < level->levelWidth; x++)
+        {
+            int index = y * level->levelWidth + x;
+
+            cJSON* tileItem = cJSON_GetArrayItem(level->boundaryLayer, index);
+            if (!tileItem || !cJSON_IsNumber(tileItem)) continue;
+
+            int gid = tileItem->valueint;
+            if (gid == 0) continue;
+
+            Rectangle r = {
+                (float)(x * level->tileWidth),
+                (float)(y * level->tileHeight),
+                (float)level->tileWidth,
+                (float)level->tileHeight
+            };
+
+            DrawRectangleLinesEx(r, 1.0f, RED);
+        }
+    }
 }

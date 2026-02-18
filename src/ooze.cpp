@@ -78,8 +78,6 @@ void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, 
 void Ooze::Update(float t_dt, Command t_activeCommand)
 {
 	HandleInput(t_activeCommand);
-
-
 	UpdateState(t_dt);
 }
 
@@ -106,8 +104,8 @@ void Ooze::UpdateIdleState(float t_dt)
 
 void Ooze::UpdateMovingState(float t_dt)
 {
-	DefaultUpdate(t_dt);
 	Move();
+	DefaultUpdate(t_dt);
 }
 
 void Ooze::UpdateJumpingState(float t_dt)
@@ -126,6 +124,7 @@ void Ooze::DefaultUpdate(float t_dt)
 {
 	UpdateSprings();
 	UpdatePoints(t_dt);
+	ResolveBoundaryCollision_C2();
 }
 
 void Ooze::HandleInput(Command t_activeCommand)
@@ -289,7 +288,7 @@ void Ooze::UpdatePoints(float t_dt)
 		m_points[index].m_position.x += m_points[index].m_velocity.x;
 		m_points[index].m_position.y += m_points[index].m_velocity.y;
 
-		ClampPlayerOnScreen(index); //deltaTime, index);
+		//ClampPlayerOnScreen(index); //deltaTime, index);
 
 		m_points[index].m_acceleration.x = 0;
 		m_points[index].m_acceleration.y = 0;	
@@ -310,7 +309,7 @@ void Ooze::UpdatePoints(float t_dt)
 }
 
 
-void Ooze::ClampPlayerOnScreen(int index)
+/*void Ooze::ClampPlayerOnScreen(int index)
 {
 	if (m_points[index].m_position.x < m_points[index].m_radius)
 	{
@@ -331,7 +330,7 @@ void Ooze::ClampPlayerOnScreen(int index)
 	{
 		m_points[index].m_position.y = SCREEN_HEIGHT - m_points[index].m_radius;
 	}
-}
+}*/
 
 void Ooze::Jump()
 {
@@ -396,4 +395,119 @@ void Ooze::Draw()
 	{
 		DrawCircle(m_points[index].m_position.x, m_points[index].m_position.y, m_points[index].m_radius / 3, (Color){ 0, 180, 0, 255 });
 	}
+}
+
+void Ooze::SetLevel(LevelData* level)
+{
+    m_level = level;
+}
+
+// used to find boundary tiles in a 3x3 grid around oozes circles
+int Ooze::FindBoundaryAABBs(Vector2 centrePos, float radius, c2AABB liveAABBs[MAX_BOUNDARY_RECTS]) const
+{
+    if (!m_level)
+	{
+		return 0;
+	}
+
+    int tileX = (int)(centrePos.x / m_level->tileWidth);
+    int tileY = (int)(centrePos.y / m_level->tileHeight);
+
+    int count = 0;
+
+    for (int oy = -1; oy <= 1; oy++)
+    {
+        for (int ox = -1; ox <= 1; ox++)
+        {
+			// adjust our position (in array)
+            int checkTileX = tileX + ox;
+            int checkTileY = tileY + oy;
+
+			// convert that array position to a realworld position in the tiles centre
+            float tileCentreX = (checkTileX * m_level->tileWidth) + (m_level->tileWidth  * 0.5f);
+            float tileCentreY = (checkTileY * m_level->tileHeight) + (m_level->tileHeight * 0.5f);
+
+            if (Level_IsBoundaryPos(m_level, tileCentreX, tileCentreY)) // if it's a boundary tile
+            {
+                if (count < MAX_BOUNDARY_RECTS)
+                {
+					// get coords of the tiles edges
+                    float left = (float)(checkTileX * m_level->tileWidth);
+                    float top = (float)(checkTileY * m_level->tileHeight);
+                    float right = left + (float)m_level->tileWidth;
+                    float bottom = top + (float)m_level->tileHeight;
+
+					// make rectangle using those coords
+                    c2AABB a;
+                    a.min = c2V(left, top);
+                    a.max = c2V(right, bottom);
+
+					// store it
+                    liveAABBs[count] = a;
+                    count++;
+                }
+            }
+        }
+    }
+
+    return count;
+}
+
+static void ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str, float friction)
+{
+    c2Circle circle = { c2V(p.m_position.x, p.m_position.y), p.m_radius };	// convert Ooze point into c2Circle 
+
+    c2Manifold m = {};	// create manifold object
+
+	// is the circle and rec overlapping
+    c2CircletoAABBManifold(circle, rec, &m);
+    
+	// count is contact points
+	if (m.count == 0)
+	{
+		return;
+	}
+
+	// get the penetration depth of the overlap
+    float depth = m.depths[0];
+    if (depth <= slop)
+	{
+		return;
+	}
+
+    // push point out of rec
+    float push = (depth - slop) * str;
+    p.m_position.x -= m.n.x * push;
+    p.m_position.y -= m.n.y * push;
+}
+
+void Ooze::ResolveBoundaryCollision_C2()
+{
+    if (!m_level)
+	{
+		return;
+	}
+
+    const int iterations = 6;		// repeating a collision resolution multiple times per frame is apparently a good idea for soft bodies so...
+    const float slop = 0.75f;		// an allowance of overlap. Helps smooth things out
+    const float str = 0.75f;		// push strength
+    const float friction = 0.20f;	// reduce sliding  
+
+    for (int iter = 0; iter < iterations; iter++)	// for each iteration
+    {
+        for (int p = 0; p < MAX_POINTS; p++)		// for each point
+        {
+            Point& point = m_points[p];
+
+			// make list of surrounding AABBs
+            c2AABB tiles[MAX_BOUNDARY_RECTS];
+            int count = FindBoundaryAABBs(point.m_position, point.m_radius, tiles);
+
+			// resolve each point against AABB
+            for (int t = 0; t < count; t++)
+			{
+                ResolvePointVsAABB(point, tiles[t], slop, str, friction);
+			}
+        }
+    }
 }
