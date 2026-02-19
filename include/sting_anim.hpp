@@ -18,7 +18,9 @@ class StingAnim
 	private:
 		bool playing;
 
-		float barHeight = 100.0f;
+		float const SPEED = 128.0f;
+
+		float barHeight;
 
 		Rectangle background;
 		Rectangle highBar;

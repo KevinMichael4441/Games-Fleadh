@@ -202,7 +202,7 @@ void Game::Draw()
 			if (m_level.foregroundLayer){
 				DrawTileLayer(&m_level, m_level.foregroundLayer);
 			}
-			DebugDrawBoundaryRects(&m_level);
+			//DebugDrawBoundaryRects(&m_level);
 		break;
 		case GAME_PAUSE:
 			DrawTexture(temp_background, 0, 0, WHITE);
@@ -214,10 +214,17 @@ void Game::Draw()
 			if (m_level.foregroundLayer){
 				DrawTileLayer(&m_level, m_level.foregroundLayer);
 			}
-			DebugDrawBoundaryRects(&m_level);
+			//DebugDrawBoundaryRects(&m_level);
 		break;
 		case GAME_END:
 			DrawTexture(temp_background, 0, 0, WHITE);
+			if (m_level.levelLayer){
+				DrawTileLayer(&m_level, m_level.levelLayer);
+			}
+			if (m_level.foregroundLayer){
+				DrawTileLayer(&m_level, m_level.foregroundLayer);
+			}
+			//DebugDrawBoundaryRects(&m_level);
 			//drawDeathScreen();
 		break;
 	}
