@@ -8,26 +8,11 @@ UI_Manager::~UI_Manager(){
 	std::cout << "UI_Manager Object Destroyed\n";
 }
 
-void UI_Manager::UIdevToggle(){
-	if(IsKeyPressed(KEY_ONE)){
-		changeUI(GAME_START);
-	}
-	else if(IsKeyPressed(KEY_TWO)){
-		changeUI(GAME_PLAY);
-	}
-	else if(IsKeyPressed(KEY_THREE)){
-		changeUI(GAME_PAUSE);
-	}
-	else if(IsKeyPressed(KEY_FOUR)){
-		changeUI(GAME_END);
-	}
-}
-
-void UI_Manager::changeUI(GameState t_newScreen){
+void UI_Manager::changeUI(GameState t_newScreen, Vector2 t_pos){
 	if(t_newScreen != screen){
 		unloadUI();
 		screen = t_newScreen;
-		loadUI();
+		loadUI(t_pos);
 	}
 }
 void UI_Manager::updateUI(){
@@ -66,7 +51,7 @@ void UI_Manager::drawUI(){
 void UI_Manager::initialize(){
 	screen = GAME_PLAY;
 }
-void UI_Manager::loadUI(){
+void UI_Manager::loadUI(Vector2& t_pos){
 	switch (screen){
 		case GAME_START:
 			loadStartUI();
@@ -78,7 +63,7 @@ void UI_Manager::loadUI(){
 			loadPauseUI();
 		break;
 		case GAME_END:
-			loadEndUI();
+			loadEndUI(t_pos);
 		break;
 	}
 }
@@ -138,14 +123,15 @@ void UI_Manager::unloadPauseUI(){
 	std::cout << "Unloading PAUSE Screen UI\n";
 }
 
-void UI_Manager::loadEndUI(){
+void UI_Manager::loadEndUI(Vector2& t_pos){
 	std::cout << "Loading END Screen UI\n";
+	stingAnim.setup(t_pos);
 }
 void UI_Manager::updateEndUI(){
-
+	stingAnim.play();
 }
 void UI_Manager::drawEndUI(){
-
+	stingAnim.draw();
 }
 void UI_Manager::unloadEndUI(){
 	std::cout << "Unloading END Screen UI\n";

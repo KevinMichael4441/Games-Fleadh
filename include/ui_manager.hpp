@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "gamestates.hpp"
+#include "sting_anim.hpp"
 
 class UI_Manager
 {
@@ -12,18 +13,18 @@ class UI_Manager
 		UI_Manager();
 		~UI_Manager();
 
-		void UIdevToggle(); // TEMPORARY : Switch between the different UI interfaces
-
-		void changeUI(GameState t_newScreen);
+		void changeUI(GameState t_newScreen, Vector2 t_pos);
 		void updateUI();
 		void drawUI();
-		
+
 	private:
 		
 		GameState screen;
 
+		StingAnim stingAnim;
+
 		void initialize();
-		void loadUI();
+		void loadUI(Vector2& t_pos);
 		void unloadUI();
 
 		void loadStartUI();
@@ -41,7 +42,7 @@ class UI_Manager
 		void drawPauseUI();
 		void unloadPauseUI();
 
-		void loadEndUI();
+		void loadEndUI(Vector2& t_pos);
 		void updateEndUI();
 		void drawEndUI();
 		void unloadEndUI();

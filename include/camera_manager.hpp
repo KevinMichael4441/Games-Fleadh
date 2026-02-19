@@ -24,6 +24,7 @@ class CameraManager
 
 		void update(Vector2 positionCommand);
 
+		Camera2D screen;
 	private:
 		void initialize();
 
@@ -31,7 +32,6 @@ class CameraManager
 		void moveCamInsideMap(Vector2& t_position);
 
 	
-		Camera2D screen;
 		CamMode mode;
 
 		float WINDOW = 70.0f; // Space around slime before camera starts to move

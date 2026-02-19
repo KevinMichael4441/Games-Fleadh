@@ -94,10 +94,9 @@ void Game::Update(float t_dt)
 {
 	m_activeCommand = PollInput();
 	NonGameInputs();
-
-	ui_manager.changeUI(gamestate);
+	
+	ui_manager.changeUI(gamestate, camera.screen.target);
 	ui_manager.updateUI();
-
 	switch (gamestate)
 	{
 		case GAME_START:
@@ -219,9 +218,11 @@ void Game::Draw()
 		break;
 		case GAME_END:
 			DrawTexture(temp_background, 0, 0, WHITE);
-			drawDeathScreen();
+			//drawDeathScreen();
 		break;
 	}
+
+	ui_manager.drawUI();
 
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 	// Draw Telemetry
