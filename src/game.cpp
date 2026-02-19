@@ -27,8 +27,6 @@ void Game::Run()
  		ClearBackground(RAYWHITE);
 		camera.begin();
 
-		DrawTexture(temp_background, 0, 0, WHITE);
-
  		// Draw the Game Objects
  		Draw();
  		// Raylib End drawing to Frame Buffer
@@ -90,41 +88,30 @@ void Game::Update(float t_dt)
 	m_activeCommand = PollInput();
 	NonGameInputs();
 
-	ui_manager.UIdevToggle();
+	ui_manager.changeUI(gamestate);
 	ui_manager.updateUI();
 
-	if(gamestate == GAME_PLAY)
+	switch (gamestate)
 	{
-		if (isDeathActive)
-    	{
-        	deathTimer += t_dt;
-
-        	if (deathTimer >= deathTimerDuration)
-        	{
+		case GAME_START:
+		break;
+		case GAME_PLAY:
+			ooze.Update(t_dt, m_activeCommand);
+			camera.update(ooze.CalculateCenter());
+			SuperMech_Update(&mech, ooze.getPosition(), true, t_dt);
+			checkMechOozeCollision();
+		break;
+		case GAME_PAUSE:
+		break;
+		case GAME_END:
+			if (isDeathActive){
+        		deathTimer += t_dt;
+        		if (deathTimer >= deathTimerDuration){
             	Respawn();
-        	}
-
-        	return;
-    	}
-
-		ooze.Update(t_dt, m_activeCommand);
-
-		camera.update(ooze.CalculateCenter());
-
-		SuperMech_Update(&mech, ooze.getPosition(), true, t_dt);
-
-		const Point* points = ooze.GetPoints();
-    	int count = ooze.GetPointCount();
-
-    	for (int i = 0; i < count; i++)
-    	{
-        	if (SuperMech_CheckCollision_Player( &mech, points[i].m_position, points[i].m_radius))
-    	    {
-				isDeathActive = true;
-				deathTimer = 0.0f;
-            	break;
-        	}
-    	}
+        		}
+        		return;
+    		}
+		break;
 	}
 
 // -----------------TELEMETRY UPDATES----------------------------------------//
@@ -173,6 +160,67 @@ void Game::NonGameInputs()
 	{
 		// (?)
 	}
+	// Temporary GameState switching --
+	if (IsKeyPressed(KEY_ONE))
+	if(gamestate != GAME_START){
+		gamestate = GAME_START;
+	}
+	if (IsKeyPressed(KEY_TWO))
+		if(gamestate != GAME_PLAY){
+		gamestate = GAME_PLAY;
+	}
+	if (IsKeyPressed(KEY_THREE))
+		if(gamestate != GAME_PAUSE){
+		gamestate = GAME_PAUSE;
+	}
+	if (IsKeyPressed(KEY_FOUR))
+		if(gamestate != GAME_END){
+		gamestate = GAME_END;
+	}
+	// --------------------------------
+}
+
+void Game::Draw()
+{
+	switch (gamestate){
+		case GAME_START:
+			DrawTexture(temp_background, 0, 0, WHITE);
+		break;
+		case GAME_PLAY:
+			DrawTexture(temp_background, 0, 0, WHITE);
+			if (m_level.levelLayer){
+				DrawTileLayer(&m_level, m_level.levelLayer);
+			}
+			ooze.Draw();
+			SuperMech_Draw(&mech);
+			if (m_level, m_level.foregroundLayer){
+				DrawTileLayer(&m_level, m_level.foregroundLayer);
+			}
+		break;
+		case GAME_PAUSE:
+			DrawTexture(temp_background, 0, 0, WHITE);
+			if (m_level.levelLayer){
+				DrawTileLayer(&m_level, m_level.levelLayer);
+			}
+			ooze.Draw();
+			SuperMech_Draw(&mech);
+			if (m_level, m_level.foregroundLayer){
+				DrawTileLayer(&m_level, m_level.foregroundLayer);
+			}
+		break;
+		case GAME_END:
+			DrawTexture(temp_background, 0, 0, WHITE);
+			drawDeathScreen();
+		break;
+	}
+
+	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
+	// Draw Telemetry
+	if (show_telemetry)
+	{
+		DrawTelemetry(&r36s_telemetry, 8, 8, glRendererStr, glVersionStr, glslVersionStr);
+	}
+	#endif // Draw Telemetry R36S and Linux only
 }
 
 void Game::Respawn()
@@ -181,13 +229,28 @@ void Game::Respawn()
     SuperMech_Reset(&mech, {100,380});
 
     isDeathActive = false;
+	gamestate = GAME_PLAY;
 }
 
-void Game::Draw()
+void Game::checkMechOozeCollision()
 {
-	if(gamestate == GAME_PLAY)
-	{
-		if (isDeathActive)
+	const Point* points = ooze.GetPoints();
+    int count = ooze.GetPointCount();
+
+    for (int i = 0; i < count; i++){
+		if (SuperMech_CheckCollision_Player( &mech, points[i].m_position, points[i].m_radius))
+		{
+			isDeathActive = true;
+			deathTimer = 0.0f;
+			gamestate = GAME_END;
+			break;
+		}
+	}
+}
+
+void Game::drawDeathScreen()
+{
+	if (isDeathActive)
     	{
     	    float alpha = (sinf(deathTimer * 10.0f) * 0.5f + 0.5f) * 0.6f;
 
@@ -208,26 +271,4 @@ void Game::Draw()
 
 			return;
     	}
-
-		if (m_level.levelLayer)
-		{
-			DrawTileLayer(&m_level, m_level.levelLayer);
-		}
-
-		ooze.Draw();
-		SuperMech_Draw(&mech);
-
-		if (m_level, m_level.foregroundLayer)
-		{
-			DrawTileLayer(&m_level, m_level.foregroundLayer);
-		}
-	}
-
-	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
-	// Draw Telemetry
-	if (show_telemetry)
-	{
-		DrawTelemetry(&r36s_telemetry, 8, 8, glRendererStr, glVersionStr, glslVersionStr);
-	}
-	#endif // Draw Telemetry R36S and Linux only
 }

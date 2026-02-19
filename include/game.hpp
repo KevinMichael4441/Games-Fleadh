@@ -63,6 +63,8 @@ private:
 	void Draw();
 	
 	void Respawn();
+	void checkMechOozeCollision();
+	void drawDeathScreen();
 
 	GameState gamestate;
 	Ooze ooze;
