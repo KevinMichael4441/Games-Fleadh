@@ -1,4 +1,8 @@
 #include "game.hpp"
+#include "cJSON.h"
+
+static void DebugDrawBoundaryRects(const LevelData* level);
+static void DebugCountBoundaryTiles(const LevelData* level);
 
 Game::Game()
 {
@@ -50,6 +54,8 @@ void Game::InitGame()
     {
         TraceLog(LOG_ERROR, "Failed to load level");
     }
+	DebugCountBoundaryTiles(&m_level);
+
 
 	// Temporary ----------------------------------------------------
 	temp_background = LoadTexture("./assets/1280x960_temp.jpg");
@@ -57,11 +63,12 @@ void Game::InitGame()
 
 	//------------- OOZEY WHIZY------------------//
 	float springConstant = 0.01;
-	float damp = 0.95;
+	float damp = 0.9;
 	Vector2 centrePoint = {0,0};
-	float speed = 0.5;
-	float jumpAmount = 0.8;
+	float speed = 0.6f;		// 1.2
+	float jumpAmount = 0.8f;	// 0.8
 	ooze.Initialize(springConstant, damp, centrePoint, speed, jumpAmount);
+	ooze.SetLevel(&m_level);
 
 	//--------Mech--------------//
 	SuperMech_Init(&mech, {100,380});
@@ -193,9 +200,10 @@ void Game::Draw()
 			}
 			ooze.Draw();
 			SuperMech_Draw(&mech);
-			if (m_level, m_level.foregroundLayer){
+			if (m_level.foregroundLayer){
 				DrawTileLayer(&m_level, m_level.foregroundLayer);
 			}
+			DebugDrawBoundaryRects(&m_level);
 		break;
 		case GAME_PAUSE:
 			DrawTexture(temp_background, 0, 0, WHITE);
@@ -204,9 +212,10 @@ void Game::Draw()
 			}
 			ooze.Draw();
 			SuperMech_Draw(&mech);
-			if (m_level, m_level.foregroundLayer){
+			if (m_level.foregroundLayer){
 				DrawTileLayer(&m_level, m_level.foregroundLayer);
 			}
+			DebugDrawBoundaryRects(&m_level);
 		break;
 		case GAME_END:
 			DrawTexture(temp_background, 0, 0, WHITE);
@@ -238,7 +247,7 @@ void Game::checkMechOozeCollision()
     int count = ooze.GetPointCount();
 
     for (int i = 0; i < count; i++){
-		if (SuperMech_CheckCollision_Player( &mech, points[i].m_position, points[i].m_radius))
+		if (SuperMech_CheckCollision_Player( &mech, points[i].m_position, points[i].m_radiusX))
 		{
 			isDeathActive = true;
 			deathTimer = 0.0f;
@@ -271,4 +280,53 @@ void Game::drawDeathScreen()
 
 			return;
     	}
+}
+
+static void DebugCountBoundaryTiles(const LevelData* level)
+{
+    if (!level || !level->boundaryLayer)
+    {
+        TraceLog(LOG_INFO, "Boundary layer missing");
+        return;
+    }
+
+    int nonZero = 0;
+    int total = level->levelWidth * level->levelHeight;
+
+    for (int i = 0; i < total; i++)
+    {
+        cJSON* tileItem = cJSON_GetArrayItem(level->boundaryLayer, i);
+        if (tileItem && cJSON_IsNumber(tileItem) && tileItem->valueint != 0)
+            nonZero++;
+    }
+
+    TraceLog(LOG_INFO, "Boundary tiles: %d / %d non-zero", nonZero, total);
+}
+
+static void DebugDrawBoundaryRects(const LevelData* level)
+{
+    if (!level || !level->boundaryLayer) return;
+
+    for (int y = 0; y < level->levelHeight; y++)
+    {
+        for (int x = 0; x < level->levelWidth; x++)
+        {
+            int index = y * level->levelWidth + x;
+
+            cJSON* tileItem = cJSON_GetArrayItem(level->boundaryLayer, index);
+            if (!tileItem || !cJSON_IsNumber(tileItem)) continue;
+
+            int gid = tileItem->valueint;
+            if (gid == 0) continue;
+
+            Rectangle r = {
+                (float)(x * level->tileWidth),
+                (float)(y * level->tileHeight),
+                (float)level->tileWidth,
+                (float)level->tileHeight
+            };
+
+            DrawRectangleLinesEx(r, 1.0f, RED);
+        }
+    }
 }

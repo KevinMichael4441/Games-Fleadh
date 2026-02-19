@@ -355,7 +355,7 @@ Command PollInput()
 
 	// Abilities
 	if (IsKeyPressed(KEY_Z))
-		command |= ACTION_SPECIAL_1;
+		command |= ACTION_JUMP;
 
 	if (IsKeyPressed(KEY_X))
 		command |= ACTION_SPECIAL_2;
@@ -368,7 +368,7 @@ Command PollInput()
 
 	// Face buttons mapping (per your README)
 	if (IsKeyPressed(KEY_P))
-		command |= ACTION_JUMP;
+		command |= ACTION_SPECIAL_1;
 	if (IsKeyPressed(KEY_L))
 		command |= ACTION_CROUCH;
 	if (IsKeyPressed(KEY_O))
