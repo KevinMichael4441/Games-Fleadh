@@ -51,6 +51,9 @@ bool Level_Load(LevelData* level, const char* mapPath, const char* mapBaseDir, c
 // unload the level
 void Level_Unload(LevelData* level);
 
+// Returns true if the world position (x,y) is inside a solid boundary tile.
+bool Level_IsBoundaryPos(const LevelData* level, float posX, float posY);
+
 
 #ifdef __cplusplus
 }

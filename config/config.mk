@@ -16,8 +16,8 @@
 # If a value contains a literal double-quote character, escape it:
 #   GAME_DESCRIPTION = "The game\"s story begins"
 #=================================================================
-GAME_NAME     		= "Game Name"
-GAME_DESCRIPTION	= "Description of game"
+GAME_NAME     		= "Slilab"
+GAME_DESCRIPTION	= "Jump"
 GAME_VERSION  		= "1.0.0"
 
 #-----------------------------------------------------------------

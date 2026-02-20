@@ -1,4 +1,8 @@
 #include "game.hpp"
+#include "cJSON.h"
+
+static void DebugDrawBoundaryRects(const LevelData* level);
+static void DebugCountBoundaryTiles(const LevelData* level);
 
 Game::Game()
 {
@@ -27,8 +31,6 @@ void Game::Run()
  		ClearBackground(RAYWHITE);
 		camera.begin();
 
-		DrawTexture(temp_background, 0, 0, WHITE);
-
  		// Draw the Game Objects
  		Draw();
  		// Raylib End drawing to Frame Buffer
@@ -52,6 +54,8 @@ void Game::InitGame()
     {
         TraceLog(LOG_ERROR, "Failed to load level");
     }
+	DebugCountBoundaryTiles(&m_level);
+
 
 	// Temporary ----------------------------------------------------
 	temp_background = LoadTexture("./assets/1280x960_temp.jpg");
@@ -59,18 +63,15 @@ void Game::InitGame()
 
 	//------------- OOZEY WHIZY------------------//
 	float springConstant = 0.01;
-	float damp = 0.95;
+	float damp = 0.9;
 	Vector2 centrePoint = {0,0};
-	float speed = 0.5;
-	float jumpAmount = 0.8;
+	float speed = 0.6f;		// 1.2
+	float jumpAmount = 0.8f;	// 0.8
 	ooze.Initialize(springConstant, damp, centrePoint, speed, jumpAmount);
+	ooze.SetLevel(&m_level);
 
 	//--------Mech--------------//
 	SuperMech_Init(&mech, {100,380});
-
-	isDeathActive = false;
-    deathTimer = 0.0f;
-    deathTimerDuration = 2.0f;
 
 	//--------Input Manager---------------------//
 	InitInputManager();
@@ -89,39 +90,27 @@ void Game::Update(float t_dt)
 {
 	m_activeCommand = PollInput();
 	NonGameInputs();
-
-	if(gamestate == GAME_PLAY)
+	
+	ui_manager.changeUI(gamestate, camera.screen.target);
+	ui_manager.updateUI(t_dt);
+	switch (gamestate)
 	{
-		if (isDeathActive)
-    	{
-        	deathTimer += t_dt;
-
-        	if (deathTimer >= deathTimerDuration)
-        	{
-            	Respawn();
-        	}
-
-        	return;
-    	}
-
-		ooze.Update(t_dt, m_activeCommand);
-
-		camera.update(ooze.CalculateCenter());
-
-		SuperMech_Update(&mech, ooze.getPosition(), true, t_dt);
-
-		const Point* points = ooze.GetPoints();
-    	int count = ooze.GetPointCount();
-
-    	for (int i = 0; i < count; i++)
-    	{
-        	if (SuperMech_CheckCollision_Player( &mech, points[i].m_position, points[i].m_radius))
-    	    {
-				isDeathActive = true;
-				deathTimer = 0.0f;
-            	break;
-        	}
-    	}
+		case GAME_START:
+		break;
+		case GAME_PLAY:
+			ooze.Update(t_dt, m_activeCommand);
+			camera.update(ooze.CalculateCenter());
+			SuperMech_Update(&mech, ooze.getPosition(), true, t_dt);
+			checkMechOozeCollision();
+		break;
+		case GAME_PAUSE:
+		break;
+		case GAME_END:
+			if(!ui_manager.stingAnim.playingAnim())
+			{
+				Respawn();
+			}
+		break;
 	}
 
 // -----------------TELEMETRY UPDATES----------------------------------------//
@@ -170,55 +159,69 @@ void Game::NonGameInputs()
 	{
 		// (?)
 	}
-}
-
-void Game::Respawn()
-{
-    ooze.Reset({SCREEN_WIDTH/2, SCREEN_HEIGHT/2});
-    SuperMech_Reset(&mech, {100,380});
-
-    isDeathActive = false;
+	// Temporary GameState switching --
+	if (IsKeyPressed(KEY_ONE))
+	if(gamestate != GAME_START){
+		gamestate = GAME_START;
+	}
+	if (IsKeyPressed(KEY_TWO))
+		if(gamestate != GAME_PLAY){
+		gamestate = GAME_PLAY;
+	}
+	if (IsKeyPressed(KEY_THREE))
+		if(gamestate != GAME_PAUSE){
+		gamestate = GAME_PAUSE;
+	}
+	if (IsKeyPressed(KEY_FOUR))
+		if(gamestate != GAME_END){
+		gamestate = GAME_END;
+	}
+	// --------------------------------
 }
 
 void Game::Draw()
 {
-	if(gamestate == GAME_PLAY)
-	{
-		if (isDeathActive)
-    	{
-    	    float alpha = (sinf(deathTimer * 10.0f) * 0.5f + 0.5f) * 0.6f;
-
-        	DrawRectangle(
-            	0, 0,
-            	GetScreenWidth(),
-            	GetScreenHeight(),
-            	Fade(RED, alpha)
-        	);
-
-        	DrawText(
-            	"DEATH BY SUPERMECH",
-            	GetScreenWidth()/2 - 180,
-            	GetScreenHeight()/2,
-            	40,
-            	WHITE
-        	);
-
-			return;
-    	}
-
-		if (m_level.levelLayer)
-		{
-			DrawTileLayer(&m_level, m_level.levelLayer);
-		}
-
-		ooze.Draw();
-		SuperMech_Draw(&mech);
-
-		if (m_level, m_level.foregroundLayer)
-		{
-			DrawTileLayer(&m_level, m_level.foregroundLayer);
-		}
+	switch (gamestate){
+		case GAME_START:
+			DrawTexture(temp_background, 0, 0, WHITE);
+		break;
+		case GAME_PLAY:
+			DrawTexture(temp_background, 0, 0, WHITE);
+			if (m_level.levelLayer){
+				DrawTileLayer(&m_level, m_level.levelLayer);
+			}
+			ooze.Draw();
+			SuperMech_Draw(&mech);
+			if (m_level.foregroundLayer){
+				DrawTileLayer(&m_level, m_level.foregroundLayer);
+			}
+			DebugDrawBoundaryRects(&m_level);
+		break;
+		case GAME_PAUSE:
+			DrawTexture(temp_background, 0, 0, WHITE);
+			if (m_level.levelLayer){
+				DrawTileLayer(&m_level, m_level.levelLayer);
+			}
+			ooze.Draw();
+			SuperMech_Draw(&mech);
+			if (m_level.foregroundLayer){
+				DrawTileLayer(&m_level, m_level.foregroundLayer);
+			}
+			DebugDrawBoundaryRects(&m_level);
+		break;
+		case GAME_END:
+			DrawTexture(temp_background, 0, 0, WHITE);
+			if (m_level.levelLayer){
+				DrawTileLayer(&m_level, m_level.levelLayer);
+			}
+			if (m_level.foregroundLayer){
+				DrawTileLayer(&m_level, m_level.foregroundLayer);
+			}
+			DebugDrawBoundaryRects(&m_level);
+		break;
 	}
+
+	ui_manager.drawUI();
 
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 	// Draw Telemetry
@@ -227,4 +230,74 @@ void Game::Draw()
 		DrawTelemetry(&r36s_telemetry, 8, 8, glRendererStr, glVersionStr, glslVersionStr);
 	}
 	#endif // Draw Telemetry R36S and Linux only
+}
+
+void Game::Respawn()
+{
+    ooze.Reset({SCREEN_WIDTH/2, SCREEN_HEIGHT/2});
+    SuperMech_Reset(&mech, {100,380});
+	gamestate = GAME_PLAY;
+}
+
+void Game::checkMechOozeCollision()
+{
+	const Point* points = ooze.GetPoints();
+    int count = ooze.GetPointCount();
+
+    for (int i = 0; i < count; i++){
+		if (SuperMech_CheckCollision_Player( &mech, points[i].m_position, points[i].m_radiusX))
+		{
+			gamestate = GAME_END;
+			break;
+		}
+	}
+}
+
+static void DebugCountBoundaryTiles(const LevelData* level)
+{
+    if (!level || !level->boundaryLayer)
+    {
+        TraceLog(LOG_INFO, "Boundary layer missing");
+        return;
+    }
+
+    int nonZero = 0;
+    int total = level->levelWidth * level->levelHeight;
+
+    for (int i = 0; i < total; i++)
+    {
+        cJSON* tileItem = cJSON_GetArrayItem(level->boundaryLayer, i);
+        if (tileItem && cJSON_IsNumber(tileItem) && tileItem->valueint != 0)
+            nonZero++;
+    }
+
+    TraceLog(LOG_INFO, "Boundary tiles: %d / %d non-zero", nonZero, total);
+}
+
+static void DebugDrawBoundaryRects(const LevelData* level)
+{
+    if (!level || !level->boundaryLayer) return;
+
+    for (int y = 0; y < level->levelHeight; y++)
+    {
+        for (int x = 0; x < level->levelWidth; x++)
+        {
+            int index = y * level->levelWidth + x;
+
+            cJSON* tileItem = cJSON_GetArrayItem(level->boundaryLayer, index);
+            if (!tileItem || !cJSON_IsNumber(tileItem)) continue;
+
+            int gid = tileItem->valueint;
+            if (gid == 0) continue;
+
+            Rectangle r = {
+                (float)(x * level->tileWidth),
+                (float)(y * level->tileHeight),
+                (float)level->tileWidth,
+                (float)level->tileHeight
+            };
+
+            DrawRectangleLinesEx(r, 1.0f, RED);
+        }
+    }
 }
