@@ -12,19 +12,28 @@ class StingAnim
 		~StingAnim();
 
 		void setup(Vector2& t_pos);
-		void play();
+		void play(float& t_dt);
 		void draw();
+		bool playingAnim();
+
+		bool isPlaying;
 
 	private:
-		bool playing;
 
-		float const SPEED = 128.0f;
+		float timer{0.0f};
+		float const MAX_DURATION{2.0f};
+		float const SPEED{128.0f};
 
 		float barHeight;
 
 		Rectangle background;
 		Rectangle highBar;
 		Rectangle lowBar;
+
+		Color fader;
+		float alpha;
+		float const MAX_ALPHA = 255.0f;
+		float const FADE_SPEED = 0.075f;
 };
 
 #endif

@@ -1,8 +1,10 @@
 #include "sting_anim.hpp"
 
 StingAnim::StingAnim(){
-	playing = false;
+	isPlaying = false;
 	barHeight = 100.0f;
+	fader = (Color){0,0,0,0};
+	alpha = 0.0f;
 
 	background.x = 0.0f;
 	background.y = 0.0f;
@@ -24,8 +26,10 @@ StingAnim::~StingAnim(){
 }
 
 void StingAnim::setup(Vector2& t_pos){
-	playing = false;
 	barHeight = 100.0f;
+	fader = (Color){0,0,0,0};
+	alpha = 0.0f;
+	timer = 0.0f;
 
 	if(t_pos.x > SCREEN_WIDTH / 2){
 		background.x = t_pos.x - (SCREEN_WIDTH / 2);
@@ -52,12 +56,16 @@ void StingAnim::setup(Vector2& t_pos){
 	lowBar.y = background.y + (SCREEN_HEIGHT / 2);
 	lowBar.width = SCREEN_WIDTH + 500;
 	lowBar.height = barHeight;
-}
-void StingAnim::play(){
-	if(playing == false){
-		playing = true;
+
+	if(isPlaying == false){
+		isPlaying = true;
 	}
-	if(playing == true){
+}
+void StingAnim::play(float& t_dt){
+	if(isPlaying == true){
+
+		timer += t_dt;
+
 		if(highBar.x < background.x)
 		{
 			highBar.x += SPEED;
@@ -66,10 +74,23 @@ void StingAnim::play(){
 		{
 			lowBar.x -= SPEED;
 		}
+		if(alpha < MAX_ALPHA)
+		{
+			alpha += FADE_SPEED;
+			fader = Fade(fader, alpha);
+		}
+		if(timer >= MAX_DURATION)
+		{
+			isPlaying = false;
+		}
 	}
 }
+bool StingAnim::playingAnim()
+{
+	return isPlaying;
+}
 void StingAnim::draw(){
-	//DrawRectangleRec(background, BLACK);
+	DrawRectangleRec(background, fader);
 	DrawRectangleRec(highBar, ORANGE);
-	DrawRectangleRec(lowBar, YELLOW);
+	DrawRectangleRec(lowBar, ORANGE);
 }

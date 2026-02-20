@@ -73,10 +73,6 @@ void Game::InitGame()
 	//--------Mech--------------//
 	SuperMech_Init(&mech, {100,380});
 
-	isDeathActive = false;
-    deathTimer = 0.0f;
-    deathTimerDuration = 2.0f;
-
 	//--------Input Manager---------------------//
 	InitInputManager();
 
@@ -96,7 +92,7 @@ void Game::Update(float t_dt)
 	NonGameInputs();
 	
 	ui_manager.changeUI(gamestate, camera.screen.target);
-	ui_manager.updateUI();
+	ui_manager.updateUI(t_dt);
 	switch (gamestate)
 	{
 		case GAME_START:
@@ -110,13 +106,10 @@ void Game::Update(float t_dt)
 		case GAME_PAUSE:
 		break;
 		case GAME_END:
-			if (isDeathActive){
-        		deathTimer += t_dt;
-        		if (deathTimer >= deathTimerDuration){
-            	Respawn();
-        		}
-        		return;
-    		}
+			if(!ui_manager.stingAnim.playingAnim())
+			{
+				Respawn();
+			}
 		break;
 	}
 
@@ -244,8 +237,6 @@ void Game::Respawn()
 {
     ooze.Reset({SCREEN_WIDTH/2, SCREEN_HEIGHT/2});
     SuperMech_Reset(&mech, {100,380});
-
-    isDeathActive = false;
 	gamestate = GAME_PLAY;
 }
 
@@ -257,37 +248,10 @@ void Game::checkMechOozeCollision()
     for (int i = 0; i < count; i++){
 		if (SuperMech_CheckCollision_Player( &mech, points[i].m_position, points[i].m_radiusX))
 		{
-			isDeathActive = true;
-			deathTimer = 0.0f;
 			gamestate = GAME_END;
 			break;
 		}
 	}
-}
-
-void Game::drawDeathScreen()
-{
-	if (isDeathActive)
-    	{
-    	    float alpha = (sinf(deathTimer * 10.0f) * 0.5f + 0.5f) * 0.6f;
-
-        	DrawRectangle(
-            	0, 0,
-            	GetScreenWidth(),
-            	GetScreenHeight(),
-            	Fade(RED, alpha)
-        	);
-
-        	DrawText(
-            	"DEATH BY SUPERMECH",
-            	GetScreenWidth()/2 - 180,
-            	GetScreenHeight()/2,
-            	40,
-            	WHITE
-        	);
-
-			return;
-    	}
 }
 
 static void DebugCountBoundaryTiles(const LevelData* level)

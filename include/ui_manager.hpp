@@ -14,14 +14,14 @@ class UI_Manager
 		~UI_Manager();
 
 		void changeUI(GameState t_newScreen, Vector2 t_pos);
-		void updateUI();
+		void updateUI(float& t_dt);
 		void drawUI();
+
+		StingAnim stingAnim;
 
 	private:
 		
 		GameState screen;
-
-		StingAnim stingAnim;
 
 		void initialize();
 		void loadUI(Vector2& t_pos);
@@ -43,7 +43,7 @@ class UI_Manager
 		void unloadPauseUI();
 
 		void loadEndUI(Vector2& t_pos);
-		void updateEndUI();
+		void updateEndUI(float& t_dt);
 		void drawEndUI();
 		void unloadEndUI();
 };

@@ -15,7 +15,7 @@ void UI_Manager::changeUI(GameState t_newScreen, Vector2 t_pos){
 		loadUI(t_pos);
 	}
 }
-void UI_Manager::updateUI(){
+void UI_Manager::updateUI(float& t_dt){
 	switch (screen){
 		case GAME_START:
 			updateStartUI();
@@ -27,7 +27,7 @@ void UI_Manager::updateUI(){
 			updatePauseUI();
 		break;
 		case GAME_END:
-			updateEndUI();
+			updateEndUI(t_dt);
 		break;
 	}
 }
@@ -127,8 +127,11 @@ void UI_Manager::loadEndUI(Vector2& t_pos){
 	std::cout << "Loading END Screen UI\n";
 	stingAnim.setup(t_pos);
 }
-void UI_Manager::updateEndUI(){
-	stingAnim.play();
+void UI_Manager::updateEndUI(float& t_dt){
+	if(stingAnim.playingAnim())
+	{
+		stingAnim.play(t_dt);
+	}
 }
 void UI_Manager::drawEndUI(){
 	stingAnim.draw();

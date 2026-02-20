@@ -65,7 +65,6 @@ private:
 	
 	void Respawn();
 	void checkMechOozeCollision();
-	void drawDeathScreen();
 
 	GameState gamestate;
 	Ooze ooze;
@@ -78,10 +77,6 @@ private:
 	LevelData m_level{};
 
 	SuperMech mech;
-
-	bool isDeathActive;
-	float deathTimer;
-	float deathTimerDuration;
 };
 
 #endif //game.h
