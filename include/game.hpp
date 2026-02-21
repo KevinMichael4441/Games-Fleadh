@@ -9,6 +9,7 @@
 #include "math.h"
 #include "rlgl.h"
 
+#include "ui_manager.hpp"
 #include "camera_manager.hpp"
 #include "gamestates.hpp"
 #include "ooze.hpp"
@@ -19,6 +20,7 @@
 #include "level_loader.h"
 #include "cJSON.h"
 #include "security_system.h"
+#include "cute_c2.h"
 
 
 
@@ -63,12 +65,13 @@ private:
 	void Draw();
 	
 	void Respawn();
+	void checkMechOozeCollision();
 
 	GameState gamestate;
 	Ooze ooze;
 	Command m_activeCommand;
 	SecuritySystem m_securitySystem;
-
+	UI_Manager ui_manager;
 	CameraManager camera;
 	Texture2D temp_background;
 
@@ -76,10 +79,6 @@ private:
 	LevelData m_level{};
 
 	SuperMech mech;
-
-	bool isDeathActive;
-	float deathTimer;
-	float deathTimerDuration;
 };
 
 #endif //game.h

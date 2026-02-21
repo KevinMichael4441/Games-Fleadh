@@ -8,6 +8,11 @@
 #include <math.h>
 
 #include "raylib.h"
+#include "cute_c2.h"
+
+#include "level_loader.h"
+
+#define MAX_BOUNDARY_RECTS 16
 
 #ifdef __cplusplus
 extern "C"
@@ -39,6 +44,8 @@ typedef struct {
 } StateConfig;
 
 typedef struct SuperMech {
+    LevelData currentLevel;
+
     Vector2 position;
     Vector2 velocity;
 
@@ -49,7 +56,6 @@ typedef struct SuperMech {
     float gravity;
     bool isGrounded;
     float jumpForce;
-    float groundY;
 
     float stateTimer;
     Vector2 lastKnownPlayerPos;
@@ -78,7 +84,7 @@ typedef struct SuperMech {
     StateConfig stateConfigs[MECH_STATE_COUNT];
 } SuperMech; //actual SM
 
-void SuperMech_Init(SuperMech *mech, Vector2 startPos);
+void SuperMech_Init(SuperMech *mech, Vector2 startPos, LevelData* level);
 
 void SuperMech_Uppdate(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, float dt);
 void SuperMech_Draw(SuperMech *mech);

@@ -60,6 +60,11 @@ static float Vec2Distance(Vector2 a, Vector2 b)
 
 //------------------Other Helper Functions------------------//
 
+static void SetLevel(SuperMech *mech, LevelData* level)
+{
+    mech->currentLevel = *level;
+}
+
 static bool CanSeePlayer(const SuperMech *mech, Vector2 playerPos) 
 {
     float dist = Vec2Distance(mech->position, playerPos);
@@ -87,7 +92,6 @@ static void MoveTowards(SuperMech *mech, Vector2 target, float speed, float dt)
     }
 
     TryJump(mech, target);
-    ApplyGravity(mech, dt);
 }
 
 static void TryJump(SuperMech *mech, Vector2 target)
@@ -112,17 +116,6 @@ static void ApplyGravity(SuperMech *mech, float dt)
     if (!mech->isGrounded)
     {
         mech->velocity.y += mech->gravity * dt;
-    }
-
-    mech->position.x += mech->velocity.x * dt;
-    mech->position.y += mech->velocity.y * dt;
-
-    //ground collision
-    if (mech->position.y >= mech->groundY)
-    {
-        mech->position.y = mech->groundY;
-        mech->velocity.y = 0;
-        mech->isGrounded = true;
     }
 }
 
@@ -154,21 +147,116 @@ bool SuperMech_CheckCollision_Player(const SuperMech *mech, Vector2 center, floa
     return distanceSquared <= radius * radius;
 }
 
+static c2AABB SuperMech_GetAABB(const SuperMech* mech)
+{
+    c2AABB box;
+
+    box.min = c2V(mech->position.x, mech->position.y);
+    box.max = c2V( mech->position.x + mech->frameWidth, mech->position.y + mech->frameHeight );
+
+    return box;
+}
+
+static int SuperMech_FindBoundaryAABBs( const SuperMech* mech, c2AABB outRects[MAX_BOUNDARY_RECTS])
+{
+    if (!&mech->currentLevel) return 0;
+
+    Vector2 center = { mech->position.x + mech->frameWidth * 0.5f, mech->position.y + mech->frameHeight * 0.5f };
+
+    int tileX = (int)(center.x / mech->currentLevel.tileWidth);
+    int tileY = (int)(center.y / mech->currentLevel.tileHeight);
+
+    int count = 0;
+
+    for (int oy = -1; oy <= 1; oy++)
+    {
+        for (int ox = -1; ox <= 1; ox++)
+        {
+            int checkTileX = tileX + ox;
+            int checkTileY = tileY + oy;
+
+            float tileCenterX = checkTileX * mech->currentLevel.tileWidth + mech->currentLevel.tileWidth * 0.5f;
+            float tileCenterY = checkTileY * mech->currentLevel.tileHeight + mech->currentLevel.tileHeight * 0.5f;
+
+            if (Level_IsBoundaryPos(&mech->currentLevel, tileCenterX, tileCenterY))
+            {
+                c2AABB tile;
+
+                tile.min = c2V( checkTileX * mech->currentLevel.tileWidth, checkTileY * mech->currentLevel.tileHeight);
+                tile.max = c2V( tile.min.x + mech->currentLevel.tileWidth, tile.min.y + mech->currentLevel.tileHeight);
+
+                outRects[count++] = tile;
+
+                if (count >= MAX_BOUNDARY_RECTS)
+                    return count;
+            }
+        }
+    }
+
+    return count;
+}
+
+static void SuperMech_ResolveVsTile( SuperMech* mech, const c2AABB* tile)
+{
+    c2AABB mechBox = SuperMech_GetAABB(mech);
+
+    c2Manifold manifold = {};
+    c2AABBtoAABBManifold(mechBox, *tile, &manifold);
+
+    if (manifold.count == 0) return;
+
+    float push = manifold.depths[0];
+
+    mech->position.x -= manifold.n.x * push;
+    mech->position.y -= manifold.n.y * push;
+
+    if (fabs(manifold.n.y) > 0.8f)
+    {
+        mech->velocity.y = 0;
+
+        if (manifold.n.y < 0 && mech->velocity.y >= 0)
+        {
+            mech->isGrounded = true;
+        }
+    }
+}
+
+void SuperMech_ResolveBoundaryCollision(SuperMech* mech)
+{
+    mech->isGrounded = false;
+    const int iterations = 4;
+
+    for (int i = 0; i < iterations; i++)
+    {
+        c2AABB tiles[MAX_BOUNDARY_RECTS];
+        int count = SuperMech_FindBoundaryAABBs(mech, tiles);
+
+        for (int t = 0; t < count; t++)
+        {
+            SuperMech_ResolveVsTile(mech, &tiles[t]);
+        }
+    }
+}
+
 void SuperMech_Reset(SuperMech *mech, Vector2 startPos)
 {
     mech->position = startPos;
     mech->velocity = (Vector2){0,0};
+    mech->isGrounded = false;
 
     mech->playerVisible = false;
-    mech->stateTimer = 0.0f;
 
-    mech->currentState = MECH_DORMANT;
     mech->previousState = MECH_DORMANT;
+    mech->currentState  = MECH_DORMANT;
+    mech->stateTimer    = 0.0f;
 
     mech->currentTexture = &mech->textureDormant;
-
     mech->currentFrame = 0;
     mech->animationTimer = 0.0f;
+
+    mech->facingRight = true;
+
+    SuperMech_ResolveBoundaryCollision(mech);
 }
 
 //------------------FSM Functions------------------//
@@ -227,8 +315,10 @@ static void UpdateState(SuperMech *mech, float dt)
 
 //------------------Public Functions------------------//
 
-void SuperMech_Init(SuperMech *mech, Vector2 startPos) 
+void SuperMech_Init(SuperMech *mech, Vector2 startPos, LevelData* level) 
 {
+    SetLevel(mech, level);
+
     mech->position = startPos;
     mech->velocity = (Vector2){0,0};
 
@@ -239,7 +329,6 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos)
     mech->gravity = 900.0f;
     mech->isGrounded = true;
     mech->jumpForce = 450.0f;
-    mech->groundY = startPos.y;
 
     mech->stateTimer = 0.0f;
     mech->lastKnownPlayerPos = startPos;
@@ -252,6 +341,7 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos)
     mech->textureIdle = LoadTexture("./assets/supermech/supermech_sleep_64x98.png");
     mech->textureHunt = LoadTexture("./assets/supermech/supermech_sleep_64x98.png");
     mech->textureSearch = LoadTexture("./assets/supermech/supermech_sleep_64x98.png");
+    mech->currentTexture = &mech->textureDormant;
     mech->frameWidth  = 64;
     mech->frameHeight = 98;
     mech->scale = 1.0f;
@@ -324,6 +414,13 @@ void SuperMech_Uppdate(SuperMech *mech, Vector2 playerPos, bool cameraTriggered,
     }
 
     UpdateState(mech, dt);
+
+    if (!mech->isGrounded) mech->velocity.y += mech->gravity * dt;
+
+    mech->position.x += mech->velocity.x * dt;
+    mech->position.y += mech->velocity.y * dt;
+    
+    SuperMech_ResolveBoundaryCollision(mech);
 }
 
 void SuperMech_Draw(SuperMech *mech) 
@@ -393,8 +490,6 @@ static void Dormant_Update(SuperMech *mech, float dt)
     {
         ChangeState(mech, MECH_HUNT, dt);
     }
-    
-    ApplyGravity(mech, dt);
 }
 
 static void Dormant_Exit(SuperMech *mech, float dt)
@@ -423,8 +518,6 @@ static void Idle_Update(SuperMech *mech, float dt)
     {
         ChangeState(mech, MECH_DORMANT, dt);
     }
-    
-    ApplyGravity(mech, dt);
 }
 
 static void Idle_Exit(SuperMech *mech, float dt)
@@ -484,8 +577,6 @@ static void Search_Update(SuperMech *mech, float dt)
     {
         ChangeState(mech, MECH_IDLE, dt);
     }
-    
-    ApplyGravity(mech, dt);
 }
 
 static void Search_Exit(SuperMech *mech, float dt)

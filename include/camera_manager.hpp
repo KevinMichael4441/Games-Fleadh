@@ -3,18 +3,21 @@
 
 #include <raylib.h>
 #include <stdio.h>
+
+#include <math.h>
+
 #include "constants.h"
 #include "command.h"
 
-typedef enum CamState
+typedef enum CamMode
 {
-	STATIC,
-	MOVING
-} CamState;
+	EXACT,
+	FOLLOW,
+	DEADZONE
+} CamMode;
 
 class CameraManager
 {
-
 	public:
 		CameraManager();
 		~CameraManager();
@@ -22,28 +25,19 @@ class CameraManager
 		void begin();
 		void end();
 
-		void update(Vector2 position);
-
-	private:
-		void initialize();
-		void move();
-		void updateDirection();
-
-
+		void update(Vector2 positionCommand);
 
 		Camera2D screen;
+	private:
+		void initialize();
 
-		CamState state;
+		void updateCamCenter(Vector2& t_position);
+		void moveCamInsideMap(Vector2& t_position);
 
-		Vector2 slimePos;
-		Vector2 direction;
+	
+		CamMode mode;
 
-		float speed = 15.0f;
-		float vertSpeed = 5.0f;
-		float offset = 50.0f;
-		float WINDOW = 30.0f; // Space around slime before camera starts to move
-
-		float increment = 0.1f;
+		float WINDOW = 70.0f; // Space around slime before camera starts to move
 };
 
 #endif
