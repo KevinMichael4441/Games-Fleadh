@@ -111,7 +111,9 @@ void Game::Update(float t_dt)
 
 		camera.update(ooze.CalculateCenter());
 
-		SuperMech_Uppdate(&mech, ooze.getPosition(), false, t_dt);
+		bool cameraTriggered = m_securitySystem.update(t_dt, ooze.getPosition());
+
+		SuperMech_Uppdate(&mech, ooze.getPosition(), cameraTriggered, t_dt);
 
 		const Point* points = ooze.GetPoints();
     	int count = ooze.GetPointCount();
@@ -125,8 +127,6 @@ void Game::Update(float t_dt)
             	break;
         	}
     	}
-		
-		m_securitySystem.update(t_dt);
 	}
 
 // -----------------TELEMETRY UPDATES----------------------------------------//

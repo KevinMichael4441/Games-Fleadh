@@ -7,7 +7,7 @@ void SecuritySystem::initialize()
 {
 	for(int index = 0; index < MAX_CAMERA; index++)
 	{
-		m_cameras[index].initialize(200,120);
+		m_cameras[index].initialize(200, 120, 110, 90);
 	}
 
 	for (int index = 0; index < MAX_LASERWALL; index++)
@@ -17,18 +17,26 @@ void SecuritySystem::initialize()
 }
 
 
-void SecuritySystem::update(float t_dt)
+bool SecuritySystem::update(float t_dt, Vector2 playerPos)
 {
-	for(int index = 0; index < MAX_CAMERA; index++)
-	{
-		m_cameras[index].update(t_dt);
-	}
+	bool detected = false;
 
-	for (int index = 0; index < MAX_LASERWALL; index++)
-	{
-		m_lasers[index].update(t_dt);
-	}
+	for(int i = 0; i < MAX_CAMERA; i++)
+    {
+        m_cameras[i].update(t_dt, playerPos);
 
+        if (m_cameras[i].isPlayerDetected())
+        {
+            detected = true;
+        }
+    }
+
+	for (int i = 0; i < MAX_LASERWALL; i++)
+    {
+        m_lasers[i].update(t_dt);
+    }
+
+    return detected;
 }
 
 void SecuritySystem::draw()
