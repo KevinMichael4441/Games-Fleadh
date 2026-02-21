@@ -202,6 +202,7 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos)
     mech->textureIdle = LoadTexture("./assets/supermech/supermech_sleep_64x98.png");
     mech->textureHunt = LoadTexture("./assets/supermech/supermech_sleep_64x98.png");
     mech->textureSearch = LoadTexture("./assets/supermech/supermech_sleep_64x98.png");
+    mech->currentTexture = &mech->textureDormant;
     mech->frameWidth  = 64;
     mech->frameHeight = 98;
     mech->scale = 1.0f;

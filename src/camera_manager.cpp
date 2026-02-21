@@ -27,7 +27,7 @@ void CameraManager::end(){
 void CameraManager::updateCamCenter(Vector2& t_position)
 {
 	screen.offset = (Vector2){ (SCREEN_WIDTH/2.0f), (SCREEN_HEIGHT/2.0f)};
-	screen.target = (Vector2){t_position.x, t_position.y};
+	screen.target = (Vector2){roundf(t_position.x), roundf(t_position.y)};
 }
 
 void CameraManager::moveCamInsideMap(Vector2& t_position)

@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include "constants.h"
 #include "command.h"
+#include <stdlib.h>
+#include "math.h"
 
 typedef enum CamMode
 {

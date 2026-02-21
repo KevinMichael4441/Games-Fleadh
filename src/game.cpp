@@ -46,8 +46,6 @@ void Game::InitGame()
 	// Initial GameState
 	gamestate = GAME_PLAY;
 
-
-
 	//-------------Level Loading-----------------//
 
 	if (!Level_Load(&m_level, "./assets/maps/MyFirstMap.json", "./assets/maps/", "./assets/images/LabTilesTest.png"))
@@ -62,12 +60,8 @@ void Game::InitGame()
 	// --------------------------------------------------------------
 
 	//------------- OOZEY WHIZY------------------//
-	float springConstant = 0.01;
-	float damp = 0.9;
 	Vector2 centrePoint = {0,0};
-	float speed = 0.6f;		// 1.2
-	float jumpAmount = 0.8f;	// 0.8
-	ooze.Initialize(springConstant, damp, centrePoint, speed, jumpAmount);
+	ooze.Initialize(SPRING_CONSTANT, DAMP, centrePoint, OOZE_SPEED, JUMP_AMOUNT);
 	ooze.SetLevel(&m_level);
 
 	//--------Mech--------------//
@@ -100,7 +94,7 @@ void Game::Update(float t_dt)
 		case GAME_PLAY:
 			ooze.Update(t_dt, m_activeCommand);
 			camera.update(ooze.CalculateCenter());
-			SuperMech_Update(&mech, ooze.getPosition(), true, t_dt);
+			//SuperMech_Update(&mech, ooze.getPosition(), true, t_dt);
 			checkMechOozeCollision();
 		break;
 		case GAME_PAUSE:
@@ -187,10 +181,10 @@ void Game::Draw()
 		break;
 		case GAME_PLAY:
 			DrawTexture(temp_background, 0, 0, WHITE);
+			ooze.Draw();
 			if (m_level.levelLayer){
 				DrawTileLayer(&m_level, m_level.levelLayer);
 			}
-			ooze.Draw();
 			SuperMech_Draw(&mech);
 			if (m_level.foregroundLayer){
 				DrawTileLayer(&m_level, m_level.foregroundLayer);
