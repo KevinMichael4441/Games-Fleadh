@@ -91,11 +91,14 @@ void Game::InitGame()
 
 void Game::Update(float t_dt)
 {
+	if (t_dt > 0.04f) return;
+
 	m_activeCommand = PollInput();
 	NonGameInputs();
 	
 	ui_manager.changeUI(gamestate, camera.screen.target);
 	ui_manager.updateUI(t_dt);
+
 	switch (gamestate)
 	{
 		case GAME_START:

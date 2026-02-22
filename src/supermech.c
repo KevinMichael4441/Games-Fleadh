@@ -74,6 +74,7 @@ static bool CanSeePlayer(const SuperMech *mech, Vector2 playerPos)
 static void MoveTowards(SuperMech *mech, Vector2 target, float speed, float dt)
 {
     float dx = target.x - mech->position.x;
+    //TraceLog(LOG_INFO, "target: %d", target.x);
 
     if(!AtLedge(mech, target))
     {
