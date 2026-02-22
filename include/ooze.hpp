@@ -81,6 +81,8 @@ private:
 	LevelData* m_level = nullptr;
 	static const int MAX_BOUNDARY_RECTS = 16;
 
+	Vector2 m_newPointPosition;
+
 
 public:
 	Ooze();
@@ -116,7 +118,6 @@ public:
 	void UpdateCollideHorizontalState(float t_dt);
 	void UpdateCollideVerticalState(float t_dt);
 
-	void ClampPointsOnScreen();
 	void SetNewLerp(int index, int t_randX, int t_baseX, int t_randY, int t_baseY);
 
 	void Move();
@@ -136,8 +137,7 @@ public:
 	void Draw();
 
 	void SetLevel(LevelData* level);
-	void ResolveBoundaryCollision_C2();
-	int FindBoundaryAABBs(Vector2 centerPos, float radius, c2AABB outRects[MAX_BOUNDARY_RECTS]) const;
+	int FindBoundaryAABBs(Vector2 centerPos, c2AABB outRects[MAX_BOUNDARY_RECTS]) const;
 	void ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str, float friction);
 	void Reset(Vector2 startPos);
 
@@ -146,6 +146,12 @@ public:
 	int GetPointCount() const;
 	
 	FSM fsm;
+
+
+
+	int collideDownCount = 0;
+	int collideUpCount = 0;
+	int collideHorizontalCount = 0;
 };
 
 #endif
