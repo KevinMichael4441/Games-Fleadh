@@ -97,7 +97,7 @@ void Game::Update(float t_dt)
 		case GAME_PLAY:
 			ooze.Update(t_dt, m_activeCommand);
 			camera.update(ooze.CalculateCenter());
-			SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze.getPosition())), t_dt);
+			SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
 			checkMechOozeCollision();
 		break;
 		case GAME_PAUSE:
@@ -190,9 +190,9 @@ void Game::Draw()
 				DrawTileLayer(&m_level, m_level.levelLayer);
 			}
 			SuperMech_Draw(&mech);
-			if (m_level.foregroundLayer){
-				DrawTileLayer(&m_level, m_level.foregroundLayer);
-			}
+			//if (m_level.foregroundLayer){
+			//	DrawTileLayer(&m_level, m_level.foregroundLayer);
+			//}
 			DebugDrawBoundaryRects(&m_level);
 		break;
 		case GAME_PAUSE:

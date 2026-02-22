@@ -142,7 +142,7 @@ public:
 	void Reset(Vector2 startPos);
 
 	Vector2 getPosition();
-	const Point* GetPoints() const;
+	Point* GetPoints();
 	int GetPointCount() const;
 	
 	FSM fsm;

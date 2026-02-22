@@ -12,18 +12,18 @@ void SecuritySystem::initialize()
 
 	for (int index = 0; index < MAX_LASERWALL; index++)
 	{
-		m_lasers[index].initialize(500, SCREEN_HEIGHT - 128);
+		m_lasers[index].initialize(500, SCREEN_HEIGHT - 300);
 	}
 }
 
 
-bool SecuritySystem::update(float t_dt, Vector2 playerPos)
+bool SecuritySystem::update(float t_dt, Ooze &t_ooze)
 {
 	bool detected = false;
 
 	for(int i = 0; i < MAX_CAMERA; i++)
     {
-        m_cameras[i].update(t_dt, playerPos);
+        m_cameras[i].update(t_dt, t_ooze.CalculateCenter());
 
         if (m_cameras[i].isPlayerDetected())
         {
@@ -33,7 +33,7 @@ bool SecuritySystem::update(float t_dt, Vector2 playerPos)
 
 	for (int i = 0; i < MAX_LASERWALL; i++)
     {
-        m_lasers[i].update(t_dt);
+        m_lasers[i].update(t_ooze, t_dt);
     }
 
     return detected;

@@ -5,15 +5,20 @@
 #include <raylib.h>
 #include <raymath.h>
 
+#include "ooze.hpp"
+
 #include "constants.h"
 
+extern "C" {
+#include "cute_c2.h"
+}
 
 class Laserwall
 {
 public:
 	Laserwall();
 	void initialize(float t_x, float t_y);
-	void update(float t_dt);
+	void update(Ooze &t_ooze, float t_dt);
 	void draw();
 
 
@@ -26,7 +31,7 @@ private:
 	static const int m_HEIGHT = 128;
 
 	Rectangle m_bars[MAX_BARS];
-	Rectangle m_boundingBox;
+	c2AABB m_boundingBox;
 
 
 	float m_timer;
@@ -34,6 +39,8 @@ private:
 
 	bool m_isActive;
 
+
+	void updateCollision(Ooze &t_ooze);
 };
 
 
