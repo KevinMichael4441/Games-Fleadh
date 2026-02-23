@@ -247,11 +247,11 @@ void SuperMech_Reset(SuperMech *mech, Vector2 startPos)
 
     mech->playerVisible = false;
 
-    mech->previousState = MECH_DORMANT;
-    mech->currentState  = MECH_DORMANT;
+    mech->previousState = MECH_SEARCH;
+    mech->currentState  = MECH_SEARCH;
     mech->stateTimer    = 0.0f;
 
-    mech->currentTexture = &mech->textureDormant;
+    mech->currentTexture = &mech->textureSearch;
     mech->currentFrame = 0;
     mech->animationTimer = 0.0f;
 
@@ -335,14 +335,14 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos, LevelData* level)
     mech->lastKnownPlayerPos = startPos;
     mech->playerVisible = false;
 
-    mech->currentState = MECH_DORMANT;
-    mech->previousState = MECH_DORMANT;
+    mech->currentState = MECH_SEARCH;
+    mech->previousState = MECH_SEARCH;
 
     mech->textureDormant = LoadTexture("./assets/supermech/supermech_sleep_64x98.png");
     mech->textureIdle = LoadTexture("./assets/supermech/supermech_sleep_64x98.png");
     mech->textureHunt = LoadTexture("./assets/supermech/supermech_sleep_64x98.png");
     mech->textureSearch = LoadTexture("./assets/supermech/supermech_sleep_64x98.png");
-    mech->currentTexture = &mech->textureDormant;
+    mech->currentTexture = &mech->textureSearch;
     mech->frameWidth  = 64;
     mech->frameHeight = 98;
     mech->scale = 1.0f;
@@ -487,10 +487,6 @@ static void Dormant_Entry(SuperMech *mech, float dt)
 
 static void Dormant_Update(SuperMech *mech, float dt)
 {
-    if (mech->playerVisible)
-    {
-        ChangeState(mech, MECH_HUNT, dt);
-    }
 }
 
 static void Dormant_Exit(SuperMech *mech, float dt)
