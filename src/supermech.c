@@ -169,9 +169,9 @@ static int SuperMech_FindBoundaryAABBs( const SuperMech* mech, c2AABB outRects[M
 
     int count = 0;
 
-    for (int oy = -1; oy <= 1; oy++)
+    for (int oy = -2; oy <= 2; oy++)
     {
-        for (int ox = -1; ox <= 1; ox++)
+        for (int ox = -2; ox <= 2; ox++)
         {
             int checkTileX = tileX + ox;
             int checkTileY = tileY + oy;
@@ -416,7 +416,7 @@ void SuperMech_Uppdate(SuperMech *mech, Vector2 playerPos, bool cameraTriggered,
 
     UpdateState(mech, dt);
 
-    if (!mech->isGrounded) mech->velocity.y += mech->gravity * dt;
+    mech->velocity.y += mech->gravity * dt;
 
     mech->position.x += mech->velocity.x * dt;
     mech->position.y += mech->velocity.y * dt;
