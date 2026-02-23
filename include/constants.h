@@ -24,7 +24,7 @@
 #define JUMP_AMOUNT			2.5f		// 1.2
 #define GRAVITY				0.8f
 
-#define ITERATIONS			8
+#define ITERATIONS			6
 
 //=================================================================
 // For SecuritySystem

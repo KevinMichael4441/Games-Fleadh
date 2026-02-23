@@ -3,11 +3,12 @@
 SecuritySystem::SecuritySystem()
 {}
 
-void SecuritySystem::initialize()
+void SecuritySystem::initialize(LevelData *t_level)
 {
 	for(int index = 0; index < MAX_CAMERA; index++)
 	{
-		m_cameras[index].initialize(200, 120, 110, 90);
+		m_cameras[index].initialize(200, 120, 40, 120);
+		m_cameras[index].SetLevel(t_level);
 	}
 
 	for (int index = 0; index < MAX_LASERWALL; index++)

@@ -68,7 +68,7 @@ void Game::InitGame()
 	SuperMech_Init(&mech, {100,200}, &m_level);
 
 	//---------------Security System------------//
-	m_securitySystem.initialize();
+	m_securitySystem.initialize(&m_level);
 
 	//--------Input Manager---------------------//
 	InitInputManager();
@@ -236,7 +236,8 @@ void Game::Draw()
 void Game::Respawn()
 {
     ooze.Reset({SCREEN_WIDTH/2, SCREEN_HEIGHT/2});
-    SuperMech_Reset(&mech, {100,200});
+	int spawnside = (rand() % 2);
+	spawnside == 0 ? SuperMech_Reset(&mech, {100,380}) : SuperMech_Reset(&mech, {500,380});
 	gamestate = GAME_PLAY;
 }
 
