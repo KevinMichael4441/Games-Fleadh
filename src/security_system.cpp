@@ -7,7 +7,7 @@ void SecuritySystem::initialize(LevelData *t_level)
 {
 	for(int index = 0; index < MAX_CAMERA; index++)
 	{
-		m_cameras[index].initialize(200, 120, 40, 120);
+		m_cameras[index].initialize(192, 128, 40, 120);
 		m_cameras[index].SetLevel(t_level);
 	}
 

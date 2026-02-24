@@ -184,7 +184,7 @@ void Game::Draw()
 		break;
 		case GAME_PLAY:
 			DrawTexture(temp_background, 0, 0, WHITE);
-			m_securitySystem.draw();
+			
 			ooze.Draw();
 			if (m_level.levelLayer){
 				DrawTileLayer(&m_level, m_level.levelLayer);
@@ -194,6 +194,7 @@ void Game::Draw()
 			//	DrawTileLayer(&m_level, m_level.foregroundLayer);
 			//}
 			DebugDrawBoundaryRects(&m_level);
+			m_securitySystem.draw();
 		break;
 		case GAME_PAUSE:
 			DrawTexture(temp_background, 0, 0, WHITE);

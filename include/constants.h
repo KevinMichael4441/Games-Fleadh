@@ -22,7 +22,7 @@
 #define BASE_RADIUS			12
 #define OOZE_SPEED			0.8f		// 0.8
 #define JUMP_AMOUNT			2.5f		// 1.2
-#define GRAVITY				0.8f
+#define GRAVITY				0.01f
 
 #define ITERATIONS			6
 

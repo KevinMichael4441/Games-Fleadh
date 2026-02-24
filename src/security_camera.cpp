@@ -9,8 +9,8 @@ SecurityCamera::SecurityCamera()
 
 void SecurityCamera::initialize(float t_x, float t_y, float t_maxRotation, float t_minRotation)
 {
-    m_maxAngle = 60;
-	m_minAngle = 120;
+    m_maxAngle = 360;
+	m_minAngle = 0;
 
 	m_angle = m_minAngle;
 
@@ -27,7 +27,7 @@ void SecurityCamera::initialize(float t_x, float t_y, float t_maxRotation, float
 
 	m_visualEndPoint = m_actualEndPoint;
 
-	m_speed =  (rand() % 20 + 20);
+	m_speed =  DEG2RAD * 20;
 
     m_isActive = true;
 	m_activeDuration = 5.0f;
@@ -42,16 +42,16 @@ void SecurityCamera::update(float t_dt, Vector2 playerPos)
 {
 	m_timer += t_dt;
 
-	if (m_isActive && m_timer >= m_activeDuration)
-    {
-        m_isActive = false;
-        m_timer = 0.0f;
-    }
-    else if (!m_isActive && m_timer >= m_inactiveDuration)
-    {
-        m_isActive = true;
-        m_timer = 0.0f;
-    }
+	// if (m_isActive && m_timer >= m_activeDuration)
+    // {
+    //     m_isActive = false;
+    //     m_timer = 0.0f;
+    // }
+    // else if (!m_isActive && m_timer >= m_inactiveDuration)
+    // {
+    //     m_isActive = true;
+    //     m_timer = 0.0f;
+    // }
 
 	if (m_isActive)
 	{
@@ -69,6 +69,9 @@ void SecurityCamera::update(float t_dt, Vector2 playerPos)
     	}
 	}
 
+    m_ray.direction.x = cos(m_angle);
+	m_ray.direction.y = sin(m_angle);
+
 	m_actualEndPoint.x = m_origin.x + (m_range * cos(m_angle));
 	m_actualEndPoint.y = m_origin.y + (m_range * sin(m_angle));
 	
@@ -77,6 +80,7 @@ void SecurityCamera::update(float t_dt, Vector2 playerPos)
     if (!m_isActive) return;
 
 	FindBoundaryAABBs(m_origin.x, m_origin.y, m_actualEndPoint.x, m_actualEndPoint.y);
+    m_playerDetected = camCheckCollisionPlayer(playerPos);
 
 }
 
@@ -91,7 +95,10 @@ void SecurityCamera::FindBoundaryAABBs(double x0, double y0, double x1, double y
     if (!m_level)
 	{
 		return;
-	}
+    }
+
+    x0 += 16;
+    y0 += 16;
 
 	// Bresenham-based supercover line algorithm
 	double dx = fabs(x1 - x0);
@@ -113,7 +120,7 @@ void SecurityCamera::FindBoundaryAABBs(double x0, double y0, double x1, double y
     {
         x_inc = 32;
         n += (int(floor(x1)) - x) / 32;
-        error = (floor(x0) + 32 - x0) * dy;
+        error = (floor(x0) + 1 - x0) * dy;
     }
     else
     {
@@ -131,7 +138,7 @@ void SecurityCamera::FindBoundaryAABBs(double x0, double y0, double x1, double y
     {
         y_inc = 32;
         n += (int(floor(y1)) - y) / 32;
-        error -= (floor(y0) + 32 - y0) * dx;
+        error -= (floor(y0) + 1 - y0) * dx;
     }
     else
     {
@@ -144,7 +151,17 @@ void SecurityCamera::FindBoundaryAABBs(double x0, double y0, double x1, double y
     {
         if (Level_IsBoundaryPos(m_level, x, y))
 		{
-			RayCollision myCollision = GetRayCollisionBox(m_ray, {{(float)x,(float)y}, {(float)x+x_inc, (float)y+y_inc} });
+            RayCollision myCollision;
+            if (x+x_inc > x)
+            {
+                myCollision = GetRayCollisionBox(m_ray, {{(float)x+x_inc, (float)y+y_inc}, {(float)x,(float)y} });
+            }
+            else
+            {
+                myCollision = GetRayCollisionBox(m_ray, {{(float)x-x_inc, (float)y-y_inc} , {(float)x,(float)y}});          
+            }
+
+            //myCollision = GetRayCollisionBox(m_ray, {{(float)x,(float)y}, {(float)x+x_inc, (float)y+y_inc} });
 			
 			m_visualEndPoint.x = myCollision.point.x;
 			m_visualEndPoint.y = myCollision.point.y;
