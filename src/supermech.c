@@ -211,14 +211,24 @@ static void SuperMech_ResolveVsTile( SuperMech* mech, const c2AABB* tile)
     mech->position.x -= manifold.n.x * push;
     mech->position.y -= manifold.n.y * push;
 
-    if (fabs(manifold.n.y) > 0.8f)
+    mechBox = SuperMech_GetAABB(mech);
+
+    float mechBottom = mechBox.max.y;
+    float mechTop = mechBox.min.y;
+
+    float tileTop = tile->min.y;
+    float tileBottom = tile->max.y;
+
+    const float epsilon = 0.5f;
+
+    if (fabsf(mechBottom - tileTop) < epsilon && mech->velocity.y >= 0)
     {
         mech->velocity.y = 0;
-
-        if (manifold.n.y < 0 && mech->velocity.y >= 0)
-        {
-            mech->isGrounded = true;
-        }
+        mech->isGrounded = true;
+    }
+    else if (fabsf(mechTop - tileBottom) < epsilon && mech->velocity.y <= 0)
+    {
+        mech->velocity.y = 0;
     }
 }
 
@@ -404,7 +414,7 @@ void SuperMech_Uppdate(SuperMech *mech, Vector2 playerPos, bool cameraTriggered,
 {
     mech->playerVisible = CanSeePlayer(mech, playerPos);
 
-    if (cameraTriggered && (mech->currentState != MECH_HUNT))
+    if (cameraTriggered && mech->currentState != MECH_HUNT)
     {
         ChangeState(mech, MECH_HUNT, dt);
     }
@@ -414,14 +424,14 @@ void SuperMech_Uppdate(SuperMech *mech, Vector2 playerPos, bool cameraTriggered,
         mech->lastKnownPlayerPos = playerPos;
     }
 
-    UpdateState(mech, dt);
-
     mech->velocity.y += mech->gravity * dt;
 
     mech->position.x += mech->velocity.x * dt;
     mech->position.y += mech->velocity.y * dt;
-    
+
     SuperMech_ResolveBoundaryCollision(mech);
+
+    UpdateState(mech, dt);
 }
 
 void SuperMech_Draw(SuperMech *mech) 
@@ -465,6 +475,10 @@ void SuperMech_Draw(SuperMech *mech)
 
     const char *stateName = SuperMech_GetStateName(mech->currentState);
     DrawText( stateName, (int)mech->position.x, (int)(mech->position.y - 20), 16, RED );
+    DrawText(mech->isGrounded ? "GROUND" : "AIR", mech->position.x, mech->position.y - 40, 16, YELLOW);
+    c2AABB box = SuperMech_GetAABB(mech);
+
+    DrawRectangleLines( box.min.x, box.min.y, box.max.x - box.min.x, box.max.y - box.min.y, GREEN );
 }
 
 const char *SuperMech_GetStateName(SupermechState state) 
