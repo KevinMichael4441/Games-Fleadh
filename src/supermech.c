@@ -161,8 +161,6 @@ static c2AABB SuperMech_GetAABB(const SuperMech* mech)
 
 static int SuperMech_FindBoundaryAABBs( const SuperMech* mech, c2AABB outRects[MAX_BOUNDARY_RECTS])
 {
-    if (!&mech->currentLevel) return 0;
-
     Vector2 center = { mech->position.x + mech->frameWidth * 0.5f, mech->position.y + mech->frameHeight * 0.5f };
 
     int tileX = (int)(center.x / mech->currentLevel.tileWidth);
