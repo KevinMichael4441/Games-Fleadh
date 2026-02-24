@@ -97,10 +97,11 @@ static void MoveTowards(SuperMech *mech, Vector2 target, float speed, float dt)
 
 static void TryJump(SuperMech *mech, Vector2 target)
 {
+    float mechBottom = mech->position.y + mech->frameHeight * mech->scale;
     float xDist = fabsf(target.x - mech->position.x);
-    float yDiff = mech->position.y - target.y;
+    float yDiff = mechBottom - target.y;
 
-    if ((yDiff > 40.0f) && (xDist < 120.0f) && mech->isGrounded)
+    if ((yDiff > 40.0f) && (xDist < 220.0f) && mech->isGrounded)
     {
         mech->velocity.y = -mech->jumpForce;
         mech->isGrounded = false;
