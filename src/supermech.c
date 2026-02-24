@@ -335,7 +335,7 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos, LevelData* level)
     mech->velocity = (Vector2){0,0};
 
     mech->speedIdle = 60.0f;
-    mech->speedHunt = 120.0f;
+    mech->speedHunt = 80.0f;
     mech->visionRange = 300.0f;
 
     mech->gravity = 900.0f;
