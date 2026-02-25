@@ -25,6 +25,10 @@ public:
 
 	void update(float t_dt, Vector2 playerPos);
 	void draw();
+
+	void initRaycast();
+	void updateRaycast();
+	void drawRaycast();
 	
 	bool isPlayerDetected() const;
 	void SetLevel(LevelData* level);
@@ -38,6 +42,8 @@ private:
 	Vector2 m_origin;
 	Vector2 m_visualEndPoint;
 	Vector2 m_actualEndPoint;
+
+	c2Ray m_laser;
 
 	const float m_range = 600;
 

@@ -9,13 +9,15 @@ SecurityCamera::SecurityCamera()
 
 void SecurityCamera::initialize(float t_x, float t_y, float t_maxRotation, float t_minRotation)
 {
+
     m_maxAngle = 360;
 	m_minAngle = 0;
 
 	m_angle = m_minAngle;
 
-	m_ray.direction.x = cos(m_angle);
-	m_ray.direction.y = sin(m_angle);
+	m_ray.direction.x = sin(m_angle);
+	m_ray.direction.y = cos(m_angle);
+    m_ray.direction.z = 0.0f;
 
 
 	m_body = {t_x, t_y, m_width, m_height};
@@ -35,8 +37,37 @@ void SecurityCamera::initialize(float t_x, float t_y, float t_maxRotation, float
 	m_timer = 0.0f;
 
 	m_playerDetected = false;
+
+    initRaycast();
 }
 
+
+void SecurityCamera::initRaycast()
+{
+    Vector2 angle = Vector2Normalize((Vector2){m_ray.direction.x, m_ray.direction.y});
+    m_laser.p = c2V(m_origin.x, m_origin.y);// Starting point
+    m_laser.d = c2V(angle.x, angle.y); // Direction
+    m_laser.t = 300.0f; // Length
+}
+
+void SecurityCamera::updateRaycast()
+{
+    Vector2 angle = Vector2Normalize((Vector2){m_ray.direction.x, m_ray.direction.y});
+    m_laser.p = c2V(m_origin.x, m_origin.y);// Starting point
+    m_laser.d = c2V(angle.x, angle.y); // Direction
+}
+
+void SecurityCamera::drawRaycast()
+{
+    float pX = m_laser.p.x + m_laser.t * sin(m_angle);
+    float pY = m_laser.p.y + m_laser.t * cos(m_angle);
+
+    Vector2 start = {m_laser.p.x, m_laser.p.y};
+    Vector2 end = {pX, pY};
+    float r = 2.0f;
+
+	DrawLineEx(start, end, r, RED);
+}
 
 void SecurityCamera::update(float t_dt, Vector2 playerPos)
 {
@@ -79,8 +110,10 @@ void SecurityCamera::update(float t_dt, Vector2 playerPos)
 
     if (!m_isActive) return;
 
-	FindBoundaryAABBs(m_origin.x, m_origin.y, m_actualEndPoint.x, m_actualEndPoint.y);
-    m_playerDetected = camCheckCollisionPlayer(playerPos);
+   updateRaycast();
+
+	// FindBoundaryAABBs(m_origin.x, m_origin.y, m_actualEndPoint.x, m_actualEndPoint.y);
+    //m_playerDetected = camCheckCollisionPlayer(playerPos);
 
 }
 
@@ -217,7 +250,8 @@ void SecurityCamera::draw()
 
 	if (!m_isActive) return;
 
-	DrawLineV(m_origin, m_visualEndPoint, RED);
+	//DrawLineV(m_origin, m_visualEndPoint, RED);
+    drawRaycast();
 
 	if (m_playerDetected)
 	{
