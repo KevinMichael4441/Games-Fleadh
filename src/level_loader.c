@@ -142,6 +142,45 @@ bool ReadTilesetInfoFromMapJson(LevelData* level, cJSON* mapRoot, const char* ma
     return true;
 }
 
+static bool ConvertTileLayerToArray(LevelData* level, cJSON* layerDataArray, int** newArray)
+{
+    if (!level || !layerDataArray || !newArray)
+    {
+        return false;
+    }
+
+    // num tiles in map
+    int count = level->levelWidth * level->levelHeight;
+
+    // get memory for that many ints 
+    int* arr = (int*)malloc(sizeof(int) * count);
+    if (!arr)
+    {
+        TraceLog(LOG_ERROR, "Out of memory allocating tile array (%d ints)", count);
+        return false;
+    }
+
+    for (int i = 0; i < count; i++)
+    {
+        cJSON* id = cJSON_GetArrayItem(layerDataArray, i); // getthe tile value from the json array
+        int gid;    // store the gid for that tile
+
+        if (id && cJSON_IsNumber(id))   // if it exists and is a number
+        {
+            gid = id->valueint;         // get the actual tile number
+        }
+        else
+        {
+            gid = 0;
+        }
+            gid &= 0x1FFFFFFF;          // remove the flip flag
+            arr[i] = gid;               // store in our array
+        }
+
+    *newArray = arr;
+    return true;
+}
+
 void DrawTileLayer(const LevelData* level, cJSON* layerDataArray)
 {
     if (!level || !layerDataArray) return;
@@ -193,7 +232,10 @@ void JoinPath(char* outBuffer, int outSize, const char* baseDir, const char* fil
 
 bool Level_Load(LevelData* level, const char* mapPath, const char* mapBaseDir, const char* tilesetPngPath)
 {
-    if (!level) return false;
+    if (!level)
+    {
+        return false;
+    }
 
     *level = (LevelData){0};
 
@@ -201,7 +243,10 @@ bool Level_Load(LevelData* level, const char* mapPath, const char* mapBaseDir, c
     level->tileHeight = 32;
 
     level->mapRoot = LoadJsonFile(mapPath);
-    if (!level->mapRoot) return false;
+    if (!level->mapRoot)
+    {
+        return false;
+    }
 
     cJSON* w = cJSON_GetObjectItem(level->mapRoot, "width");
     cJSON* h = cJSON_GetObjectItem(level->mapRoot, "height");
@@ -233,6 +278,30 @@ bool Level_Load(LevelData* level, const char* mapPath, const char* mapBaseDir, c
         return false;
     }
 
+        if (!ConvertTileLayerToArray(level, level->levelLayer, &level->levelGids))
+    {
+        Level_Unload(level);
+        return false;
+    }
+
+    if (level->foregroundLayer)
+    {
+        if (!ConvertTileLayerToArray(level, level->foregroundLayer, &level->foregroundGids))
+        {
+            Level_Unload(level);
+            return false;
+        }
+    }
+
+    if (level->boundaryLayer)
+    {
+        if (!ConvertTileLayerToArray(level, level->boundaryLayer, &level->boundaryGids))
+        {
+            Level_Unload(level);
+            return false;
+        }
+    }
+
     return true;
 }
 
@@ -245,16 +314,37 @@ void Level_Unload(LevelData* level)
     if (level->tilesetTexture.id != 0)
     {
         UnloadTexture(level->tilesetTexture);
+        level->tilesetTexture.id = 0;
     }
 
     if (level->boundaryTiles)
     {
         free(level->boundaryTiles);
+        level->boundaryTiles = NULL;
+    }
+
+    if (level->levelGids)
+    {
+        free(level->levelGids);
+        level->levelGids = NULL;
+    }
+
+    if (level->foregroundGids)
+    {
+        free(level->foregroundGids);
+        level->foregroundGids = NULL;
+    }
+
+    if (level->boundaryGids)
+    {
+        free(level->boundaryGids);
+        level->boundaryGids = NULL;
     }
 
     if (level->mapRoot)
     {
         cJSON_Delete(level->mapRoot);
+        level->mapRoot = NULL;
     }
 
     *level = (LevelData){0};
@@ -379,13 +469,7 @@ static void drawTileLayerChunk(const LevelData* level, cJSON* layerDataArray, in
         {
             int index = y * level->levelWidth + x;
 
-            cJSON* tileItem = cJSON_GetArrayItem(layerDataArray, index);
-            if (!tileItem || !cJSON_IsNumber(tileItem))
-            {
-                continue;
-            }
-
-            int gid = tileItem->valueint;
+            int gid = level->levelGids[index];
             if (gid == 0)
             {
                 continue;

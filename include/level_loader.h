@@ -36,6 +36,10 @@ typedef struct
     cJSON* foregroundLayer;
     cJSON* boundaryLayer;
 
+    int* levelGids;
+    int* foregroundGids;
+    int* boundaryGids;
+
     int chunkWidthPx;           // chunk pixel size (screen size)
     int chunkHeightPx;
     int chunksX;                // num of chunks
