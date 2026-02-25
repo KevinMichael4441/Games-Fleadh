@@ -135,6 +135,10 @@ void Ooze::HandleEvent(Event t_event)
 
 void Ooze::Update(float t_dt, Command t_activeCommand)
 {
+	if (t_dt > 0.04)
+	{
+		t_dt = 0.033335;
+	}
 	HandleInput(t_activeCommand);
 	UpdateState(t_dt);
 

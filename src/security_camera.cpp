@@ -1,7 +1,5 @@
 #include "security_camera.h"
 
-static bool Cam_CheckCollision_Player( Vector2 t_center, float t_radius, Vector2 t_lineStart, Vector2 t_lineEnd);
-
 SecurityCamera::SecurityCamera()
 { 
 }
@@ -11,19 +9,19 @@ void SecurityCamera::initialize(float t_x, float t_y, float t_maxRotation, float
 {
 
     m_maxAngle = 360;
-	m_minAngle = 0;
+	m_minAngle = 20;
 
 	m_angle = m_minAngle;
 
-	m_ray.direction.x = sin(m_angle);
-	m_ray.direction.y = cos(m_angle);
-    m_ray.direction.z = 0.0f;
+	//m_ray.direction.x = sin(m_angle);
+	//m_ray.direction.y = cos(m_angle);
+    //m_ray.direction.z = 0.0f;
 
 
 	m_body = {t_x, t_y, m_width, m_height};
 	m_origin = { t_x + m_width / 2.0f, t_y + m_height / 2.0f };
 
-	m_ray.position = {m_origin.x, m_origin.y, 0};
+	//m_ray.position = {m_origin.x, m_origin.y, 0};
 	m_actualEndPoint.x = m_origin.x + (m_range * cos(DEG2RAD * m_angle));
 	m_actualEndPoint.y = m_origin.y + (m_range * sin(DEG2RAD * m_angle));
 
@@ -44,16 +42,16 @@ void SecurityCamera::initialize(float t_x, float t_y, float t_maxRotation, float
 
 void SecurityCamera::initRaycast()
 {
-    Vector2 angle = Vector2Normalize((Vector2){m_ray.direction.x, m_ray.direction.y});
+    Vector2 angle = Vector2Normalize((Vector2){m_laser.d.x, m_laser.d.y});
     m_laser.p = c2V(m_origin.x, m_origin.y);// Starting point
     m_laser.d = c2V(angle.x, angle.y); // Direction
-    m_laser.t = 300.0f; // Length
+    m_laser.t = SCREEN_WIDTH; // Length
 }
 
 void SecurityCamera::updateRaycast()
 {
-    Vector2 angle = Vector2Normalize((Vector2){m_ray.direction.x, m_ray.direction.y});
-    m_laser.p = c2V(m_origin.x, m_origin.y);// Starting point
+    Vector2 angle = Vector2Normalize((Vector2){m_laser.d.x, m_laser.d.y});
+    //m_laser.p = c2V(m_origin.x, m_origin.y);// Starting point
     m_laser.d = c2V(angle.x, angle.y); // Direction
 }
 
@@ -100,8 +98,8 @@ void SecurityCamera::update(float t_dt, Vector2 playerPos)
     	}
 	}
 
-    m_ray.direction.x = cos(m_angle);
-	m_ray.direction.y = sin(m_angle);
+    m_laser.d.x = cos(m_angle);
+	m_laser.d.y = sin(m_angle);
 
 	m_actualEndPoint.x = m_origin.x + (m_range * cos(m_angle));
 	m_actualEndPoint.y = m_origin.y + (m_range * sin(m_angle));
@@ -112,7 +110,7 @@ void SecurityCamera::update(float t_dt, Vector2 playerPos)
 
    updateRaycast();
 
-	// FindBoundaryAABBs(m_origin.x, m_origin.y, m_actualEndPoint.x, m_actualEndPoint.y);
+    FindBoundaryAABBs(m_origin.x, m_origin.y, m_actualEndPoint.x, m_actualEndPoint.y);
     //m_playerDetected = camCheckCollisionPlayer(playerPos);
 
 }
@@ -130,8 +128,8 @@ void SecurityCamera::FindBoundaryAABBs(double x0, double y0, double x1, double y
 		return;
     }
 
-    x0 += 16;
-    y0 += 16;
+    x0 -= 16;
+    y0 -= 16;
 
 	// Bresenham-based supercover line algorithm
 	double dx = fabs(x1 - x0);
@@ -144,12 +142,8 @@ void SecurityCamera::FindBoundaryAABBs(double x0, double y0, double x1, double y
     int x_inc, y_inc;
     double error;
 
-    if (dx == 0)
-    {
-        x_inc = 0;
-        error = std::numeric_limits<double>::infinity();
-    }
-    else if (x1 > x0)
+
+    if (x1 > x0)
     {
         x_inc = 32;
         n += (int(floor(x1)) - x) / 32;
@@ -162,12 +156,7 @@ void SecurityCamera::FindBoundaryAABBs(double x0, double y0, double x1, double y
         error = (x0 - floor(x0)) * dy;
     }
 
-    if (dy == 0)
-    {
-        y_inc = 0;
-        error -= std::numeric_limits<double>::infinity();
-    }
-    else if (y1 > y0)
+    if (y1 > y0)
     {
         y_inc = 32;
         n += (int(floor(y1)) - y) / 32;
@@ -184,20 +173,48 @@ void SecurityCamera::FindBoundaryAABBs(double x0, double y0, double x1, double y
     {
         if (Level_IsBoundaryPos(m_level, x, y))
 		{
-            RayCollision myCollision;
+            bool collided = false;
+            c2Raycast out;
+            c2v min;
+            c2v max;
             if (x+x_inc > x)
             {
-                myCollision = GetRayCollisionBox(m_ray, {{(float)x+x_inc, (float)y+y_inc}, {(float)x,(float)y} });
+                max.x = x+x_inc;
+                min.x = x; 
             }
             else
             {
-                myCollision = GetRayCollisionBox(m_ray, {{(float)x-x_inc, (float)y-y_inc} , {(float)x,(float)y}});          
+                max.x = x;
+                min.x = x+x_inc; 
             }
+
+            if (y+y_inc > y)
+            {
+                max.y = y+y_inc;
+                min.y = y; 
+            }
+            else
+            {
+                max.y = y;
+                min.y = y+y_inc; 
+            }
+
+            collided = c2RaytoAABB(m_laser, {min, max}, &out);
 
             //myCollision = GetRayCollisionBox(m_ray, {{(float)x,(float)y}, {(float)x+x_inc, (float)y+y_inc} });
 			
-			m_visualEndPoint.x = myCollision.point.x;
-			m_visualEndPoint.y = myCollision.point.y;
+
+            if (collided)
+            {
+                m_visualEndPoint.x = m_laser.p.x + m_laser.d.x * out.t;
+			    m_visualEndPoint.y = m_laser.p.y + m_laser.d.y * out.t;
+                m_collidingFine = true;
+            }
+            else 
+            {
+                m_collidingFine = false;
+            }
+	
 			break;
 		}
 
@@ -246,12 +263,12 @@ bool SecurityCamera::isPlayerDetected() const
 
 void SecurityCamera::draw()
 {
-	DrawRectangleRec(m_body, m_isActive ? ORANGE : DARKGRAY);
+	DrawRectangleRec(m_body, m_collidingFine ? ORANGE : DARKGRAY);
 
 	if (!m_isActive) return;
 
-	//DrawLineV(m_origin, m_visualEndPoint, RED);
-    drawRaycast();
+	DrawLineV(m_origin, m_visualEndPoint, RED);
+    //drawRaycast();
 
 	if (m_playerDetected)
 	{

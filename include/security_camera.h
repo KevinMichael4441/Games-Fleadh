@@ -3,7 +3,9 @@
 
 #include <raylib.h>
 #include <raymath.h>
-#include <cute_c2.h>
+extern "C" {
+#include "cute_c2.h"
+}
 #include <vector>
 #include <limits> // for infinity
 
@@ -61,9 +63,11 @@ private:
     bool m_playerDetected;
 
 
+	bool m_collidingFine;
+
 	LevelData* m_level = nullptr;
 
-	Ray m_ray;
+	//Ray m_ray;
 	//std::vector<Intersection> m_intersections;
 
 	bool camCheckCollisionPlayer(Vector2 t_center);
