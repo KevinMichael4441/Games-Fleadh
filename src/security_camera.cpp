@@ -47,16 +47,25 @@ void SecurityCamera::initRaycast()
     Vector2 angle = Vector2Normalize((Vector2){m_ray.direction.x, m_ray.direction.y});
     m_laser.p = c2V(m_origin.x, m_origin.y);// Starting point
     m_laser.d = c2V(angle.x, angle.y); // Direction
-    m_laser.t = 300.0f; // Length
+    m_laser.t = 240.0f; // Length
 }
-
 void SecurityCamera::updateRaycast()
 {
-    Vector2 angle = Vector2Normalize((Vector2){m_ray.direction.x, m_ray.direction.y});
-    m_laser.p = c2V(m_origin.x, m_origin.y);// Starting point
+    Vector2 angle = Vector2Normalize((Vector2){direction.x, direction.y});
     m_laser.d = c2V(angle.x, angle.y); // Direction
 }
+void SecurityCamera::raycastLevelCollision()
+{
+   
+}
+bool SecurityCamera::raycastPlayerCollision(Vector2& t_center){
+    c2Circle player;
+    c2Raycast laserCast;
+    player.p = c2V(t_center.x, t_center.y);
+    player.r = 30.0f;
 
+    return c2RaytoCircle(m_laser, player, &laserCast);
+}
 void SecurityCamera::drawRaycast()
 {
     float pX = m_laser.p.x + m_laser.t * sin(m_angle);
@@ -65,6 +74,8 @@ void SecurityCamera::drawRaycast()
     Vector2 start = {m_laser.p.x, m_laser.p.y};
     Vector2 end = {pX, pY};
     float r = 2.0f;
+
+    direction = {end.x - start.x, end.y - start.y};
 
 	DrawLineEx(start, end, r, RED);
 }
@@ -109,9 +120,9 @@ void SecurityCamera::update(float t_dt, Vector2 playerPos)
 	m_playerDetected = false;
 
     if (!m_isActive) return;
-
-   updateRaycast();
-
+    
+    updateRaycast();
+    m_playerDetected = raycastPlayerCollision(playerPos);
 	// FindBoundaryAABBs(m_origin.x, m_origin.y, m_actualEndPoint.x, m_actualEndPoint.y);
     //m_playerDetected = camCheckCollisionPlayer(playerPos);
 

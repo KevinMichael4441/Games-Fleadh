@@ -56,7 +56,7 @@ void Game::InitGame()
 
 
 	// Temporary ----------------------------------------------------
-	temp_background = LoadTexture("./assets/1280x960_temp.jpg");
+	temp_background = LoadTexture("./assets/1280x960_temp.png");
 	// --------------------------------------------------------------
 
 	//------------- OOZEY WHIZY------------------//
@@ -193,7 +193,7 @@ void Game::Draw()
 			//if (m_level.foregroundLayer){
 			//	DrawTileLayer(&m_level, m_level.foregroundLayer);
 			//}
-			DebugDrawBoundaryRects(&m_level);
+			//DebugDrawBoundaryRects(&m_level);
 			m_securitySystem.draw();
 		break;
 		case GAME_PAUSE:
@@ -203,13 +203,13 @@ void Game::Draw()
 			}
 			ooze.Draw();
 			SuperMech_Draw(&mech);
-			if (m_level.foregroundLayer){
-				DrawTileLayer(&m_level, m_level.foregroundLayer);
-			}
+			//if (m_level.foregroundLayer){
+			//	DrawTileLayer(&m_level, m_level.foregroundLayer);
+			//}
 
 			m_securitySystem.draw();
 
-			DebugDrawBoundaryRects(&m_level);
+			//DebugDrawBoundaryRects(&m_level);
 		break;
 		case GAME_END:
 			DrawTexture(temp_background, 0, 0, WHITE);
@@ -219,7 +219,7 @@ void Game::Draw()
 			if (m_level.foregroundLayer){
 				DrawTileLayer(&m_level, m_level.foregroundLayer);
 			}
-			DebugDrawBoundaryRects(&m_level);
+			//DebugDrawBoundaryRects(&m_level);
 		break;
 	}
 

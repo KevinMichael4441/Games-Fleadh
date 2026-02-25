@@ -3,7 +3,9 @@
 
 #include <raylib.h>
 #include <raymath.h>
-#include <cute_c2.h>
+extern "C" {
+#include "cute_c2.h"
+}
 #include <vector>
 #include <limits> // for infinity
 
@@ -29,6 +31,9 @@ public:
 	void initRaycast();
 	void updateRaycast();
 	void drawRaycast();
+	void raycastLevelCollision();
+	bool raycastPlayerCollision(Vector2& t_center);
+
 	
 	bool isPlayerDetected() const;
 	void SetLevel(LevelData* level);
@@ -44,6 +49,7 @@ private:
 	Vector2 m_actualEndPoint;
 
 	c2Ray m_laser;
+	Vector2 direction;
 
 	const float m_range = 600;
 
