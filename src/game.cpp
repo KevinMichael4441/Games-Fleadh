@@ -106,9 +106,15 @@ void Game::Update(float t_dt)
 		case GAME_PAUSE:
 		break;
 		case GAME_END:
-			if(!ui_manager.stingAnim.playingAnim())
+			if(ui_manager.stingAnim.timeToSpawn())
 			{
 				Respawn();
+				camera.update(ooze.CalculateCenter());
+				ui_manager.stingAnim.setStingPos(camera.screen.target);
+			}
+			if(!ui_manager.stingAnim.playingAnim())
+			{
+				gamestate = GAME_PLAY;
 			}
 		break;
 	}
@@ -239,7 +245,6 @@ void Game::Respawn()
 {
     ooze.Reset({SCREEN_WIDTH/2, SCREEN_HEIGHT/2});
     SuperMech_Reset(&mech, {100,200});
-	gamestate = GAME_PLAY;
 }
 
 void Game::checkMechOozeCollision()
