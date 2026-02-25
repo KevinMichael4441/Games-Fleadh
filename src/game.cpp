@@ -38,6 +38,8 @@ void Game::Run()
  		EndDrawing();	
 	}
 	UnloadTexture(temp_background);
+	chunkCacheUnload(&m_level);
+	Level_Unload(&m_level);
 }
 
 void Game::InitGame()
@@ -54,6 +56,10 @@ void Game::InitGame()
     }
 	DebugCountBoundaryTiles(&m_level);
 
+	if (!chunkCacheInit(&m_level, SCREEN_WIDTH, SCREEN_HEIGHT))
+	{
+    	TraceLog(LOG_ERROR, "chunkCacheInit failed");
+	}
 
 	// Temporary ----------------------------------------------------
 	temp_background = LoadTexture("./assets/1280x960_temp.jpg");
@@ -98,10 +104,14 @@ void Game::Update(float t_dt)
 		case GAME_START:
 		break;
 		case GAME_PLAY:
+		{
 			ooze.Update(t_dt, m_activeCommand);
-			camera.update(ooze.CalculateCenter());
+			Vector2 center = ooze.CalculateCenter();
+			camera.update(center);
+			chunkCacheUpdate(&m_level, center);
 			SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze.getPosition())), t_dt);
 			checkMechOozeCollision();
+		}
 		break;
 		case GAME_PAUSE:
 		break;
@@ -187,40 +197,22 @@ void Game::Draw()
 		break;
 		case GAME_PLAY:
 			DrawTexture(temp_background, 0, 0, WHITE);
-			ooze.Draw();
-			if (m_level.levelLayer){
-				DrawTileLayer(&m_level, m_level.levelLayer);
-			}
+			
 			SuperMech_Draw(&mech);
-			if (m_level.foregroundLayer){
-				DrawTileLayer(&m_level, m_level.foregroundLayer);
-			}
-			DebugDrawBoundaryRects(&m_level);
+			chunkCacheDraw(&m_level);
+			ooze.Draw();
 		break;
 		case GAME_PAUSE:
 			DrawTexture(temp_background, 0, 0, WHITE);
-			if (m_level.levelLayer){
-				DrawTileLayer(&m_level, m_level.levelLayer);
-			}
+			chunkCacheDraw(&m_level);
 			ooze.Draw();
 			SuperMech_Draw(&mech);
-			if (m_level.foregroundLayer){
-				DrawTileLayer(&m_level, m_level.foregroundLayer);
-			}
-
 			m_securitySystem.draw();
 
-			DebugDrawBoundaryRects(&m_level);
 		break;
 		case GAME_END:
 			DrawTexture(temp_background, 0, 0, WHITE);
-			if (m_level.levelLayer){
-				DrawTileLayer(&m_level, m_level.levelLayer);
-			}
-			if (m_level.foregroundLayer){
-				DrawTileLayer(&m_level, m_level.foregroundLayer);
-			}
-			DebugDrawBoundaryRects(&m_level);
+			chunkCacheDraw(&m_level);
 		break;
 	}
 
@@ -275,32 +267,4 @@ static void DebugCountBoundaryTiles(const LevelData* level)
     }
 
     TraceLog(LOG_INFO, "Boundary tiles: %d / %d non-zero", nonZero, total);
-}
-
-static void DebugDrawBoundaryRects(const LevelData* level)
-{
-    if (!level || !level->boundaryLayer) return;
-
-    for (int y = 0; y < level->levelHeight; y++)
-    {
-        for (int x = 0; x < level->levelWidth; x++)
-        {
-            int index = y * level->levelWidth + x;
-
-            cJSON* tileItem = cJSON_GetArrayItem(level->boundaryLayer, index);
-            if (!tileItem || !cJSON_IsNumber(tileItem)) continue;
-
-            int gid = tileItem->valueint;
-            if (gid == 0) continue;
-
-            Rectangle r = {
-                (float)(x * level->tileWidth),
-                (float)(y * level->tileHeight),
-                (float)level->tileWidth,
-                (float)level->tileHeight
-            };
-
-            DrawRectangleLinesEx(r, 1.0f, RED);
-        }
-    }
 }

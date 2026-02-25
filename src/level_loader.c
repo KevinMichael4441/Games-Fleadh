@@ -184,6 +184,8 @@ void DrawTileLayer(const LevelData* level, cJSON* layerDataArray)
     }
 }
 
+static void drawTileLayerChunk(const LevelData* level, cJSON* layerDataArray, int originPxX, int originPxY);
+
 void JoinPath(char* outBuffer, int outSize, const char* baseDir, const char* file)
 {
     snprintf(outBuffer, outSize, "%s%s", baseDir, file);
@@ -238,6 +240,8 @@ void Level_Unload(LevelData* level)
 {
     if (!level) return;
 
+    chunkCacheUnload(level);
+
     if (level->tilesetTexture.id != 0)
     {
         UnloadTexture(level->tilesetTexture);
@@ -282,4 +286,399 @@ bool Level_IsBoundaryPos(const LevelData* level, float posX, float posY)
     gid = gid & 0x1FFFFFFF; // remove Tiled flip flags
 
     return true;
+}
+
+static void SlotMappingReset(LevelData* level)
+{
+    int i = 0;
+    for (int r = 0; r < 3; r++)
+    {
+        for (int c = 0; c < 3; c++)
+        {
+            level->slotTex[r][c] = i++;
+            level->slotValid[r][c] = 0;
+        }
+    }
+}
+
+static bool chunkInBounds(const LevelData* level, int chunkX, int chunkY)
+{
+    return (chunkX >= 0 && chunkX < level->chunksX && chunkY >= 0 && chunkY < level->chunksY);
+}
+
+static void bakeChunkIntoTexture(LevelData* level, cJSON* layerDataArray, ChunkCache* cache, int worldChunkX, int worldChunkY, int texIndex)
+{
+    BeginTextureMode(cache->tex[texIndex]);
+    ClearBackground(BLANK);
+
+    // ignore if out of bounds
+    if (chunkInBounds(level, worldChunkX, worldChunkY))
+    {
+        int originPxX = worldChunkX * level->chunkWidthPx;
+        int originPxY = worldChunkY * level->chunkHeightPx;
+
+        if (layerDataArray)
+        {
+            drawTileLayerChunk(level, layerDataArray, originPxX, originPxY);
+        }
+    }
+
+    EndTextureMode();
+}
+
+static void bakeChunkLevelLayer(LevelData* level, int wcx, int wcy, int texIndex)
+{
+    bakeChunkIntoTexture(level, level->levelLayer, &level->levelCache, wcx, wcy, texIndex);
+}
+
+static void drawTileLayerChunk(const LevelData* level, cJSON* layerDataArray, int originPxX, int originPxY)
+{
+    if (!level || !layerDataArray)
+    {
+        return;
+    }
+
+    // convert chunk world position to tile coords
+    int startTileX = originPxX / level->tileWidth;
+    int startTileY = originPxY / level->tileHeight;
+
+    // calculate chunks end position in world pixels
+    int endPxX = originPxX + level->chunkWidthPx;
+    int endPxY = originPxY + level->chunkHeightPx;
+
+    // convert end position to tile coords
+    int endTileX = (endPxX + level->tileWidth - 1) / level->tileWidth;
+    int endTileY = (endPxY + level->tileHeight - 1) / level->tileHeight;
+
+    if (endTileX <= 0 || endTileY <= 0 || startTileX >= level->levelWidth || startTileY >= level->levelHeight)
+    {
+        return;
+    }
+
+    if (startTileX < 0)
+    {
+        startTileX = 0;
+    }
+    if (startTileY < 0)
+    {
+        startTileY = 0;
+    }
+
+    if (endTileX > level->levelWidth)
+    {
+        endTileX = level->levelWidth;
+    }
+    if (endTileY > level->levelHeight)
+    {
+        endTileY = level->levelHeight;
+    }
+
+    for (int y = startTileY; y < endTileY; y++)
+    {
+        for (int x = startTileX; x < endTileX; x++)
+        {
+            int index = y * level->levelWidth + x;
+
+            cJSON* tileItem = cJSON_GetArrayItem(layerDataArray, index);
+            if (!tileItem || !cJSON_IsNumber(tileItem))
+            {
+                continue;
+            }
+
+            int gid = tileItem->valueint;
+            if (gid == 0)
+            {
+                continue;
+            }
+
+            gid = gid & 0x1FFFFFFF; // remove flip flags
+
+            int localId = gid - level->firstGid;
+            if (localId < 0)
+            {
+                continue;
+            }
+
+            int srcCol = localId % level->tilesetColumns;
+            int srcRow = localId / level->tilesetColumns;
+
+            Rectangle src = {(float)(srcCol * level->tileWidth), (float)(srcRow * level->tileHeight), (float)level->tileWidth, (float)level->tileHeight};
+
+            Vector2 dst = {(float)(x * level->tileWidth - originPxX), (float)(y * level->tileHeight - originPxY)};
+
+            DrawTextureRec(level->tilesetTexture, src, dst, WHITE);
+        }
+    }
+}
+
+static void rebuildAll3x3(LevelData* level, int newCentreChunkX, int newCentreChunkY)
+{
+    level->centreChunkX = newCentreChunkX;
+    level->centreChunkY = newCentreChunkY;
+
+    for (int r = 0; r < 3; r++)
+    {
+        for (int c = 0; c < 3; c++)
+        {
+            int wcx = newCentreChunkX + (c - 1);
+            int wcy = newCentreChunkY + (r - 1);
+
+            level->slotValid[r][c] = chunkInBounds(level, wcx, wcy);
+
+            int texIndex = level->slotTex[r][c];
+            bakeChunkLevelLayer(level, wcx, wcy, texIndex);
+        }
+    }
+}
+
+static void shiftRight(LevelData* level)
+{
+    for (int r = 0; r < 3; r++)
+    {
+        int freedTex = level->slotTex[r][0];
+        level->slotTex[r][0] = level->slotTex[r][1];
+        level->slotTex[r][1] = level->slotTex[r][2];
+        level->slotTex[r][2] = freedTex;
+
+        int freedValid = level->slotValid[r][0];
+        level->slotValid[r][0] = level->slotValid[r][1];
+        level->slotValid[r][1] = level->slotValid[r][2];
+        level->slotValid[r][2] = freedValid;
+    }
+
+    level->centreChunkX += 1;
+
+    // bake new right column
+    int c = 2;
+    for (int r = 0; r < 3; r++)
+    {
+        int wcx = level->centreChunkX + (c - 1);
+        int wcy = level->centreChunkY + (r - 1);
+
+        level->slotValid[r][c] = chunkInBounds(level, wcx, wcy);
+
+        int texIndex = level->slotTex[r][c];
+        bakeChunkLevelLayer(level, wcx, wcy, texIndex);
+    }
+}
+
+static void shiftLeft(LevelData* level)
+{
+    for (int r = 0; r < 3; r++)
+    {
+        int freedTex = level->slotTex[r][2];
+        level->slotTex[r][2] = level->slotTex[r][1];
+        level->slotTex[r][1] = level->slotTex[r][0];
+        level->slotTex[r][0] = freedTex;
+
+        int freedValid = level->slotValid[r][2];
+        level->slotValid[r][2] = level->slotValid[r][1];
+        level->slotValid[r][1] = level->slotValid[r][0];
+        level->slotValid[r][0] = freedValid;
+    }
+
+    level->centreChunkX -= 1;
+
+    int c = 0;
+    for (int r = 0; r < 3; r++)
+    {
+        int wcx = level->centreChunkX + (c - 1);
+        int wcy = level->centreChunkY + (r - 1);
+
+        level->slotValid[r][c] = chunkInBounds(level, wcx, wcy);
+
+        int texIndex = level->slotTex[r][c];
+        bakeChunkLevelLayer(level, wcx, wcy, texIndex);
+    }
+}
+
+static void shiftDown(LevelData* level)
+{
+    for (int c = 0; c < 3; c++)
+    {
+        int freedTex = level->slotTex[0][c];
+        level->slotTex[0][c] = level->slotTex[1][c];
+        level->slotTex[1][c] = level->slotTex[2][c];
+        level->slotTex[2][c] = freedTex;
+
+        int freedValid = level->slotValid[0][c];
+        level->slotValid[0][c] = level->slotValid[1][c];
+        level->slotValid[1][c] = level->slotValid[2][c];
+        level->slotValid[2][c] = freedValid;
+    }
+
+    level->centreChunkY += 1;
+
+    int r = 2;
+    for (int c = 0; c < 3; c++)
+    {
+        int wcx = level->centreChunkX + (c - 1);
+        int wcy = level->centreChunkY + (r - 1);
+
+        level->slotValid[r][c] = chunkInBounds(level, wcx, wcy);
+
+        int texIndex = level->slotTex[r][c];
+        bakeChunkLevelLayer(level, wcx, wcy, texIndex);
+    }
+}
+
+static void shiftUp(LevelData* level)
+{
+    for (int c = 0; c < 3; c++)
+    {
+        int freedTex = level->slotTex[2][c];
+        level->slotTex[2][c] = level->slotTex[1][c];
+        level->slotTex[1][c] = level->slotTex[0][c];
+        level->slotTex[0][c] = freedTex;
+
+        int freedValid = level->slotValid[2][c];
+        level->slotValid[2][c] = level->slotValid[1][c];
+        level->slotValid[1][c] = level->slotValid[0][c];
+        level->slotValid[0][c] = freedValid;
+    }
+
+    level->centreChunkY -= 1;
+
+    int r = 0;
+    for (int c = 0; c < 3; c++)
+    {
+        int wcx = level->centreChunkX + (c - 1);
+        int wcy = level->centreChunkY + (r - 1);
+
+        level->slotValid[r][c] = chunkInBounds(level, wcx, wcy);
+
+        int texIndex = level->slotTex[r][c];
+        bakeChunkLevelLayer(level, wcx, wcy, texIndex);
+    }
+}
+
+bool chunkCacheInit(LevelData* level, int chunkWidthPx, int chunkHeightPx)
+{
+    if (!level)
+    {
+        return false;
+    }
+
+    level->chunkWidthPx = chunkWidthPx;
+    level->chunkHeightPx = chunkHeightPx;
+
+    // map size in pixels
+    int mapWidthPx = level->levelWidth  * level->tileWidth;
+    int mapHeightPx = level->levelHeight * level->tileHeight;
+
+    // number of chunks in the the map
+    level->chunksX = mapWidthPx / chunkWidthPx;
+    level->chunksY = mapHeightPx / chunkHeightPx;
+
+    // create 9 render textures
+    for (int i = 0; i < 9; i++)
+    {
+        level->levelCache.tex[i] = LoadRenderTexture(chunkWidthPx, chunkHeightPx);
+        BeginTextureMode(level->levelCache.tex[i]);
+        ClearBackground(BLANK);
+        EndTextureMode();
+    }
+
+    // set up the order starting order of the textures
+    SlotMappingReset(level);
+
+    // impossible value to force rebuild on first update
+    level->centreChunkX = -1;
+    level->centreChunkY = -1;
+
+    level->chunkCacheReady = 1;
+    return true;
+}
+
+void chunkCacheUnload(LevelData* level)
+{
+    if (!level || !level->chunkCacheReady)
+    {
+        return;
+    }
+
+    for (int i = 0; i < 9; i++)
+    {
+        UnloadRenderTexture(level->levelCache.tex[i]);
+    }
+
+    level->chunkCacheReady = 0;
+}
+
+void chunkCacheUpdate(LevelData* level, Vector2 playerWorldPos)
+{
+    if (!level || !level->chunkCacheReady)
+    {
+        return;
+    }
+
+    // calculate which chunk player is in from player position
+    int playerChunkX = (int)floorf(playerWorldPos.x / (float)level->chunkWidthPx);
+    int playerChunkY = (int)floorf(playerWorldPos.y / (float)level->chunkHeightPx);
+
+    // first time or invalid rebuild all 9 around the player
+    if (level->centreChunkX < 0 || level->centreChunkX >= level->chunksX || level->centreChunkY < 0 || level->centreChunkY >= level->chunksY)
+    {
+        rebuildAll3x3(level, playerChunkX, playerChunkY);
+        return;
+    }
+
+    // check the players position relative to the chunks (have they crossed a boundary between chunks?)
+    int dx = playerChunkX - level->centreChunkX;
+    int dy = playerChunkY - level->centreChunkY;
+
+    // update chunks if we cross a boundary between chunks
+    if (dx == 1)
+    {
+        shiftRight(level);
+    }
+    else if (dx == -1)
+    {
+        shiftLeft(level);
+    }
+
+    if (dy == 1)
+    {
+        shiftDown(level);
+    }
+    else if (dy == -1)
+    {
+        shiftUp(level);
+    }
+}
+
+void chunkCacheDraw(const LevelData* level)
+{
+    if (!level || !level->chunkCacheReady)
+    {
+        return;
+    }
+
+    // draw the chunks
+    for (int row = 0; row < 3; row++)
+    {
+        for (int col = 0; col < 3; col++)
+        {
+            if (!level->slotValid[row][col])
+            {
+                continue;
+            }
+
+            // convert slot grid position to an offset from the centre slot
+            int wcx = level->centreChunkX + (col - 1);
+            int wcy = level->centreChunkY + (row - 1);
+
+            // convert chunk coords to world pixel coords for drawing
+            float worldX = (float)(wcx * level->chunkWidthPx);
+            float worldY = (float)(wcy * level->chunkHeightPx);
+
+            int texIndex = level->slotTex[row][col];
+            RenderTexture2D rt = level->levelCache.tex[texIndex];
+
+            Rectangle src = { 0, 0, (float)level->chunkWidthPx, -(float)level->chunkHeightPx };
+            Vector2 dst = { worldX, worldY };
+
+            DrawTextureRec(rt.texture, src, dst, WHITE);
+        }
+    }
 }
