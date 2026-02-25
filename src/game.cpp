@@ -204,8 +204,8 @@ void Game::Draw()
 		case GAME_PLAY:
 			DrawTexture(temp_background, 0, 0, WHITE);
 			
-			SuperMech_Draw(&mech);
 			chunkCacheDraw(&m_level);
+			SuperMech_Draw(&mech);
 			ooze.Draw();
 		break;
 		case GAME_PAUSE:
