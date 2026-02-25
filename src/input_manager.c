@@ -337,13 +337,13 @@ Command PollInput()
 
 	// If no gamepad input check keyboard
 	// Movement
-	if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP))
+	if (IsKeyDown(KEY_UP))
 		command |= MOVE_UP;
-	if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
+	if (IsKeyDown(KEY_DOWN))
 		command |= MOVE_DOWN;
-	if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT))
+	if (IsKeyDown(KEY_LEFT))
 		command |= MOVE_LEFT;
-	if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT))
+	if (IsKeyDown(KEY_RIGHT))
 		command |= MOVE_RIGHT;
 
 	// Attacks
@@ -378,13 +378,13 @@ Command PollInput()
 
 	// Aim simulate right tumbstick with Keyboard
 	// Using NUMPAD (Right NUMPAD)
-	if (IsKeyDown(KEY_KP_8))
+	if (IsKeyPressed(KEY_W))
 		command |= AIM_UP;
-	if (IsKeyDown(KEY_KP_2))
+	if (IsKeyDown(KEY_S))
 		command |= AIM_DOWN;
-	if (IsKeyDown(KEY_KP_4))
+	if (IsKeyDown(KEY_A))
 		command |= AIM_LEFT;
-	if (IsKeyDown(KEY_KP_6))
+	if (IsKeyDown(KEY_D))
 		command |= AIM_RIGHT;
 
 	// Menu / start / exit
