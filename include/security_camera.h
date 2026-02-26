@@ -24,7 +24,7 @@ class SecurityCamera
 {
 public:
 	SecurityCamera();
-	void initialize(float t_x, float t_y, float t_distance, CamType t_type);
+	void initialize(float t_x, float t_y, float t_distance, CamType t_type, CamDirection t_direction);
 
 	void update(float t_dt, Vector2 playerPos);
 	void draw();
@@ -40,11 +40,12 @@ private:
 	Rectangle m_body;
 
 	CamType m_type{CAM_NONE};
+	CamDirection m_fix{S};
 
 	static const int WIDTH = 32;
 	static const int HEIGHT = 32;
-	const float MAX_ANGLE = 0.75f;
-	const float MIN_ANGLE = -0.75f;
+	float MAX_ANGLE = 0.75f;
+	float MIN_ANGLE = -0.75f;
 
 
 	c2Ray m_laser;
@@ -52,12 +53,10 @@ private:
 	Vector2 m_end;
 	Vector2 m_direction;
 	float m_length;
-	float MIN_LENGTH;
-	const float MAX_LENGTH = 500.0f;
 	float m_angle;
 
 	float angleV; // Velocity
-	float extendSpd{3};
+	float extendSpd{3.0f};
 
 	bool m_isActive;
     bool m_playerDetected;

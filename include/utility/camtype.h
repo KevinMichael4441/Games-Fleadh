@@ -6,6 +6,18 @@ typedef enum CamType
 	CAM_NONE,
 	CAM_SPOT,
 	CAM_SWEEP
-}CamType;
+} CamType;
+
+typedef enum CamDirection
+{
+	N,
+	S,
+	E,
+	W,
+	NE,
+	NW,
+	SE,
+	SW
+} CamDirection;
 
 #endif

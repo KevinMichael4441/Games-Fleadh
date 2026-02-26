@@ -110,7 +110,7 @@ void Game::Update(float t_dt)
 			camera.update(center);
 			chunkCacheUpdate(&m_level, center);
 			SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
-			checkMechOozeCollision();
+			//checkMechOozeCollision();
 		}
 		break;
 		case GAME_PAUSE:
@@ -204,7 +204,7 @@ void Game::Draw()
 		case GAME_PLAY:
 			DrawTexture(temp_background, 0, 0, WHITE);
 			chunkCacheDraw(&m_level);
-			SuperMech_Draw(&mech);
+			//SuperMech_Draw(&mech);
 			ooze.Draw();
 			m_securitySystem.draw();
 		break;

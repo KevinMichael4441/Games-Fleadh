@@ -7,20 +7,63 @@ SecurityCamera::SecurityCamera()
 }
 
 
-void SecurityCamera::initialize(float t_x, float t_y, float t_distance, CamType t_type)
+void SecurityCamera::initialize(float t_x, float t_y, float t_distance, CamType t_type, CamDirection t_direction)
 {
     m_type = t_type;
+    m_fix = t_direction;
     m_origin = { t_x + WIDTH / 2.0f, t_y + HEIGHT / 2.0f };
-	m_angle = 0.0f;
     m_length = t_distance;
-    MIN_LENGTH = t_distance;
-    if(m_type == CAM_SPOT)
-    {
-        m_end = (Vector2){sin(m_angle) * m_length + m_origin.x, cos(m_angle) * m_length + m_origin.y};
+
+    switch(m_fix){
+        case N:
+            m_angle = 3.125f;
+            MAX_ANGLE = 3.75f;
+	        MIN_ANGLE = 2.50f;
+        break;
+        case S:
+            m_angle = 0.625f;
+            MAX_ANGLE = 0.75f;
+	        MIN_ANGLE = -0.75f;
+        break;
+        case E:
+            m_angle = 1.875f;
+            MAX_ANGLE = 2.50f;
+	        MIN_ANGLE = 1.25f;
+        break;
+        case W:
+            m_angle = 4.375f;
+            MAX_ANGLE = 5.0f;
+	        MIN_ANGLE = 3.75f;
+        break;
+        case NE:
+            m_angle = 2.5f;
+            MAX_ANGLE = 3.125f;
+	        MIN_ANGLE = 1.875f;
+        break;
+        case NW:
+            m_angle = 3.75f;
+            MAX_ANGLE = 4.375f;
+	        MIN_ANGLE = 3.125f;
+        break;
+        case SE:
+            m_angle = 0.75f;
+            MAX_ANGLE = 1.5f;
+	        MIN_ANGLE = 0.0f;
+        break;
+        case SW:
+            m_angle = 5.0f;
+            MAX_ANGLE = 5.625f;
+	        MIN_ANGLE = 4.375f;
+        break;
     }
-    else if (m_type == CAM_SWEEP)
-    {
-        m_end = (Vector2){m_origin.x, m_origin.y + m_length};
+
+    switch(m_type){
+        case CAM_SPOT:
+            m_end = (Vector2){sin(m_angle) * m_length + m_origin.x, cos(m_angle) * m_length + m_origin.y};
+        break;
+        case CAM_SWEEP:
+            m_end = (Vector2){m_origin.x, m_origin.y + m_length};
+        break;
     }
     
     m_direction = Vector2Normalize((Vector2){m_end.x, m_end.y});
@@ -35,7 +78,7 @@ void SecurityCamera::initialize(float t_x, float t_y, float t_distance, CamType 
     m_laser.d = c2V(m_direction.x , m_direction.y); // Direction
     m_laser.t = m_length; // Length
 
-    angleV = 0.02f;
+    angleV = 0.015f;
 }
 
 bool SecurityCamera::raycastPlayerCollision(Vector2& t_center){
