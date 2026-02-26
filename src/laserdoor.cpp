@@ -1,5 +1,36 @@
 #include "laserdoor.h"
 
+//------------------LaserDoorManager------------------//
+
+LaserDoor_Manager::LaserDoor_Manager()
+{
+}
+
+void LaserDoor_Manager::Initialize(Vector2 lazer_pos, Vector2 key_pos, float key_radius)
+{
+	for(int i = 0; i < MAX_PAIRS; i++)
+	{
+		m_laserdoor_pairs->first.Initialize(key_pos, key_radius);
+		m_laserdoor_pairs->second.Initialize(lazer_pos);
+	}
+}
+
+void LaserDoor_Manager::Update(Ooze& player, float dt)
+{
+	if(m_laserdoor_pairs->first.Update(player))
+	{
+		m_laserdoor_pairs->second.Disactivate();
+	}
+
+	m_laserdoor_pairs->second.Update(player, dt);
+}
+
+void LaserDoor_Manager::Draw() const
+{
+	m_laserdoor_pairs->first.Draw();
+	m_laserdoor_pairs->second.Draw();
+}
+
 //------------------Key------------------//
 
 Key::Key()
@@ -16,15 +47,9 @@ void Key::Initialize(Vector2 pos, float radius)
     m_active = true;
 }
 
-Vector2 Key::GetPosition() const
+bool Key::Update(Ooze& player)
 {
-    return m_position;
-}
-
-void Key::Update(Ooze& player)
-{
-    if (!m_active)
-        return;
+    if (!m_active) return false;
 
     const Point* points = player.GetPoints();
     int count = player.GetPointCount();
@@ -44,9 +69,11 @@ void Key::Update(Ooze& player)
         if (distSq <= combined * combined)
         {
             m_active = false;
-            break;
+			return true;
         }
     }
+
+	return false;
 }
 
 void Key::Draw() const
@@ -59,79 +86,72 @@ void Key::Draw() const
 
 //------------------LaserDoor------------------//
 
-Laserdoor::Laserdoor()
-{ 
-
+LaserDoor::LaserDoor()
+{
+	m_active = false;
+	m_boundingBox = {0, 0, 0 + m_WIDTH, 0 + m_HEIGHT};
 }
 
 
-void Laserdoor::initialize(float t_x, float t_y)
+void LaserDoor::Initialize(Vector2 pos)
 {
-	m_boundingBox = {t_x, t_y, t_x + m_WIDTH, t_y + m_HEIGHT};
+	m_boundingBox = {pos.x, pos.y, pos.x + m_WIDTH, pos.y + m_HEIGHT};
 
 	for (int index = 0; index < MAX_BARS; index++)
 	{
-		m_bars[index] = {t_x + (10*index), t_y, m_BAR_WIDTH, m_BAR_HEIGHT};
+		m_bars[index] = {pos.x + (10*index), pos.y, m_BAR_WIDTH, m_BAR_HEIGHT};
 	}
 
-	m_timer = 0;
-	m_delay = rand() % 5 + 8;
-	m_isActive = true;
+	m_active = true;
 }
 
 
-void Laserdoor::update(Ooze &t_ooze, float t_dt)
+void LaserDoor::Update(Ooze &player, float dt)
 {
-	m_timer += t_dt;
-
-	if (m_timer > m_delay)
+	if (m_active)
 	{
-		m_delay = rand() % 5 + 3;
-		m_isActive = !m_isActive;
-		m_timer = 0;
+		UpdateCollision(player);
 	}
-
-	updateCollision(t_ooze);
 }
 
-void Laserdoor::updateCollision(Ooze &t_ooze)
+void LaserDoor::UpdateCollision(Ooze &player)
 {
-	if (m_isActive)
-	{
-		Point *currentPoint;
+	Point *currentPoint;
 
-		for (int index = 0; index < MAX_POINTS; index++)
+	for (int index = 0; index < MAX_POINTS; index++)
+	{
+		currentPoint = &player.GetPoints()[index];
+		c2Circle circle = {currentPoint->m_position.x, currentPoint->m_position.y, currentPoint->m_radiusX};
+
+		if (c2CircletoAABB(circle, m_boundingBox))
 		{
-			currentPoint = &t_ooze.GetPoints()[index];
-			c2Circle circle = {currentPoint->m_position.x, currentPoint->m_position.y, currentPoint->m_radiusX};
+			c2Manifold manifold = {};
+ 	 		c2CircletoAABBManifold(circle, m_boundingBox, &manifold);
 
-			if (c2CircletoAABB(circle, m_boundingBox))
+			if (manifold.n.x > 0.1)
 			{
-				c2Manifold manifold = {};	// create manifold object
-	
-				// is the circle and rec overlapping
- 	 	  		c2CircletoAABBManifold(circle, m_boundingBox, &manifold);
+				currentPoint->m_position.x -= (manifold.n.x * manifold.depths[0]);
+				currentPoint->m_velocity.x -= WALL_PUSHBACK;
+			}
+			else if(manifold.n.x < -0.1)
+			{
+				currentPoint->m_velocity.x += WALL_PUSHBACK;
+				currentPoint->m_position.x += (manifold.n.x * manifold.depths[0]);
+			}
 
-					if (manifold.n.x > 0.1)
-					{
-						currentPoint->m_position.x -= (manifold.n.x * manifold.depths[0]);
-						currentPoint->m_velocity.x -= WALL_PUSHBACK;
-					}
-					else if(manifold.n.x < -0.1)
-					{
-						currentPoint->m_velocity.x += WALL_PUSHBACK;
-						currentPoint->m_position.x += (manifold.n.x * manifold.depths[0]);
-					}
-
-					break;
-			}	
-		}
+			break;
+		}	
 	}
 }
 
-void Laserdoor::draw()
+void LaserDoor::Disactivate()
 {
-	if(m_isActive)
+	m_active = false;
+}
+
+void LaserDoor::Draw() const
+{
+	if(m_active)
 	{
 		DrawRectangle(m_boundingBox.min.x, m_boundingBox.min.y, m_WIDTH, m_HEIGHT, WHITE );
 		

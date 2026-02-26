@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <math.h>
-
 #include "raylib.h"
 #include "cute_c2.h"
+
+#include <math.h>
 
 #include "level_loader.h"
 

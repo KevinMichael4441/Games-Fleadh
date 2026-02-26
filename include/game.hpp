@@ -8,12 +8,13 @@
 #include "constants.h"
 #include "math.h"
 #include "rlgl.h"
-
+#include "laserdoor.h"
 #include "ui_manager.hpp"
 #include "camera_manager.hpp"
 #include "gamestates.hpp"
 #include "ooze.hpp"
 #include "supermech.h"
+
 #include "command.h"
 #include "input_manager.h"
 
@@ -75,6 +76,7 @@ private:
 	CameraManager camera;
 	Texture2D temp_background;
 
+	LaserDoor_Manager m_laseDoor_Manager;
 
 	LevelData m_level{};
 

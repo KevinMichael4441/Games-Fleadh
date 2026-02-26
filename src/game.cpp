@@ -75,6 +75,7 @@ void Game::InitGame()
 
 	//---------------Security System------------//
 	m_securitySystem.initialize(&m_level);
+	m_laseDoor_Manager.Initialize({576, 300}, {300, 200}, 8);
 
 	//--------Input Manager---------------------//
 	InitInputManager();
@@ -108,6 +109,7 @@ void Game::Update(float t_dt)
 			ooze.Update(t_dt, m_activeCommand);
 			Vector2 center = ooze.CalculateCenter();
 			camera.update(center);
+			m_laseDoor_Manager.Update(ooze, t_dt);
 			chunkCacheUpdate(&m_level, center);
 			SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
 			checkMechOozeCollision();
@@ -208,6 +210,7 @@ void Game::Draw()
 			SuperMech_Draw(&mech);
 			ooze.Draw();
 			m_securitySystem.draw();
+			m_laseDoor_Manager.Draw();
 		break;
 		case GAME_PAUSE:
 			DrawTexture(temp_background, 0, 0, WHITE);
