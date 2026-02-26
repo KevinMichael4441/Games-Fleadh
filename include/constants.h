@@ -19,7 +19,7 @@
 #define MAX_SPRINGS 		21 	// (6 + 5 + 4 + 3 + 2 + 1)
 #define SPRING_CONSTANT		0.1
 #define DAMP				0.9
-#define BASE_RADIUS			12
+#define BASE_RADIUS			14
 #define OOZE_SPEED			0.8f		// 0.8
 #define JUMP_AMOUNT			2.5f		// 1.2
 #define GRAVITY				0.8f
