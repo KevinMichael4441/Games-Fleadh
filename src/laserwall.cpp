@@ -54,34 +54,21 @@ void Laserwall::updateCollision(Ooze &t_ooze)
 				// is the circle and rec overlapping
  	 	  		c2CircletoAABBManifold(circle, m_boundingBox, &manifold);
 
-				if (manifold.depths[0] > BASE_RADIUS)
-				{
 					if (manifold.n.x > 0.1)
 					{
+						currentPoint->m_position.x -= (manifold.n.x * manifold.depths[0]);
 						currentPoint->m_velocity.x -= WALL_PUSHBACK;
 					}
 					else if(manifold.n.x < -0.1)
 					{
 						currentPoint->m_velocity.x += WALL_PUSHBACK;
+						currentPoint->m_position.x += (manifold.n.x * manifold.depths[0]);
 					}
-				}
-				else 
-				{
-					int randomShootDirection = rand() % 2;
 
-					if (randomShootDirection == 0)
-						currentPoint->m_velocity.x -= WALL_PUSHBACK;
-					else
-						currentPoint->m_velocity.x += WALL_PUSHBACK;
-				}
-
-				
+					break;
 			}	
-		
 		}
 	}
-
-
 }
 
 void Laserwall::draw()

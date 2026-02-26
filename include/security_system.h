@@ -23,7 +23,6 @@ public:
 	
 private:
 	Laserwall m_lasers[MAX_LASERWALL];
-	SecurityCamera m_cameras[MAX_CAMERA];
 };
 
 #endif
