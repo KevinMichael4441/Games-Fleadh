@@ -14,6 +14,7 @@
 #include "gamestates.hpp"
 #include "ooze.hpp"
 #include "supermech.h"
+#include "collectibles.h"
 #include "command.h"
 #include "input_manager.h"
 
@@ -75,6 +76,8 @@ private:
 	CameraManager camera;
 	Texture2D temp_background;
 
+	Collectibles_Manager collectibles;
+	int score;
 
 	LevelData m_level{};
 

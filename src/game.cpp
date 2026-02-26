@@ -67,6 +67,15 @@ void Game::InitGame()
 	//--------Mech--------------//
 	SuperMech_Init(&mech, {100,200}, &m_level);
 
+	//-------Collectibles-------//
+	score = 0;
+
+	collectibles.AddCollectible({400, 200}, 8);
+	collectibles.AddCollectible({300, 220}, 8);
+	collectibles.AddCollectible({400, 100}, 8);
+	collectibles.AddCollectible({260, 260}, 8);
+	collectibles.AddCollectible({100, 200}, 8);
+
 	//---------------Security System------------//
 	m_securitySystem.initialize();
 
@@ -99,6 +108,7 @@ void Game::Update(float t_dt)
 		break;
 		case GAME_PLAY:
 			ooze.Update(t_dt, m_activeCommand);
+			collectibles.Update(ooze, score);
 			camera.update(ooze.CalculateCenter());
 			SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze.getPosition())), t_dt);
 			checkMechOozeCollision();
@@ -188,6 +198,7 @@ void Game::Draw()
 		case GAME_PLAY:
 			DrawTexture(temp_background, 0, 0, WHITE);
 			ooze.Draw();
+			collectibles.Draw();
 			if (m_level.levelLayer){
 				DrawTileLayer(&m_level, m_level.levelLayer);
 			}
@@ -196,6 +207,7 @@ void Game::Draw()
 				DrawTileLayer(&m_level, m_level.foregroundLayer);
 			}
 			DebugDrawBoundaryRects(&m_level);
+			DrawText(TextFormat("Score: %d", score), 20, 20, 30, WHITE);
 		break;
 		case GAME_PAUSE:
 			DrawTexture(temp_background, 0, 0, WHITE);
@@ -239,6 +251,14 @@ void Game::Respawn()
 {
     ooze.Reset({SCREEN_WIDTH/2, SCREEN_HEIGHT/2});
     SuperMech_Reset(&mech, {100,200});
+
+	score = 0;
+	collectibles.Reset();
+
+	collectibles.AddCollectible({400, 200}, 8);
+	collectibles.AddCollectible({300, 220}, 8);
+	collectibles.AddCollectible({400, 180}, 8);
+
 	gamestate = GAME_PLAY;
 }
 
