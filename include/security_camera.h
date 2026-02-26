@@ -3,6 +3,7 @@
 
 #include <raylib.h>
 #include <raymath.h>
+#include <cstdio>
 extern "C" {
 #include "cute_c2.h"
 }
@@ -28,10 +29,7 @@ public:
 	void update(float t_dt, Vector2 playerPos);
 	void draw();
 
-	void initRaycast();
-	void updateRaycast();
 	void drawRaycast();
-	void raycastLevelCollision();
 	bool raycastPlayerCollision(Vector2& t_center);
 
 	
@@ -39,45 +37,30 @@ public:
 	void SetLevel(LevelData* level);
 
 private:
-	static const int m_width = 32;
-	static const int m_height = 32;
-
 	Rectangle m_body;
+	static const int WIDTH = 32;
+	static const int HEIGHT = 32;
+	const float MAX_ANGLE = 0.75f;
+	const float MIN_ANGLE = -0.75f;
 
-	Vector2 m_origin;
-	Vector2 m_visualEndPoint;
-	Vector2 m_actualEndPoint;
 
 	c2Ray m_laser;
-	Vector2 direction;
+	Vector2 m_origin;
+	Vector2 m_end;
+	Vector2 m_direction;
+	float m_length;
+	const float MIN_LENGTH = 240.0f;
+	const float MAX_LENGTH = 500.0f;
+	float m_angle;
 
-	const float m_range = 600;
-
-    float m_angle;
-    float m_maxAngle;
-	float m_minAngle;
-
-	float m_speed; //radians per second
+	float angleV; // Velocity
+	float extendSpd{3};
 
 	bool m_isActive;
-	float m_timer;
-    float m_activeDuration;
-    float m_inactiveDuration;
-
     bool m_playerDetected;
-
+	bool m_movingRight;
 
 	LevelData* m_level = nullptr;
-
-	Ray m_ray;
-	//std::vector<Intersection> m_intersections;
-
-	bool camCheckCollisionPlayer(Vector2 t_center);
-	void FindBoundaryAABBs(double x0, double y0, double x1, double y1);	
-
-	// void findIntersection(Vector2 t_start, Vector2 t_end);
-	// void findIntersections(c2AABB t_line);
-	// void findClosestIntersection();
 };
 
 #endif
