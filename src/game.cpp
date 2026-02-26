@@ -1,7 +1,6 @@
 #include "game.hpp"
 #include "cJSON.h"
 
-static void DebugDrawBoundaryRects(const LevelData* level);
 static void DebugCountBoundaryTiles(const LevelData* level);
 
 Game::Game()
@@ -75,7 +74,16 @@ void Game::InitGame()
 
 	//---------------Security System------------//
 	m_securitySystem.initialize(&m_level);
-	m_laseDoor_Manager.Initialize({576, 300}, {300, 200}, 8);
+	m_laseDoor_manager.Initialize({576, 300}, {520, 350}, 8);
+
+	//-----------Teleporter------------------------//
+	m_teleporter_manager.Initialize({960, 384}, {1120, 384});
+
+	//-----------JumpPad------------------------//
+	for (int index = 0; index < MAX_JUMPPADS; index++)
+	{
+		m_jumpPadds[index].initialize({672,384});
+	}
 
 	//--------Input Manager---------------------//
 	InitInputManager();
@@ -106,13 +114,21 @@ void Game::Update(float t_dt)
 		break;
 		case GAME_PLAY:
 		{
-			ooze.Update(t_dt, m_activeCommand);
 			Vector2 center = ooze.CalculateCenter();
 			camera.update(center);
-			m_laseDoor_Manager.Update(ooze, t_dt);
+			m_laseDoor_manager.Update(ooze, t_dt);
+			m_teleporter_manager.Update(ooze, t_dt);
 			chunkCacheUpdate(&m_level, center);
 			SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
 			checkMechOozeCollision();
+
+			//-----------JumpPad------------------------//
+			for (int index = 0; index < MAX_JUMPPADS; index++)
+			{
+				m_jumpPadds[index].update(ooze);
+			}
+
+			ooze.Update(t_dt, m_activeCommand);
 		}
 		break;
 		case GAME_PAUSE:
@@ -210,7 +226,15 @@ void Game::Draw()
 			SuperMech_Draw(&mech);
 			ooze.Draw();
 			m_securitySystem.draw();
-			m_laseDoor_Manager.Draw();
+			m_laseDoor_manager.Draw();
+			m_teleporter_manager.Draw();
+			
+			//-----------JumpPad------------------------//
+			for (int index = 0; index < MAX_JUMPPADS; index++)
+			{
+				m_jumpPadds[index].draw();
+			}
+
 		break;
 		case GAME_PAUSE:
 			DrawTexture(temp_background, 0, 0, WHITE);
@@ -218,6 +242,12 @@ void Game::Draw()
 			ooze.Draw();
 			SuperMech_Draw(&mech);
 			m_securitySystem.draw();
+
+			//-----------JumpPad------------------------//
+			for (int index = 0; index < MAX_JUMPPADS; index++)
+			{
+				m_jumpPadds[index].draw();
+			}
 
 		break;
 		case GAME_END:

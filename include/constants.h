@@ -32,7 +32,9 @@
 #define MAX_LASERWALL		1
 #define MAX_CAMERA			1
 #define MAX_WORKER			1
+#define MAX_JUMPPADS		1
 
+#define JUMP_PUSHBACK		50
 #define WALL_PUSHBACK		50
 #define BOT_PUSHBACK		20
 

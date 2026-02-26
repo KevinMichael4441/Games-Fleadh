@@ -14,6 +14,8 @@ extern "C" {
 
 static const int MAX_PAIRS = 10;
 
+//------------------Manager------------------//
+
 class Key
 {
 public:
@@ -29,6 +31,8 @@ private:
     float m_radius;
 };
 
+//------------------LaserDoor------------------//
+
 class LaserDoor
 {
 public:
@@ -36,7 +40,6 @@ public:
 	void Initialize(Vector2 pos);
 
 	void Update(Ooze &player, float dt);
-	void UpdateCollision(Ooze &player);
 	void Disactivate();
 	void Draw() const;
 

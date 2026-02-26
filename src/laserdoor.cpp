@@ -10,25 +10,34 @@ void LaserDoor_Manager::Initialize(Vector2 lazer_pos, Vector2 key_pos, float key
 {
 	for(int i = 0; i < MAX_PAIRS; i++)
 	{
-		m_laserdoor_pairs->first.Initialize(key_pos, key_radius);
-		m_laserdoor_pairs->second.Initialize(lazer_pos);
+		//m_laserdoor_pairs[i].first.Initialize({key_pos.x + 160 * i, key_pos.y}, key_radius);
+		//m_laserdoor_pairs[i].second.Initialize({lazer_pos.x + 160 * i, lazer_pos.y});
+
+		m_laserdoor_pairs[i].first.Initialize({key_pos.x, key_pos.y}, key_radius);
+		m_laserdoor_pairs[i].second.Initialize({lazer_pos.x, lazer_pos.y});
 	}
 }
 
 void LaserDoor_Manager::Update(Ooze& player, float dt)
 {
-	if(m_laserdoor_pairs->first.Update(player))
+	for(int i = 0; i < MAX_PAIRS; i++)
 	{
-		m_laserdoor_pairs->second.Disactivate();
-	}
+		if(m_laserdoor_pairs[i].first.Update(player))
+		{
+			m_laserdoor_pairs[i].second.Disactivate();
+		}
 
-	m_laserdoor_pairs->second.Update(player, dt);
+		m_laserdoor_pairs[i].second.Update(player, dt);
+	}
 }
 
 void LaserDoor_Manager::Draw() const
 {
-	m_laserdoor_pairs->first.Draw();
-	m_laserdoor_pairs->second.Draw();
+	for(int i = 0; i < MAX_PAIRS; i++)
+	{
+		m_laserdoor_pairs[i].first.Draw();
+		m_laserdoor_pairs[i].second.Draw();
+	}
 }
 
 //------------------Key------------------//
@@ -78,10 +87,9 @@ bool Key::Update(Ooze& player)
 
 void Key::Draw() const
 {
-    if (!m_active)
-        return;
+    if (!m_active) return;
 
-    DrawCircleV(m_position, m_radius, GOLD);
+    DrawCircleV(m_position, m_radius, PINK);
 }
 
 //------------------LaserDoor------------------//
@@ -110,37 +118,32 @@ void LaserDoor::Update(Ooze &player, float dt)
 {
 	if (m_active)
 	{
-		UpdateCollision(player);
-	}
-}
+		Point *currentPoint;
 
-void LaserDoor::UpdateCollision(Ooze &player)
-{
-	Point *currentPoint;
-
-	for (int index = 0; index < MAX_POINTS; index++)
-	{
-		currentPoint = &player.GetPoints()[index];
-		c2Circle circle = {currentPoint->m_position.x, currentPoint->m_position.y, currentPoint->m_radiusX};
-
-		if (c2CircletoAABB(circle, m_boundingBox))
+		for (int index = 0; index < MAX_POINTS; index++)
 		{
-			c2Manifold manifold = {};
- 	 		c2CircletoAABBManifold(circle, m_boundingBox, &manifold);
+			currentPoint = &player.GetPoints()[index];
+			c2Circle circle = {currentPoint->m_position.x, currentPoint->m_position.y, currentPoint->m_radiusX};
 
-			if (manifold.n.x > 0.1)
+			if (c2CircletoAABB(circle, m_boundingBox))
 			{
-				currentPoint->m_position.x -= (manifold.n.x * manifold.depths[0]);
-				currentPoint->m_velocity.x -= WALL_PUSHBACK;
-			}
-			else if(manifold.n.x < -0.1)
-			{
-				currentPoint->m_velocity.x += WALL_PUSHBACK;
-				currentPoint->m_position.x += (manifold.n.x * manifold.depths[0]);
-			}
+				c2Manifold manifold = {};
+ 	 			c2CircletoAABBManifold(circle, m_boundingBox, &manifold);
 
-			break;
-		}	
+				if (manifold.n.x > 0.1)
+				{
+					currentPoint->m_position.x -= (manifold.n.x * manifold.depths[0]);
+					currentPoint->m_velocity.x -= WALL_PUSHBACK;
+				}
+				else if(manifold.n.x < -0.1)
+				{
+					currentPoint->m_velocity.x += WALL_PUSHBACK;
+					currentPoint->m_position.x += (manifold.n.x * manifold.depths[0]);
+				}
+
+				break;
+			}	
+		}
 	}
 }
 

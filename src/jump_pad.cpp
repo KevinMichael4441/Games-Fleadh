@@ -11,13 +11,17 @@ void JumpPad::initialize(Vector2 pos)
 }
 
 void JumpPad::update(Ooze &player)
-{       
-	
-
+{      
     if (CheckCollisionPointRec(player.CalculateCenter(), m_boundingBox))
     {
-		Point *currentPoint = &player.GetPoints()[0];
-		currentPoint->m_velocity.y -= WALL_PUSHBACK;
+		Point *currentPoint;
+		for (int index = 0; index < MAX_POINTS; index++)
+		{
+			currentPoint = &player.GetPoints()[index];
+			currentPoint->m_velocity.y -= JUMP_PUSHBACK;
+		}
+
+		player.HandleEvent(EVENT_JUMP);
     }    
 }
 

@@ -7,7 +7,7 @@ void SecuritySystem::initialize(LevelData *t_level)
 {
 	for (int index = 0; index < MAX_LASERWALL; index++)
 	{
-		m_lasers[index].initialize(450, SCREEN_HEIGHT - 128);
+		m_lasers[index].initialize(864, 300);
 	}
 }
 

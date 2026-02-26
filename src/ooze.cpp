@@ -1110,29 +1110,29 @@ void Ooze::ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str
 	else if (mY.n.y < -0.1)
 	{
 		p.m_position.y += pushY;
-		if (p.m_velocity.y > 6)
-		{
+		//if (p.m_velocity.y < 6)
+		//{
 			HandleEvent(EVENT_COLLIDE_UP);
-		}
+		//}
 		p.m_velocity.y = 0;
 	}
 
 	if (mX.n.x > 0.1)
 	{
 		p.m_position.x -= pushX;
-		if (p.m_velocity.x > 6)
-		{
+		//if (abs(p.m_velocity.x) > 6)
+		//{
 			HandleEvent(EVENT_COLLIDE_HORIZONTAL);
-		}
+		//}
 		p.m_velocity.x = 0;
 	}
 	else if(mX.n.x < -0.1)
 	{
 		p.m_position.x += pushX;
-		if (p.m_velocity.x > 6)
-		{
+		//if (abs(p.m_velocity.x) > 6)
+		//{
 			HandleEvent(EVENT_COLLIDE_HORIZONTAL);
-		}
+		//}
 		p.m_velocity.x = 0;
 	}
 }

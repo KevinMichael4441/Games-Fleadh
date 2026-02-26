@@ -22,7 +22,7 @@ void Laserwall::initialize(float t_x, float t_y)
 }
 
 
-void Laserwall::update(Ooze &t_ooze, float t_dt)
+bool Laserwall::update(Ooze &t_ooze, float t_dt)
 {
 	m_timer += t_dt;
 
@@ -33,10 +33,10 @@ void Laserwall::update(Ooze &t_ooze, float t_dt)
 		m_timer = 0;
 	}
 
-	updateCollision(t_ooze);
+	return updateCollision(t_ooze);
 }
 
-void Laserwall::updateCollision(Ooze &t_ooze)
+bool Laserwall::updateCollision(Ooze &t_ooze)
 {
 	if (m_isActive)
 	{
@@ -65,10 +65,12 @@ void Laserwall::updateCollision(Ooze &t_ooze)
 						currentPoint->m_position.x += (manifold.n.x * manifold.depths[0]);
 					}
 
-					break;
+					return true;
 			}	
 		}
 	}
+
+	return false;
 }
 
 void Laserwall::draw()

@@ -1,29 +1,34 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <raylib.h>
-#include <raymath.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "constants.h"
-#include "math.h"
+
+#include <raylib.h>
+#include <raymath.h>
 #include "rlgl.h"
-#include "laserdoor.h"
+
+#include "cute_c2.h"
+#include "math.h"
+
+#include "constants.h"
+#include "level_loader.h"
+#include "cJSON.h"
+
 #include "ui_manager.hpp"
-#include "camera_manager.hpp"
 #include "gamestates.hpp"
-#include "ooze.hpp"
-#include "supermech.h"
 
 #include "command.h"
 #include "input_manager.h"
 
-#include "level_loader.h"
-#include "cJSON.h"
+#include "camera_manager.hpp"
+#include "ooze.hpp"
+#include "supermech.h"
+
+#include "jump_pad.h"
+#include "teleporter.h"
+#include "laserdoor.h"
 #include "security_system.h"
-#include "cute_c2.h"
-
-
 
 #if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 #include "telemetry.h"
@@ -39,8 +44,6 @@
 #endif // Default
 #endif // R36S and Linux only
 
-
-
 #if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 	// Telemetry
 	static Telemetry r36s_telemetry;
@@ -51,7 +54,6 @@
 	static bool action_special_2_was_pressed = false;
 #endif
 
-
 class Game
 {
 public:
@@ -59,28 +61,30 @@ public:
 	void Run();
 
 private:
-
 	void InitGame();
+
 	void Update(float t_dt);
 	void NonGameInputs();
 	void Draw();
 	
-	void Respawn();
 	void checkMechOozeCollision();
+	void Respawn();
 
-	GameState gamestate;
-	Ooze ooze;
-	Command m_activeCommand;
-	SecuritySystem m_securitySystem;
 	UI_Manager ui_manager;
-	CameraManager camera;
-	Texture2D temp_background;
+	GameState gamestate;
+	Command m_activeCommand;
 
-	LaserDoor_Manager m_laseDoor_Manager;
+	CameraManager camera;
+	Ooze ooze;
+	SuperMech mech;
+
+	JumpPad m_jumpPadds[MAX_JUMPPADS];
+	Teleporter_Manager m_teleporter_manager;
+	LaserDoor_Manager m_laseDoor_manager;
+	SecuritySystem m_securitySystem;
 
 	LevelData m_level{};
-
-	SuperMech mech;
+	Texture2D temp_background;
 };
 
 #endif //game.h
