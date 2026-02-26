@@ -9,6 +9,7 @@
 #include "constants.h"
 #include "laserwall.h"
 #include "security_camera.h"
+#include "utility/camtype.h"
 
 
 
