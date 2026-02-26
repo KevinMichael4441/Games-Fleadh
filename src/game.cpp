@@ -76,6 +76,15 @@ void Game::InitGame()
 	m_securitySystem.initialize(&m_level);
 	m_laseDoor_manager.Initialize({576, 300}, {520, 350}, 8);
 
+	
+	//-------Collectibles-------//
+	score = 0;
+	collectibles.AddCollectible({400, 200}, 8);
+	collectibles.AddCollectible({300, 220}, 8);
+	collectibles.AddCollectible({400, 100}, 8);
+	collectibles.AddCollectible({260, 260}, 8);
+	collectibles.AddCollectible({100, 200}, 8);
+
 	//-----------Teleporter------------------------//
 	m_teleporter_manager.Initialize({960, 384}, {1120, 384});
 
@@ -121,6 +130,7 @@ void Game::Update(float t_dt)
 			chunkCacheUpdate(&m_level, center);
 			SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
 			checkMechOozeCollision();
+			collectibles.Update(ooze, score);
 
 			//-----------JumpPad------------------------//
 			for (int index = 0; index < MAX_JUMPPADS; index++)
@@ -228,13 +238,13 @@ void Game::Draw()
 			m_securitySystem.draw();
 			m_laseDoor_manager.Draw();
 			m_teleporter_manager.Draw();
-			
+			collectibles.Draw();
 			//-----------JumpPad------------------------//
 			for (int index = 0; index < MAX_JUMPPADS; index++)
 			{
 				m_jumpPadds[index].draw();
 			}
-
+			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
 		break;
 		case GAME_PAUSE:
 			DrawTexture(temp_background, 0, 0, WHITE);
@@ -242,6 +252,7 @@ void Game::Draw()
 			ooze.Draw();
 			SuperMech_Draw(&mech);
 			m_securitySystem.draw();
+			collectibles.Draw();
 
 			//-----------JumpPad------------------------//
 			for (int index = 0; index < MAX_JUMPPADS; index++)

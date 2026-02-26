@@ -25,6 +25,7 @@
 #include "ooze.hpp"
 #include "supermech.h"
 
+#include "collectibles.h"
 #include "jump_pad.h"
 #include "teleporter.h"
 #include "laserdoor.h"
@@ -73,11 +74,13 @@ private:
 	UI_Manager ui_manager;
 	GameState gamestate;
 	Command m_activeCommand;
+	int score;
 
 	CameraManager camera;
 	Ooze ooze;
 	SuperMech mech;
 
+	Collectibles_Manager collectibles;
 	JumpPad m_jumpPadds[MAX_JUMPPADS];
 	Teleporter_Manager m_teleporter_manager;
 	LaserDoor_Manager m_laseDoor_manager;
