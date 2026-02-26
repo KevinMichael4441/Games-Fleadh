@@ -2,6 +2,7 @@
 
 StingAnim::StingAnim(){
 	isPlaying = false;
+	spawn = false;
 	barHeight = 100.0f;
 	fader = (Color){0,0,0,0};
 	alpha = 0.0f;
@@ -30,6 +31,7 @@ void StingAnim::setup(Vector2& t_pos){
 	fader = (Color){0,0,0,0};
 	alpha = 0.0f;
 	timer = 0.0f;
+	spawn = false;
 
 	if(t_pos.x > SCREEN_WIDTH / 2){
 		background.x = t_pos.x - (SCREEN_WIDTH / 2);
@@ -61,33 +63,75 @@ void StingAnim::setup(Vector2& t_pos){
 		isPlaying = true;
 	}
 }
+
+void StingAnim::setStingPos(Vector2& t_pos)
+{
+	if(t_pos.x > SCREEN_WIDTH / 2){
+		background.x = t_pos.x - (SCREEN_WIDTH / 2);
+	}
+	else{
+		background.x = 0.0f;
+	}
+	if(t_pos.y > SCREEN_HEIGHT / 2){
+		background.y = t_pos.y - (SCREEN_HEIGHT / 2);
+	}
+	else{
+		background.y = 0.0f;
+	}
+
+	highBar.y = background.y + (SCREEN_HEIGHT / 2) - barHeight;
+	lowBar.y = background.y + (SCREEN_HEIGHT / 2);
+}
+
 void StingAnim::play(float& t_dt){
 	if(isPlaying == true){
-
 		timer += t_dt;
-
-		if(highBar.x < background.x)
+		if(timer < MAX_DURATION / 2)
 		{
-			highBar.x += SPEED;
+			if(highBar.x < background.x)
+			{
+				highBar.x += SPEED;
+			}
+			if(lowBar.x > background.x)
+			{
+				lowBar.x -= SPEED;
+			}
+			if(alpha < MAX_ALPHA)
+			{
+				alpha += FADE_SPEED;
+				fader = Fade(fader, alpha);
+			}
 		}
-		if(lowBar.x > background.x)
+		else if(timer > MAX_DURATION / 2 && timer < MAX_DURATION)
 		{
-			lowBar.x -= SPEED;
-		}
-		if(alpha < MAX_ALPHA)
-		{
-			alpha += FADE_SPEED;
-			fader = Fade(fader, alpha);
-		}
-		if(timer >= MAX_DURATION)
-		{
-			isPlaying = false;
+			if(!spawn){spawn = true;}
+			if(highBar.x >= background.x - SCREEN_WIDTH)
+			{
+				highBar.x -= SPEED;
+			}
+			if(lowBar.x <= background.x + SCREEN_WIDTH)
+			{
+				lowBar.x += SPEED;
+			}
+			if(alpha > 0.0f)
+			{
+				alpha -= FADE_SPEED;
+				fader = Fade(fader, alpha);
+			}
+			if(alpha <= 0.0f)
+			{
+				isPlaying = false;
+			}
 		}
 	}
 }
 bool StingAnim::playingAnim()
 {
 	return isPlaying;
+}
+bool StingAnim::timeToSpawn()
+{
+	return spawn;
 }
 void StingAnim::draw(){
 	DrawRectangleRec(background, fader);

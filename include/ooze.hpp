@@ -83,7 +83,6 @@ private:
 
 	Vector2 m_newPointPosition;
 
-
 public:
 	Ooze();
 	void Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount);
@@ -146,8 +145,6 @@ public:
 	int GetPointCount() const;
 	
 	FSM fsm;
-
-
 
 	int collideDownCount = 0;
 	int collideUpCount = 0;

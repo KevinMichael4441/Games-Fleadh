@@ -38,6 +38,8 @@ void Game::Run()
  		EndDrawing();	
 	}
 	UnloadTexture(temp_background);
+	chunkCacheUnload(&m_level);
+	Level_Unload(&m_level);
 }
 
 void Game::InitGame()
@@ -54,6 +56,10 @@ void Game::InitGame()
     }
 	DebugCountBoundaryTiles(&m_level);
 
+	if (!chunkCacheInit(&m_level, SCREEN_WIDTH, SCREEN_HEIGHT))
+	{
+    	TraceLog(LOG_ERROR, "chunkCacheInit failed");
+	}
 
 	// Temporary ----------------------------------------------------
 	temp_background = LoadTexture("./assets/1280x960_temp.jpg");
@@ -85,27 +91,40 @@ void Game::InitGame()
 
 void Game::Update(float t_dt)
 {
+	if (t_dt > 0.04f) return;
+
 	m_activeCommand = PollInput();
 	NonGameInputs();
 	
 	ui_manager.changeUI(gamestate, camera.screen.target);
 	ui_manager.updateUI(t_dt);
+
 	switch (gamestate)
 	{
 		case GAME_START:
 		break;
 		case GAME_PLAY:
+		{
 			ooze.Update(t_dt, m_activeCommand);
-			camera.update(ooze.CalculateCenter());
+			Vector2 center = ooze.CalculateCenter();
+			camera.update(center);
+			chunkCacheUpdate(&m_level, center);
 			SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
 			checkMechOozeCollision();
+		}
 		break;
 		case GAME_PAUSE:
 		break;
 		case GAME_END:
-			if(!ui_manager.stingAnim.playingAnim())
+			if(ui_manager.stingAnim.timeToSpawn())
 			{
 				Respawn();
+				camera.update(ooze.CalculateCenter());
+				ui_manager.stingAnim.setStingPos(camera.screen.target);
+			}
+			if(!ui_manager.stingAnim.playingAnim())
+			{
+				gamestate = GAME_PLAY;
 			}
 		break;
 	}
@@ -185,41 +204,22 @@ void Game::Draw()
 		case GAME_PLAY:
 			DrawTexture(temp_background, 0, 0, WHITE);
 			
-			ooze.Draw();
-			if (m_level.levelLayer){
-				DrawTileLayer(&m_level, m_level.levelLayer);
-			}
+			chunkCacheDraw(&m_level);
 			SuperMech_Draw(&mech);
-			//if (m_level.foregroundLayer){
-			//	DrawTileLayer(&m_level, m_level.foregroundLayer);
-			//}
-			DebugDrawBoundaryRects(&m_level);
+			ooze.Draw();
 			m_securitySystem.draw();
 		break;
 		case GAME_PAUSE:
 			DrawTexture(temp_background, 0, 0, WHITE);
-			if (m_level.levelLayer){
-				DrawTileLayer(&m_level, m_level.levelLayer);
-			}
+			chunkCacheDraw(&m_level);
 			ooze.Draw();
 			SuperMech_Draw(&mech);
-			if (m_level.foregroundLayer){
-				DrawTileLayer(&m_level, m_level.foregroundLayer);
-			}
-
 			m_securitySystem.draw();
 
-			DebugDrawBoundaryRects(&m_level);
 		break;
 		case GAME_END:
 			DrawTexture(temp_background, 0, 0, WHITE);
-			if (m_level.levelLayer){
-				DrawTileLayer(&m_level, m_level.levelLayer);
-			}
-			if (m_level.foregroundLayer){
-				DrawTileLayer(&m_level, m_level.foregroundLayer);
-			}
-			DebugDrawBoundaryRects(&m_level);
+			chunkCacheDraw(&m_level);
 		break;
 	}
 
@@ -229,7 +229,7 @@ void Game::Draw()
 	// Draw Telemetry
 	if (show_telemetry)
 	{
-		DrawTelemetry(&r36s_telemetry, 8, 8, glRendererStr, glVersionStr, glslVersionStr);
+		DrawTelemetry(&r36s_telemetry, camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), glRendererStr, glVersionStr, glslVersionStr);
 	}
 	#endif // Draw Telemetry R36S and Linux only
 }
@@ -237,9 +237,7 @@ void Game::Draw()
 void Game::Respawn()
 {
     ooze.Reset({SCREEN_WIDTH/2, SCREEN_HEIGHT/2});
-	int spawnside = (rand() % 2);
-	spawnside == 0 ? SuperMech_Reset(&mech, {100,380}) : SuperMech_Reset(&mech, {500,380});
-	gamestate = GAME_PLAY;
+	SuperMech_Reset(&mech, {100,200});
 }
 
 void Game::checkMechOozeCollision()
@@ -275,32 +273,4 @@ static void DebugCountBoundaryTiles(const LevelData* level)
     }
 
     TraceLog(LOG_INFO, "Boundary tiles: %d / %d non-zero", nonZero, total);
-}
-
-static void DebugDrawBoundaryRects(const LevelData* level)
-{
-    if (!level || !level->boundaryLayer) return;
-
-    for (int y = 0; y < level->levelHeight; y++)
-    {
-        for (int x = 0; x < level->levelWidth; x++)
-        {
-            int index = y * level->levelWidth + x;
-
-            cJSON* tileItem = cJSON_GetArrayItem(level->boundaryLayer, index);
-            if (!tileItem || !cJSON_IsNumber(tileItem)) continue;
-
-            int gid = tileItem->valueint;
-            if (gid == 0) continue;
-
-            Rectangle r = {
-                (float)(x * level->tileWidth),
-                (float)(y * level->tileHeight),
-                (float)level->tileWidth,
-                (float)level->tileHeight
-            };
-
-            DrawRectangleLinesEx(r, 1.0f, RED);
-        }
-    }
 }

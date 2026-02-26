@@ -14,14 +14,19 @@ class StingAnim
 		void setup(Vector2& t_pos);
 		void play(float& t_dt);
 		void draw();
+
 		bool playingAnim();
+		bool timeToSpawn();
+
+		void setStingPos(Vector2& t_pos);
 
 		bool isPlaying;
+		bool spawn;
 
 	private:
 
 		float timer{0.0f};
-		float const MAX_DURATION{2.0f};
+		float const MAX_DURATION{3.0f};
 		float const SPEED{128.0f};
 
 		float barHeight;
@@ -32,7 +37,7 @@ class StingAnim
 
 		Color fader;
 		float alpha;
-		float const MAX_ALPHA = 255.0f;
+		float const MAX_ALPHA = 1.0f;
 		float const FADE_SPEED = 0.075f;
 };
 
