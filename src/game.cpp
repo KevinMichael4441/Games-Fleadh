@@ -74,7 +74,7 @@ void Game::InitGame()
 	SuperMech_Init(&mech, {100,200}, &m_level);
 
 	//---------------Security System------------//
-	m_securitySystem.initialize();
+	m_securitySystem.initialize(&m_level);
 
 	//--------Input Manager---------------------//
 	InitInputManager();
@@ -109,7 +109,7 @@ void Game::Update(float t_dt)
 			Vector2 center = ooze.CalculateCenter();
 			camera.update(center);
 			chunkCacheUpdate(&m_level, center);
-			SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze.getPosition())), t_dt);
+			SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
 			checkMechOozeCollision();
 		}
 		break;
@@ -207,6 +207,7 @@ void Game::Draw()
 			chunkCacheDraw(&m_level);
 			SuperMech_Draw(&mech);
 			ooze.Draw();
+			m_securitySystem.draw();
 		break;
 		case GAME_PAUSE:
 			DrawTexture(temp_background, 0, 0, WHITE);

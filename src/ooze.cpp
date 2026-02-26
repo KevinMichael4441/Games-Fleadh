@@ -1168,7 +1168,7 @@ Vector2 Ooze::getPosition()
     return CalculateCenter();
 }
 
-const Point* Ooze::GetPoints() const
+Point* Ooze::GetPoints()
 {
     return m_points;
 }
