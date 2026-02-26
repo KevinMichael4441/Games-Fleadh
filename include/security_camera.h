@@ -24,7 +24,7 @@ class SecurityCamera
 {
 public:
 	SecurityCamera();
-	void initialize(float t_x, float t_y, float t_maxRotation, float t_minRotation);
+	void initialize(float t_x, float t_y);
 
 	void update(float t_dt, Vector2 playerPos);
 	void draw();
@@ -49,7 +49,7 @@ private:
 	Vector2 m_end;
 	Vector2 m_direction;
 	float m_length;
-	const float MIN_LENGTH = 240.0f;
+	const float MIN_LENGTH = 300.0f;
 	const float MAX_LENGTH = 500.0f;
 	float m_angle;
 

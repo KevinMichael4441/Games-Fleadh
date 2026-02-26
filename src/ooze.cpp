@@ -1179,27 +1179,8 @@ int Ooze::GetPointCount() const
 }
 
 
-
-
-
-
-
-
 //----------------KNOWN ISSUES-------------------//
 /*
-1 - Seperaton of points on apex	(Will deal with later)
-2 - Jitter (Could be potentially solved by slightly adjusting camera logic)	(Isn't fully solved; need new ideas)
-3 - Splat on apex (Can be dealt with in level design to not have any splat wherever there are apexes)
+1 - Jitter (Could be potentially solved by slightly adjusting camera logic)	(Isn't fully solved; need new ideas)
 */
 //----------------KNOWN ISSUES-------------------//
-
-
-
-// --------------TODO------------- //
-/*
-	radiusY and issues
-	MAYBE SEE KNOWN ISSUES (jitter especially)
-
-	
-*/
-// -------------TODO------------- //

@@ -34,8 +34,8 @@ void CameraManager::moveCamInsideMap(Vector2& t_position)
 {
 	float minX = 0.0f;
 	float minY = 0.0f;
-	float maxX = 1280.0f;
-	float maxY = 960.0f;
+	float maxX = 180 * 32;
+	float maxY = 180 * 32;
 
 	Vector2 max = GetWorldToScreen2D((Vector2){ maxX, maxY }, screen);
     Vector2 min = GetWorldToScreen2D((Vector2){ minX, minY }, screen);

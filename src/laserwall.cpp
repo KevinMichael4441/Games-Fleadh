@@ -38,44 +38,35 @@ void Laserwall::update(Ooze &t_ooze, float t_dt)
 
 void Laserwall::updateCollision(Ooze &t_ooze)
 {
-	Point *currentPoint;
-
-	for (int index = 0; index < MAX_POINTS; index++)
+	if (m_isActive)
 	{
-		currentPoint = &t_ooze.GetPoints()[index];
-		c2Circle circle = {currentPoint->m_position.x, currentPoint->m_position.y, currentPoint->m_radiusX};
+		Point *currentPoint;
 
-		if (c2CircletoAABB(circle, m_boundingBox))
+		for (int index = 0; index < MAX_POINTS; index++)
 		{
-			c2Manifold manifold = {};	// create manifold object
+			currentPoint = &t_ooze.GetPoints()[index];
+			c2Circle circle = {currentPoint->m_position.x, currentPoint->m_position.y, currentPoint->m_radiusX};
+
+			if (c2CircletoAABB(circle, m_boundingBox))
+			{
+				c2Manifold manifold = {};	// create manifold object
 	
-			// is the circle and rec overlapping
- 	 	  	c2CircletoAABBManifold(circle, m_boundingBox, &manifold);
+				// is the circle and rec overlapping
+ 	 	  		c2CircletoAABBManifold(circle, m_boundingBox, &manifold);
 
+					if (manifold.n.x > 0.1)
+					{
+						currentPoint->m_position.x -= (manifold.n.x * manifold.depths[0]);
+						currentPoint->m_velocity.x -= WALL_PUSHBACK;
+					}
+					else if(manifold.n.x < -0.1)
+					{
+						currentPoint->m_velocity.x += WALL_PUSHBACK;
+						currentPoint->m_position.x += (manifold.n.x * manifold.depths[0]);
+					}
 
-			if (m_isActive)
-			{
-				if (manifold.n.x > 0.1)
-				{
-					currentPoint->m_velocity.x -= WALL_PUSHBACK;
-				}
-				else if(manifold.n.x < -0.1)
-				{
-					currentPoint->m_velocity.x += WALL_PUSHBACK;
-				}
-			}
-			else
-			{
-				if (manifold.n.x > 0.1)
-				{
-					currentPoint->m_velocity.x -= manifold.depths[0];
-				}
-				else if(manifold.n.x < -0.1)
-				{
-					currentPoint->m_velocity.x += manifold.depths[0];
-				}
-			}
-
+					break;
+			}	
 		}
 	}
 }

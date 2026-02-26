@@ -7,7 +7,7 @@ SecurityCamera::SecurityCamera()
 }
 
 
-void SecurityCamera::initialize(float t_x, float t_y, float t_maxRotation, float t_minRotation)
+void SecurityCamera::initialize(float t_x, float t_y)
 {
     m_origin = { t_x + WIDTH / 2.0f, t_y + HEIGHT / 2.0f };
 	m_angle = 0.0f;

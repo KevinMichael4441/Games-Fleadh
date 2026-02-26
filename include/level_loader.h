@@ -3,10 +3,18 @@
 
 #include "cJSON.h"
 #include "raylib.h"
+#include "constants.h"
+#include <math.h>
+#include <limits.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef struct ChunkCache
+{
+    RenderTexture2D tex[9];
+} ChunkCache;
 
 typedef struct
 {
@@ -27,6 +35,22 @@ typedef struct
     cJSON* levelLayer;
     cJSON* foregroundLayer;
     cJSON* boundaryLayer;
+
+    int* levelGids;
+    int* foregroundGids;
+    int* boundaryGids;
+
+    int chunkWidthPx;           // chunk pixel size (screen size)
+    int chunkHeightPx;
+    int chunksX;                // num of chunks
+    int chunksY;
+    int centreChunkX;           // the centre of the 9 chunks
+    int centreChunkY;
+
+    ChunkCache levelCache;
+    int slotTex[3][3];              // storage for the individual chunks 0-8
+    unsigned char slotValid[3][3];  // used for edge cases where the player (centre chunk) is at the edge of the map so adjacent chunks could be out of bounds
+    unsigned char chunkCacheReady; 
 } LevelData;
 
 
@@ -53,6 +77,18 @@ void Level_Unload(LevelData* level);
 
 // Returns true if the world position (x,y) is inside a solid boundary tile.
 bool Level_IsBoundaryPos(const LevelData* level, float posX, float posY);
+
+// sets up 9 rdender textures
+bool chunkCacheInit(LevelData* level, int chunkW_px, int chunkH_px);
+
+// releases resources
+void chunkCacheUnload(LevelData* level);
+
+// updates chunks based on player world position
+void chunkCacheUpdate(LevelData* level, Vector2 playerWorldPos);
+
+// draws the chunks
+void chunkCacheDraw(const LevelData* level);
 
 
 #ifdef __cplusplus
