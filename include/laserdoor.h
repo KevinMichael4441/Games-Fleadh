@@ -14,7 +14,7 @@ extern "C" {
 
 static const int MAX_PAIRS = 10;
 
-//------------------Manager------------------//
+//------------------Key------------------//
 
 class Key
 {

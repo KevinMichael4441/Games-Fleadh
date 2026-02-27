@@ -6,6 +6,8 @@
 
 static const int MAX_COLLECTIBLES = 100;
 
+//------------------Collectible------------------//
+
 class Collectible
 {
 private:
@@ -14,37 +16,28 @@ private:
     bool m_active;
 
 public:
-    Collectible();void Initialize(Vector2 pos, float radius);
+    Collectible();
+    void Initialize(Vector2 pos, float radius);
 
     void Update(Ooze& player, int& score);
-
     void Draw() const;
 
     bool IsActive() const;
-
-    Vector2 GetPosition() const;
-    float GetRadius() const;
 };
 
 //------------------Manager------------------//
 
 class Collectibles_Manager
 {
-private:
-    Collectible m_collectibles[MAX_COLLECTIBLES];
-    int m_count;
-
 public:
     Collectibles_Manager();
-
-    void AddCollectible(Vector2 pos, float radius);
+    void Initialize(Vector2 pos, float radius);
 
     void Update(Ooze& player, int& score);
-
     void Draw() const;
 
-    void Reset();
+private:
+    Collectible m_collectibles[MAX_COLLECTIBLES];
 };
-
 
 #endif

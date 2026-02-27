@@ -1,7 +1,8 @@
 #include "security_system.h"
 
 SecuritySystem::SecuritySystem()
-{}
+{
+}
 
 void SecuritySystem::initialize(LevelData *t_level)
 {
@@ -10,7 +11,6 @@ void SecuritySystem::initialize(LevelData *t_level)
 		m_lasers[index].initialize(864, 300);
 	}
 }
-
 
 bool SecuritySystem::update(float t_dt, Ooze &t_ooze)
 {
@@ -30,5 +30,4 @@ void SecuritySystem::draw()
 	{
 		m_lasers[index].draw();
 	}
-
 }

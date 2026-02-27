@@ -87,6 +87,7 @@ typedef struct SuperMech {
 void SuperMech_Init(SuperMech *mech, Vector2 startPos, LevelData* level);
 
 void SuperMech_Uppdate(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, float dt);
+void SuperMech_Frame_Update(SuperMech *mech);
 void SuperMech_Draw(SuperMech *mech);
 
 bool SuperMech_CheckCollision_Player(const SuperMech *mech, Vector2 center, float radius);

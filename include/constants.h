@@ -56,14 +56,12 @@
 #define MOVE_HORIZONTAL_THRESHOLD 0.5f
 #define MOVE_DIAGONAL_THRESHOLD 0.5f
 
-
 //=================================================================
 // Font Sizes
 //=================================================================
 #define SMALL_FONT_SIZE 16
 #define DEFAULT_FONT_SIZE 24
 #define LARGE_FONT_SIZE 32
-
 
 //=================================================================
 // IP ADDRESS Lookup
