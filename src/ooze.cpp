@@ -144,11 +144,14 @@ void Ooze::Update(float t_dt, Command t_activeCommand)
 	HandleInput(t_activeCommand);
 	UpdateState(t_dt);
 
+	printf("Y-Velocity: %d \n", m_points[0].m_velocity.y);
+
+	//--------------TEMP----------//
 	if (IsKeyPressed(KEY_X))
 	{
 		Spread();
 	}
-	
+	//--------------TEMP----------//
 }
 
 
