@@ -13,7 +13,7 @@ void CameraManager::initialize(){
 	screen.offset = Vector2({SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2}); // Window origin in screen space
 	screen.target = Vector2({SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2});; // Window origin position in World Space
 	screen.rotation = 0.0f; // Degrees
-	screen.zoom = 0.25f; // Scale
+	screen.zoom = 1.0f; // Scale
 }
 
 void CameraManager::begin(){

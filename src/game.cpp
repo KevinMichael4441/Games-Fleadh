@@ -55,6 +55,10 @@ void Game::InitGame()
         TraceLog(LOG_ERROR, "Failed to load level");
     }
 	DebugCountBoundaryTiles(&m_level);
+	/*if (!LevelLoadObjects(level, "Objects"))
+	{
+		TraceLog(LOG_ERROR, "Failed to load objects");
+	}*/
 
 	if (!chunkCacheInit(&m_level, SCREEN_WIDTH, SCREEN_HEIGHT))
 	{
@@ -199,8 +203,9 @@ void Game::Draw()
 			DrawTexture(temp_background, 0, 0, WHITE);
 			
 			SuperMech_Draw(&mech);
-			chunkCacheDraw(&m_level);
+			chunkCacheDrawBackground(&m_level);
 			ooze.Draw();
+			chunkCacheDraw(&m_level);
 		break;
 		case GAME_PAUSE:
 			DrawTexture(temp_background, 0, 0, WHITE);

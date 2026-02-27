@@ -223,7 +223,8 @@ void DrawTileLayer(const LevelData* level, cJSON* layerDataArray)
     }
 }
 
-static void drawTileLayerChunk(const LevelData* level, cJSON* layerDataArray, int originPxX, int originPxY);
+static void drawTileLayerChunk(const LevelData* level, const int* gids, int originPxX, int originPxY);
+static void bakeChunkBackgroundLayer(LevelData* level, int wcx, int wcy, int texIndex);
 
 void JoinPath(char* outBuffer, int outSize, const char* baseDir, const char* file)
 {
@@ -272,6 +273,7 @@ bool Level_Load(LevelData* level, const char* mapPath, const char* mapBaseDir, c
     level->levelLayer = FindTileLayerDataArray(level->mapRoot, "Level");
     level->foregroundLayer = FindTileLayerDataArray(level->mapRoot, "Foreground");
     level->boundaryLayer = FindTileLayerDataArray(level->mapRoot, "Boundary");
+    level->backgroundLayer = FindTileLayerDataArray(level->mapRoot, "Background");
 
     if (!level->levelLayer)
     {
@@ -302,12 +304,24 @@ bool Level_Load(LevelData* level, const char* mapPath, const char* mapBaseDir, c
         }
     }
 
+    if (level->backgroundLayer)
+    {
+        if (!ConvertTileLayerToArray(level, level->backgroundLayer, &level->backgroundGids))
+        {
+            Level_Unload(level);
+            return false;
+        }
+    }
+
     return true;
 }
 
 void Level_Unload(LevelData* level)
 {
-    if (!level) return;
+    if (!level)
+    {
+        return;
+    }
 
     chunkCacheUnload(level);
 
@@ -335,6 +349,12 @@ void Level_Unload(LevelData* level)
         level->foregroundGids = NULL;
     }
 
+    if (level->backgroundGids)
+    {
+        free(level->backgroundGids);
+        level->backgroundGids = NULL;
+    }
+
     if (level->boundaryGids)
     {
         free(level->boundaryGids);
@@ -347,35 +367,31 @@ void Level_Unload(LevelData* level)
         level->mapRoot = NULL;
     }
 
+    if (level->objects)
+    {
+        free(level->objects);
+        level->objects = NULL;
+        level->objectCount = 0;
+    }
+
     *level = (LevelData){0};
 }
 
 bool Level_IsBoundaryPos(const LevelData* level, float posX, float posY)
 {
     if (!level || !level->boundaryLayer)
+    {
         return false;
+    }
 
     int tx = (int)(posX / level->tileWidth);
     int ty = (int)(posY / level->tileHeight);
 
     int index = ty * level->levelWidth + tx;
 
-    cJSON* tileItem = cJSON_GetArrayItem(level->boundaryLayer, index);
-    if (!tileItem || !cJSON_IsNumber(tileItem))
-    {
-        return false;
-    }
+    int gid = level->boundaryGids[index];
 
-    int gid = tileItem->valueint;
-
-    if (gid == 0)
-    {
-        return false;
-    }
-
-    gid = gid & 0x1FFFFFFF; // remove Tiled flip flags
-
-    return true;
+    return (gid !=0);
 }
 
 static void SlotMappingReset(LevelData* level)
@@ -396,7 +412,7 @@ static bool chunkInBounds(const LevelData* level, int chunkX, int chunkY)
     return (chunkX >= 0 && chunkX < level->chunksX && chunkY >= 0 && chunkY < level->chunksY);
 }
 
-static void bakeChunkIntoTexture(LevelData* level, cJSON* layerDataArray, ChunkCache* cache, int worldChunkX, int worldChunkY, int texIndex)
+static void bakeChunkIntoTexture(LevelData* level, const int* gids, ChunkCache* cache, int worldChunkX, int worldChunkY, int texIndex)
 {
     BeginTextureMode(cache->tex[texIndex]);
     ClearBackground(BLANK);
@@ -407,9 +423,9 @@ static void bakeChunkIntoTexture(LevelData* level, cJSON* layerDataArray, ChunkC
         int originPxX = worldChunkX * level->chunkWidthPx;
         int originPxY = worldChunkY * level->chunkHeightPx;
 
-        if (layerDataArray)
+        if (gids)
         {
-            drawTileLayerChunk(level, layerDataArray, originPxX, originPxY);
+            drawTileLayerChunk(level, gids, originPxX, originPxY);
         }
     }
 
@@ -418,12 +434,17 @@ static void bakeChunkIntoTexture(LevelData* level, cJSON* layerDataArray, ChunkC
 
 static void bakeChunkLevelLayer(LevelData* level, int wcx, int wcy, int texIndex)
 {
-    bakeChunkIntoTexture(level, level->levelLayer, &level->levelCache, wcx, wcy, texIndex);
+    bakeChunkIntoTexture(level, level->levelGids, &level->levelCache, wcx, wcy, texIndex);
 }
 
-static void drawTileLayerChunk(const LevelData* level, cJSON* layerDataArray, int originPxX, int originPxY)
+static void bakeChunkBackgroundLayer(LevelData* level, int wcx, int wcy, int texIndex)
 {
-    if (!level || !layerDataArray)
+    bakeChunkIntoTexture(level, level->backgroundGids, &level->backgroundCache, wcx, wcy, texIndex);
+}
+
+static void drawTileLayerChunk(const LevelData* level, const int* gids, int originPxX, int originPxY)
+{
+    if (!level || !gids)
     {
         return;
     }
@@ -469,7 +490,7 @@ static void drawTileLayerChunk(const LevelData* level, cJSON* layerDataArray, in
         {
             int index = y * level->levelWidth + x;
 
-            int gid = level->levelGids[index];
+            int gid = gids[index];
             if (gid == 0)
             {
                 continue;
@@ -511,6 +532,7 @@ static void rebuildAll3x3(LevelData* level, int newCentreChunkX, int newCentreCh
 
             int texIndex = level->slotTex[r][c];
             bakeChunkLevelLayer(level, wcx, wcy, texIndex);
+            bakeChunkBackgroundLayer(level, wcx, wcy, texIndex);
         }
     }
 }
@@ -543,6 +565,7 @@ static void shiftRight(LevelData* level)
 
         int texIndex = level->slotTex[r][c];
         bakeChunkLevelLayer(level, wcx, wcy, texIndex);
+        bakeChunkBackgroundLayer(level, wcx, wcy, texIndex);
     }
 }
 
@@ -573,6 +596,7 @@ static void shiftLeft(LevelData* level)
 
         int texIndex = level->slotTex[r][c];
         bakeChunkLevelLayer(level, wcx, wcy, texIndex);
+        bakeChunkBackgroundLayer(level, wcx, wcy, texIndex);
     }
 }
 
@@ -603,6 +627,7 @@ static void shiftDown(LevelData* level)
 
         int texIndex = level->slotTex[r][c];
         bakeChunkLevelLayer(level, wcx, wcy, texIndex);
+        bakeChunkBackgroundLayer(level, wcx, wcy, texIndex);
     }
 }
 
@@ -633,6 +658,7 @@ static void shiftUp(LevelData* level)
 
         int texIndex = level->slotTex[r][c];
         bakeChunkLevelLayer(level, wcx, wcy, texIndex);
+        bakeChunkBackgroundLayer(level, wcx, wcy, texIndex);
     }
 }
 
@@ -663,6 +689,14 @@ bool chunkCacheInit(LevelData* level, int chunkWidthPx, int chunkHeightPx)
         EndTextureMode();
     }
 
+    for (int i = 0; i < 9; i++)
+    {
+        level->backgroundCache.tex[i] = LoadRenderTexture(chunkWidthPx, chunkHeightPx);
+        BeginTextureMode(level->backgroundCache.tex[i]);
+        ClearBackground(BLANK);
+        EndTextureMode();
+    }
+
     // set up the order starting order of the textures
     SlotMappingReset(level);
 
@@ -684,6 +718,11 @@ void chunkCacheUnload(LevelData* level)
     for (int i = 0; i < 9; i++)
     {
         UnloadRenderTexture(level->levelCache.tex[i]);
+    }
+
+    for (int i = 0; i < 9; i++)
+    {
+        UnloadRenderTexture(level->backgroundCache.tex[i]);
     }
 
     level->chunkCacheReady = 0;
@@ -765,4 +804,164 @@ void chunkCacheDraw(const LevelData* level)
             DrawTextureRec(rt.texture, src, dst, WHITE);
         }
     }
+}
+
+void chunkCacheDrawBackground(const LevelData* level)
+{
+    if (!level || !level->chunkCacheReady)
+    {
+        return;
+    }
+
+    for (int row = 0; row < 3; row++)
+    {
+        for (int col = 0; col < 3; col++)
+        {
+            if (!level->slotValid[row][col])
+            {
+                continue;
+            }
+
+            int wcx = level->centreChunkX + (col - 1);
+            int wcy = level->centreChunkY + (row - 1);
+
+            float worldX = (float)(wcx * level->chunkWidthPx);
+            float worldY = (float)(wcy * level->chunkHeightPx);
+
+            int texIndex = level->slotTex[row][col];
+            RenderTexture2D rt = level->backgroundCache.tex[texIndex];
+
+            Rectangle src = { 0, 0, (float)level->chunkWidthPx, -(float)level->chunkHeightPx };
+            Vector2 dst = { worldX, worldY };
+
+            DrawTextureRec(rt.texture, src, dst, WHITE);
+        }
+    }
+}
+
+static cJSON* FindObjectLayer(cJSON* levelJson, const char* layerName)
+{
+    cJSON* layers = cJSON_GetObjectItem(levelJson, "layers");
+    if (!layers || !cJSON_IsArray(layers))
+    {
+        TraceLog(LOG_ERROR, "Map JSON has no 'layers' array");
+        return NULL;
+    }
+
+    int layerCount = cJSON_GetArraySize(layers);
+
+    for (int i = 0; i < layerCount; i++)
+    {
+        cJSON* layer = cJSON_GetArrayItem(layers, i);
+        if (!layer)
+        {
+            continue;
+        }
+
+        cJSON* nameItem = cJSON_GetObjectItem(layer, "name");
+        if (!nameItem || !cJSON_IsString(nameItem))
+        {
+            continue;
+        }
+
+        if (strcmp(nameItem->valuestring, layerName) != 0)
+        {
+            continue;
+        }
+
+        cJSON* typeItem = cJSON_GetObjectItem(layer, "type");
+        if (!typeItem || !cJSON_IsString(typeItem) || strcmp(typeItem->valuestring, "objectgroup") != 0)
+        {
+            TraceLog(LOG_ERROR, "Layer '%s' exists but is not an objectgroup", layerName);
+            return NULL;
+        }
+
+        return layer; // this is the whole layer object
+    }
+
+    TraceLog(LOG_ERROR, "Could not find object layer named '%s'", layerName);
+    return NULL;
+}
+
+bool Level_LoadObjects(LevelData* level, const char* objectLayerName)
+{
+    if (!level || !level->mapRoot || !objectLayerName)
+    {
+        return false;
+    }
+
+    // find the layer
+    cJSON* layer = FindObjectLayer(level->mapRoot, objectLayerName);
+    if (!layer)
+    {
+        return false;
+    }
+
+    level->objectLayer = layer;
+
+    // get the objects array
+    cJSON* objects = cJSON_GetObjectItem(layer, "objects");
+    if (!objects || !cJSON_IsArray(objects))
+    {
+        TraceLog(LOG_ERROR, "Object layer '%s' has no 'objects' array", objectLayerName);
+        return false;
+    }
+
+    int count = cJSON_GetArraySize(objects);
+    if (count <= 0)
+    {
+        level->objects = NULL;
+        level->objectCount = 0;
+        return true;
+    }
+
+    LevelObject* arr = (LevelObject*)malloc(sizeof(LevelObject) * count);
+    if (!arr)
+    {
+        TraceLog(LOG_ERROR, "Out of memory allocating LevelObject array (%d objects)", count);
+        return false;
+    }
+
+    for (int i = 0; i < count; i++)
+    {
+        cJSON* obj = cJSON_GetArrayItem(objects, i);
+
+        arr[i].type = "";
+        arr[i].x = 0.0f;
+        arr[i].y = 0.0f;
+        arr[i].properties = NULL;
+
+        if (!obj)
+        {
+            continue;
+        }
+
+        cJSON* typeItem = cJSON_GetObjectItem(obj, "type");
+        if (typeItem && cJSON_IsString(typeItem))
+        {
+            arr[i].type = typeItem->valuestring;
+        }
+
+        cJSON* xItem = cJSON_GetObjectItem(obj, "x");
+        cJSON* yItem = cJSON_GetObjectItem(obj, "y");
+        if (xItem && cJSON_IsNumber(xItem))
+        {
+            arr[i].x = (float)xItem->valuedouble;
+        }
+
+        if (yItem && cJSON_IsNumber(yItem))
+        {
+            arr[i].y = (float)yItem->valuedouble;
+        } 
+
+        cJSON* props = cJSON_GetObjectItem(obj, "properties");
+        if (props && cJSON_IsArray(props))
+        {
+            arr[i].properties = props;
+        }
+    }
+
+    level->objects = arr;
+    level->objectCount = count;
+    return true;
 }
