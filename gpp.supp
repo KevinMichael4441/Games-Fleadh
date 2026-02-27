@@ -1,0 +1,151 @@
+# glibc loader false positives (Bullseye)
+{
+   glibc_dl_dst_substitute_addr8
+   Memcheck:Addr8
+   fun:strncmp
+   fun:is_dst
+   fun:_dl_dst_substitute
+   fun:fillin_rpath.isra.0
+   fun:decompose_rpath
+   fun:cache_rpath
+   fun:cache_rpath
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_exception
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+}
+
+{
+   glibc_dl_dst_count_addr8
+   Memcheck:Addr8
+   fun:strncmp
+   fun:is_dst
+   fun:_dl_dst_count
+   fun:expand_dynamic_string_token
+   fun:fillin_rpath.isra.0
+   fun:decompose_rpath
+   fun:cache_rpath
+   fun:cache_rpath
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_exception
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+}
+
+# X11 input method leak via GLFW
+{
+   x11_xim_openim_definite_leak
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   fun:_XimOpenIM
+   fun:_XimRegisterIMInstantiateCallback
+   fun:XRegisterIMInstantiateCallback
+   fun:_glfwInitX11
+   fun:glfwInit
+   fun:InitPlatform
+   fun:InitWindow
+   fun:main
+}
+
+# GLdispatch MakeCurrent strdup leak (Mesa/GL)
+{
+   gldispatch_makecurrent_strdup_leak
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:strdup
+   ...
+   obj:/usr/lib/x86_64-linux-gnu/libGLdispatch.so.0.0.0
+   fun:__glDispatchMakeCurrent
+   ...
+   fun:makeContextCurrentEGL
+   fun:_glfwRefreshContextAttribs
+   fun:_glfwCreateWindowX11
+   fun:glfwCreateWindow
+}
+
+# GLFW/EGL init leaks
+{
+   glfw_egl_init_definite_leak_malloc_small
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   ...
+   fun:_glfwInitEGL
+   fun:_glfwCreateWindowX11
+   fun:glfwCreateWindow
+   fun:InitPlatform
+   fun:InitWindow
+}
+
+{
+   glfw_egl_init_definite_leak_calloc_big
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   ...
+   fun:_glfwInitEGL
+   fun:_glfwCreateWindowX11
+   fun:glfwCreateWindow
+   fun:InitPlatform
+   fun:InitWindow
+}
+
+# dlopen/operator new leaks during EGL loading (unresolved frames)
+{
+   glfw_egl_dlopen_new64_leak_a_exact
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:_Znwm
+   ...
+   fun:dlopen@@GLIBC_2.2.5
+   fun:???
+   fun:???
+   fun:???
+   fun:???
+   fun:???
+   fun:_glfwInitEGL
+   fun:_glfwCreateWindowX11
+   fun:glfwCreateWindow
+   fun:InitPlatform
+   fun:InitWindow
+   fun:main
+}
+
+{
+   glfw_egl_dlopen_new64_leak_b_exact
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:_Znwm
+   ...
+   fun:dlopen@@GLIBC_2.2.5
+   fun:???
+   fun:???
+   fun:???
+   fun:???
+   fun:???
+   fun:_glfwInitEGL
+   fun:_glfwCreateWindowX11
+   fun:glfwCreateWindow
+   fun:InitPlatform
+   fun:InitWindow
+   fun:main
+}
+
+# raylib/rlgl first-draw render batch one-time allocation (llvmpipe/Mesa container)
+{
+   raylib_rlgl_renderbatch_first_draw_leak
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   ...
+   fun:rlDrawRenderBatch
+   fun:EndDrawing
+   fun:main
+}

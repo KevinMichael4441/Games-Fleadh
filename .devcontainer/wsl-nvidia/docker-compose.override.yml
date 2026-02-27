@@ -1,0 +1,29 @@
+services:
+  gpp:
+
+    #-----------------------------------------------------------------
+    # NVIDIA GPU passthrough (WSL2)
+    #-----------------------------------------------------------------
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      #---------------------------------------------------------------
+      # WSLg display passthrough
+      #---------------------------------------------------------------
+      - DISPLAY=${DISPLAY:-:0}
+      - WAYLAND_DISPLAY=${WAYLAND_DISPLAY}
+      - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
+      #---------------------------------------------------------------
+      # WSLg audio passthrough (PulseAudio via wslg socket)
+      #---------------------------------------------------------------
+      - PULSE_SERVER=${PULSE_SERVER:-unix:/mnt/wslg/runtime-dir/pulse/native}
+
+    volumes:
+      - ./:/gpp
+      - ~/.ssh:/host_ssh:ro
+      # WSLg X11 socket
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # WSLg shared directory (display + audio)
+      - /mnt/wslg:/mnt/wslg
+      - /mnt/wslg/runtime-dir/pulse:/mnt/wslg/runtime-dir/pulse:ro

@@ -1,0 +1,9 @@
+services:
+  gpp:
+
+    #-----------------------------------------------------------------
+    # Headless - no GPU, no display, no audio
+    # Build only environment (CI server)
+    #-----------------------------------------------------------------
+    environment:
+      - DISPLAY=

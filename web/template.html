@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gameplay Programming I Webbuild for testing R36S</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+    <style>
+        /* Custom styles */
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background-color: #393939;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Canvas fills page */
+        canvas {
+            display: block;
+            width: auto;
+            height: 100vh;
+            touch-action: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Full-screen canvas for Raylib rendering -->
+    <canvas id="canvas"></canvas>
+
+    <script>
+        // Ensure 'Module' exists before using it
+        // Tell the Emscripten module to use this canvas for rendering
+        var Module = Module || {};
+
+        function setCanvasSize() {
+            var canvas = document.getElementById('canvas');
+            if (!canvas) return;
+
+            // Set the initial canvas size to fill the window
+            var cssW = window.innerWidth;
+            var cssH = window.innerHeight;
+
+            // Backing buffer size (actual WebGL resolution)
+            var dpr = window.devicePixelRatio || 1;
+
+            canvas.style.width = cssW + "px";
+            canvas.style.height = cssH + "px";
+
+            canvas.width = Math.floor(cssW * dpr);
+            canvas.height = Math.floor(cssH * dpr);
+        }
+
+        // Make sure emscripten uses our canvas from the very start
+        Module.canvas = document.getElementById('canvas');
+
+        // Run sizing before the wasm/main loop begins drawing (prevents the one-time WebGL warning)
+        Module.preRun = Module.preRun || [];
+        Module.preRun.push(function () {
+            setCanvasSize();
+        });
+
+        // Also size once immediately (in case preRun timing varies)
+        setCanvasSize();
+    </script>
+
+    <!-- Handle Element.setCapture() -->
+    <script>
+        // Override setCapture() to use setPointerCapture() (supress warning)
+        (function () {
+            var originalSetCapture = Element.prototype.setCapture;
+
+            Element.prototype.setCapture = function (pointerId) {
+                if (this.setPointerCapture) {
+                    try {
+                        this.setPointerCapture(pointerId || 1);
+                        return;
+                    } catch (e) {
+                        // Fall back to the original
+                    }
+                }
+
+                // Last resort: call original
+                if (originalSetCapture) {
+                    try {
+                        originalSetCapture.call(this, pointerId);
+                    } catch (e2) {
+                        // Ignore
+                    }
+                }
+            };
+        })();
+    </script>
+
+
+    <!-- Emscripten will inject the necessary scripts here -->
+    {{{ SCRIPT }}}
+
+    <script>
+        function unlockAudioOnce() {
+            // WebAudio must be resumed after a user gesture
+            try {
+                if (Module && Module.ctx && Module.ctx.state === "suspended") {
+                    Module.ctx.resume();
+                    console.log("AudioContext resumed");
+                }
+            } catch (e) {
+                console.warn("Audio unlock failed:", e);
+            }
+        }
+
+        // Unlock audio with an interaction
+        function installAudioUnlockHandlers() {
+            var onceOpts = { once: true, passive: true };
+
+            window.addEventListener("pointerdown", unlockAudioOnce, onceOpts);
+            window.addEventListener("keydown", unlockAudioOnce, onceOpts);
+            window.addEventListener("touchstart", unlockAudioOnce, onceOpts);
+            window.addEventListener("mousedown", unlockAudioOnce, onceOpts);
+        }
+
+        Module.onRuntimeInitialized = function () {
+            var canvas = document.getElementById('canvas');
+            Module.canvas = canvas;
+
+            // Resize the canvas when window is resized
+            setCanvasSize();
+            installAudioUnlockHandlers();
+
+            console.log("Raylib Template is ready");
+        };
+
+        window.addEventListener("resize", setCanvasSize);
+        window.addEventListener("load", setCanvasSize);
+    </script>
+</body>
+
+</html>
