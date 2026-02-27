@@ -120,9 +120,15 @@ void Game::Update(float t_dt)
 		case GAME_PAUSE:
 		break;
 		case GAME_END:
-			if(!ui_manager.stingAnim.playingAnim())
+			if(ui_manager.stingAnim.timeToSpawn())
 			{
 				Respawn();
+				camera.update(ooze.CalculateCenter());
+				ui_manager.stingAnim.setStingPos(camera.screen.target);
+			}
+			if(!ui_manager.stingAnim.playingAnim())
+			{
+				gamestate = GAME_PLAY;
 			}
 		break;
 	}
@@ -202,8 +208,13 @@ void Game::Draw()
 		case GAME_PLAY:
 			DrawTexture(temp_background, 0, 0, WHITE);
 			
+<<<<<<< HEAD
 			SuperMech_Draw(&mech);
 			chunkCacheDrawBackground(&m_level);
+=======
+			chunkCacheDraw(&m_level);
+			SuperMech_Draw(&mech);
+>>>>>>> 3ec25a045b5a23bd65b87ae17696b204fd52460d
 			ooze.Draw();
 			chunkCacheDraw(&m_level);
 		break;
@@ -227,7 +238,7 @@ void Game::Draw()
 	// Draw Telemetry
 	if (show_telemetry)
 	{
-		DrawTelemetry(&r36s_telemetry, 8, 8, glRendererStr, glVersionStr, glslVersionStr);
+		DrawTelemetry(&r36s_telemetry, camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), glRendererStr, glVersionStr, glslVersionStr);
 	}
 	#endif // Draw Telemetry R36S and Linux only
 }
@@ -236,7 +247,6 @@ void Game::Respawn()
 {
     ooze.Reset({SCREEN_WIDTH/2, SCREEN_HEIGHT/2});
     SuperMech_Reset(&mech, {100,200});
-	gamestate = GAME_PLAY;
 }
 
 void Game::checkMechOozeCollision()
