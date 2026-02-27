@@ -96,6 +96,12 @@ void Ooze::HandleInput(Command t_activeCommand)
 	if (IsCommandActive(t_activeCommand, MOVE_RIGHT))
 		axis += 1.0f;
 
+	if (IsCommandActive(t_activeCommand, AIM_LEFT))
+		axis += -4.0f;
+
+	if (IsCommandActive(t_activeCommand, AIM_RIGHT))
+		axis += 4.0f;
+
 
 	// Check if we are moving
 	bool moving = abs(axis) > 0.0f;
@@ -721,9 +727,6 @@ void Ooze::EnterCollideHorizontalState()
 	{
 		m_squishiness = SQUISH_AMOUNT::HIGH;
 	}
-
-	collideHorizontalCount++;
-	std::cout << collideHorizontalCount << "\n";
 }
 
 void Ooze::EnterCollideVerticalState()
@@ -762,9 +765,6 @@ void Ooze::EnterCollideVerticalState()
 	{
 		m_squishiness = SQUISH_AMOUNT::HIGH;
 	}
-
-	collideDownCount++;
-	std::cout << collideDownCount << "\n";
 }
 
 

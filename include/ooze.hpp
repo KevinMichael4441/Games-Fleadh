@@ -75,8 +75,6 @@ private:
 	LevelData* m_level = nullptr;
 	static const int MAX_BOUNDARY_RECTS = 16;
 
-	Vector2 m_newPointPosition;
-
 public:
 	Ooze();
 	void Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount);
@@ -137,10 +135,6 @@ public:
 	int GetPointCount() const;
 	
 	FSM fsm;
-
-	int collideDownCount = 0;
-	int collideUpCount = 0;
-	int collideHorizontalCount = 0;
 };
 
 #endif
