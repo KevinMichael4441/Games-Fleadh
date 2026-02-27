@@ -1,20 +1,19 @@
 #ifndef OOZE_H
 #define OOZE_H
 
-
 #include <raylib.h>
 #include <raymath.h>
 
 #include "constants.h"
-
 #include "command.h"
 #include "input_manager.h"
-#include "fsm.h"
+
 #include "level_loader.h"
+#include "fsm.h"
+
 extern "C" {
 #include "cute_c2.h"
 }
-
 
 static const int MAX_COLLISION_PARTS = 4;
 
@@ -37,21 +36,16 @@ typedef struct Point
 	float lerpTimeElapsedX;
 	float lerpTimeElapsedY;
 	float lerpTime;
-	
 } Point;
-
 
 typedef struct Spring
 {
 	float springConstant;
 	float restLength;
 	
-
 	Point *a;
 	Point *b;
-
 } Spring;
-
 
 class Ooze
 {
@@ -97,8 +91,6 @@ public:
 	void EnterCollideHorizontalState();
 	void EnterCollideVerticalState();
    
-
-
     void ExitState();
 	void ExitIdleState();
 	void ExitMoveState();

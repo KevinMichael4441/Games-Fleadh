@@ -431,9 +431,10 @@ void SuperMech_Uppdate(SuperMech *mech, Vector2 playerPos, bool cameraTriggered,
     SuperMech_ResolveBoundaryCollision(mech);
 
     UpdateState(mech, dt);
+    SuperMech_Frame_Update(mech);
 }
 
-void SuperMech_Draw(SuperMech *mech) 
+void SuperMech_Frame_Update(SuperMech *mech)
 {
     mech->animationTimer += GetFrameTime();
     if (mech->animationTimer >= mech->frameTime)
@@ -446,7 +447,10 @@ void SuperMech_Draw(SuperMech *mech)
             mech->currentFrame = 0;
         }
     }
+}
 
+void SuperMech_Draw(SuperMech *mech) 
+{
     float frameWidth = (float)mech->frameWidth;
     float sourceX = (float)(mech->currentFrame * mech->frameWidth);
 
@@ -457,18 +461,8 @@ void SuperMech_Draw(SuperMech *mech)
     }
 
     Rectangle source = { sourceX, 0.0f, frameWidth, (float)mech->frameHeight };
-
-    Vector2 origin = {
-        (mech->frameWidth * mech->scale) / 2.0f,
-        (mech->frameHeight * mech->scale) / 2.0f
-    };
-
-    Rectangle dest = {
-        mech->position.x + origin.x,
-        mech->position.y + origin.y,
-        mech->frameWidth * mech->scale,
-        mech->frameHeight * mech->scale
-    };
+    Vector2 origin = { (mech->frameWidth * mech->scale) / 2.0f, (mech->frameHeight * mech->scale) / 2.0f };
+    Rectangle dest = { mech->position.x + origin.x, mech->position.y + origin.y, mech->frameWidth * mech->scale, mech->frameHeight * mech->scale };
 
     DrawTexturePro( *mech->currentTexture, source, dest, origin, 0.0f, WHITE);
 

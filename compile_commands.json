@@ -3,6 +3,28 @@
     "arguments": [
       "/usr/bin/x86_64-linux-gnu-g++-10",
       "-c",
+      "src/jump_pad.cpp",
+      "-o",
+      "build/linux_debug/obj/jump_pad.o",
+      "-I/opt/raylib/src",
+      "-Iinclude",
+      "-std=c++17",
+      "-DGAME_NAME=\"Slilab\"",
+      "-DGAME_DESCRIPTION=\"Jump\"",
+      "-DGAME_VERSION=\"1.0.0\"",
+      "-DPLATFORM_LINUX",
+      "-O0",
+      "-g",
+      "-DDEBUG"
+    ],
+    "directory": "/gpp",
+    "file": "/gpp/src/jump_pad.cpp",
+    "output": "/gpp/build/linux_debug/obj/jump_pad.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-g++-10",
+      "-c",
       "src/ui_manager.cpp",
       "-o",
       "build/linux_debug/obj/ui_manager.o",
@@ -86,6 +108,72 @@
     "directory": "/gpp",
     "file": "/gpp/src/laserwall.cpp",
     "output": "/gpp/build/linux_debug/obj/laserwall.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-g++-10",
+      "-c",
+      "src/laserdoor.cpp",
+      "-o",
+      "build/linux_debug/obj/laserdoor.o",
+      "-I/opt/raylib/src",
+      "-Iinclude",
+      "-std=c++17",
+      "-DGAME_NAME=\"Slilab\"",
+      "-DGAME_DESCRIPTION=\"Jump\"",
+      "-DGAME_VERSION=\"1.0.0\"",
+      "-DPLATFORM_LINUX",
+      "-O0",
+      "-g",
+      "-DDEBUG"
+    ],
+    "directory": "/gpp",
+    "file": "/gpp/src/laserdoor.cpp",
+    "output": "/gpp/build/linux_debug/obj/laserdoor.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-g++-10",
+      "-c",
+      "src/collectibles.cpp",
+      "-o",
+      "build/linux_debug/obj/collectibles.o",
+      "-I/opt/raylib/src",
+      "-Iinclude",
+      "-std=c++17",
+      "-DGAME_NAME=\"Slilab\"",
+      "-DGAME_DESCRIPTION=\"Jump\"",
+      "-DGAME_VERSION=\"1.0.0\"",
+      "-DPLATFORM_LINUX",
+      "-O0",
+      "-g",
+      "-DDEBUG"
+    ],
+    "directory": "/gpp",
+    "file": "/gpp/src/collectibles.cpp",
+    "output": "/gpp/build/linux_debug/obj/collectibles.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-g++-10",
+      "-c",
+      "src/teleporter.cpp",
+      "-o",
+      "build/linux_debug/obj/teleporter.o",
+      "-I/opt/raylib/src",
+      "-Iinclude",
+      "-std=c++17",
+      "-DGAME_NAME=\"Slilab\"",
+      "-DGAME_DESCRIPTION=\"Jump\"",
+      "-DGAME_VERSION=\"1.0.0\"",
+      "-DPLATFORM_LINUX",
+      "-O0",
+      "-g",
+      "-DDEBUG"
+    ],
+    "directory": "/gpp",
+    "file": "/gpp/src/teleporter.cpp",
+    "output": "/gpp/build/linux_debug/obj/teleporter.o"
   },
   {
     "arguments": [

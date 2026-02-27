@@ -32,7 +32,9 @@
 #define MAX_LASERWALL		1
 #define MAX_CAMERA			2
 #define MAX_WORKER			1
+#define MAX_JUMPPADS		1
 
+#define JUMP_PUSHBACK		50
 #define WALL_PUSHBACK		50
 #define BOT_PUSHBACK		20
 
@@ -54,14 +56,12 @@
 #define MOVE_HORIZONTAL_THRESHOLD 0.5f
 #define MOVE_DIAGONAL_THRESHOLD 0.5f
 
-
 //=================================================================
 // Font Sizes
 //=================================================================
 #define SMALL_FONT_SIZE 16
 #define DEFAULT_FONT_SIZE 24
 #define LARGE_FONT_SIZE 32
-
 
 //=================================================================
 // IP ADDRESS Lookup

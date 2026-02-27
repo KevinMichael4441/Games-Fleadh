@@ -1,19 +1,19 @@
 #include "security_system.h"
 
 SecuritySystem::SecuritySystem()
-{}
+{
+}
 
 void SecuritySystem::initialize(LevelData *t_level)
 {
 	for (int index = 0; index < MAX_LASERWALL; index++)
 	{
-		m_lasers[index].initialize(450, SCREEN_HEIGHT - 128);
+		m_lasers[index].initialize(864, 300);
 	}
 	
 	m_cameras[0].initialize(400.0f, 150.0f, 200.0f, CAM_SPOT, W);
 	m_cameras[1].initialize(300.0f, 150.0f, 200.0f, CAM_SPOT, E);
 }
-
 
 bool SecuritySystem::update(float t_dt, Ooze &t_ooze)
 {
@@ -42,5 +42,4 @@ void SecuritySystem::draw()
 	{
 		m_cameras[i].draw();
 	}
-
 }

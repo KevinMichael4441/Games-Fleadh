@@ -18,7 +18,7 @@ class Laserwall
 public:
 	Laserwall();
 	void initialize(float t_x, float t_y);
-	void update(Ooze &t_ooze, float t_dt);
+	bool update(Ooze &t_ooze, float t_dt);
 	void draw();
 
 
@@ -40,7 +40,7 @@ private:
 	bool m_isActive;
 
 
-	void updateCollision(Ooze &t_ooze);
+	bool updateCollision(Ooze &t_ooze);
 };
 
 

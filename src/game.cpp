@@ -1,7 +1,6 @@
 #include "game.hpp"
 #include "cJSON.h"
 
-static void DebugDrawBoundaryRects(const LevelData* level);
 static void DebugCountBoundaryTiles(const LevelData* level);
 
 Game::Game()
@@ -75,6 +74,18 @@ void Game::InitGame()
 
 	//---------------Security System------------//
 	m_securitySystem.initialize(&m_level);
+	m_laseDoor_manager.Initialize({576, 300}, {520, 350}, 8);
+
+	
+	//-------Collectibles-------//
+	score = 0;
+	m_collectibles_manager.Initialize({640, 350}, 8);
+
+	//-----------Teleporter------------------------//
+	m_teleporter_manager.Initialize({960, 384}, {1120, 384});
+
+	//-----------JumpPad------------------------//
+	m_jumpPadd_manager.Initialize({672, 384});
 
 	//--------Input Manager---------------------//
 	InitInputManager();
@@ -105,12 +116,19 @@ void Game::Update(float t_dt)
 		break;
 		case GAME_PLAY:
 		{
-			ooze.Update(t_dt, m_activeCommand);
 			Vector2 center = ooze.CalculateCenter();
 			camera.update(center);
+			m_laseDoor_manager.Update(ooze, t_dt);
+			m_teleporter_manager.Update(ooze, t_dt);
 			chunkCacheUpdate(&m_level, center);
 			SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
-			//checkMechOozeCollision();
+			checkMechOozeCollision();
+			m_collectibles_manager.Update(ooze, score);
+
+			//-----------JumpPad------------------------//
+			m_jumpPadd_manager.Update(ooze);
+
+			ooze.Update(t_dt, m_activeCommand);
 		}
 		break;
 		case GAME_PAUSE:
@@ -204,16 +222,32 @@ void Game::Draw()
 		case GAME_PLAY:
 			DrawTexture(temp_background, 0, 0, WHITE);
 			chunkCacheDraw(&m_level);
-			//SuperMech_Draw(&mech);
-			ooze.Draw();
+
 			m_securitySystem.draw();
+			m_laseDoor_manager.Draw();
+			m_jumpPadd_manager.Draw();
+			m_teleporter_manager.Draw();
+			m_collectibles_manager.Draw();
+
+			SuperMech_Draw(&mech);
+			ooze.Draw();
+
+			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
 		break;
 		case GAME_PAUSE:
 			DrawTexture(temp_background, 0, 0, WHITE);
 			chunkCacheDraw(&m_level);
-			ooze.Draw();
-			SuperMech_Draw(&mech);
+
 			m_securitySystem.draw();
+			m_laseDoor_manager.Draw();
+			m_jumpPadd_manager.Draw();
+			m_teleporter_manager.Draw();
+			m_collectibles_manager.Draw();
+
+			SuperMech_Draw(&mech);
+			ooze.Draw();
+
+			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
 		break;
 		case GAME_END:
 			DrawTexture(temp_background, 0, 0, WHITE);
