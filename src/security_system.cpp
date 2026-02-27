@@ -10,8 +10,8 @@ void SecuritySystem::initialize(LevelData *t_level)
 		m_lasers[index].initialize(450, SCREEN_HEIGHT - 128);
 	}
 	
-	m_cameras[0].initialize(400.0f, 150.0f, 200.0f, CAM_SPOT, SE);
-	m_cameras[1].initialize(300.0f, 150.0f, 200.0f, CAM_SPOT, NW);
+	m_cameras[0].initialize(400.0f, 150.0f, 200.0f, CAM_SPOT, W);
+	m_cameras[1].initialize(300.0f, 150.0f, 200.0f, CAM_SPOT, E);
 }
 
 
