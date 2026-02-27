@@ -207,14 +207,8 @@ void Game::Draw()
 		break;
 		case GAME_PLAY:
 			DrawTexture(temp_background, 0, 0, WHITE);
-			
-<<<<<<< HEAD
-			SuperMech_Draw(&mech);
 			chunkCacheDrawBackground(&m_level);
-=======
-			chunkCacheDraw(&m_level);
 			SuperMech_Draw(&mech);
->>>>>>> 3ec25a045b5a23bd65b87ae17696b204fd52460d
 			ooze.Draw();
 			chunkCacheDraw(&m_level);
 		break;
