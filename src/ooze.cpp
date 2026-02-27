@@ -144,8 +144,6 @@ void Ooze::Update(float t_dt, Command t_activeCommand)
 	HandleInput(t_activeCommand);
 	UpdateState(t_dt);
 
-	printf("Y-Velocity: %d \n", m_points[0].m_velocity.y);
-
 	//--------------TEMP----------//
 	if (IsKeyPressed(KEY_X))
 	{
@@ -586,6 +584,21 @@ void Ooze::DefaultUpdate(float t_dt)
 	UpdatePoints(t_dt);
 	//ResolveBoundaryCollision_C2();
 	Move();
+	
+	if (fsm.m_currentState != STATE_JUMPING)
+	{
+		float avgVel = 0;
+		for (int index = 0; index < MAX_POINTS; index++)
+		{
+			avgVel += m_points[index].m_velocity.y;
+		}
+
+		if (avgVel > 1)
+		{
+			HandleEvent(EVENT_JUMP);
+		}
+	}
+	
 	//ResolveBoundaryCollision_C2();
 }
 
