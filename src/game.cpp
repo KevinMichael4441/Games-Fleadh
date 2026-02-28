@@ -1,6 +1,59 @@
 #include "game.hpp"
 #include "cJSON.h"
 
+Rectangle AABBToRectangle(const c2AABB& box)
+{
+    return Rectangle{ box.min.x, box.min.y, box.max.x - box.min.x, box.max.y - box.min.y };
+}
+
+static bool IsMechOffScreen(const SuperMech& mech, const CameraManager& camera)
+{
+    Rectangle camRect = camera.getScreenRect();
+    Rectangle mechRect = AABBToRectangle(SuperMech_GetBoundingBox(&mech));
+
+    return !CheckCollisionRecs(camRect, mechRect);
+}
+
+static bool Level_IsSolidTile(const LevelData* level, Vector2 pos)
+{
+    int tx = (int)(pos.x / level->tileWidth);
+    int ty = (int)(pos.y / level->tileHeight);
+
+    if (tx < 0 || ty < 0 || tx >= level->levelWidth || ty >= level->levelHeight) return true;
+
+    cJSON* tileItem = cJSON_GetArrayItem(level->boundaryLayer, ty * level->levelWidth + tx);
+    if (tileItem && cJSON_IsNumber(tileItem) && tileItem->valueint != 0) return true;
+
+    return false;
+}
+
+static Vector2 FindValidRespawnPosition(const LevelData* level, const CameraManager& camera)
+{
+    Rectangle camRect = camera.getScreenRect();
+    int step = 32;
+    std::vector<Vector2> candidates;
+
+    //generate positions just outside camera bounds (left, right, top, bottom)
+    for (int y = (int)camRect.y; y < camRect.y + camRect.height; y += step) 
+	{
+        candidates.push_back({camRect.x - step, (float)y}); //left
+        candidates.push_back({camRect.x + camRect.width + step, (float)y}); //right
+    }
+
+    for (int x = (int)camRect.x; x < camRect.x + camRect.width; x += step) 
+	{
+        candidates.push_back({(float)x, camRect.y - step}); //top
+        candidates.push_back({(float)x, camRect.y + camRect.height + step}); //bottom
+    }
+
+    for (auto& pos : candidates) 
+	{
+        if (!Level_IsSolidTile(level, pos)) return pos;
+    }
+
+    return {camRect.x - step, camRect.y - step};
+}
+
 static void DebugCountBoundaryTiles(const LevelData* level);
 
 Game::Game()
@@ -124,11 +177,16 @@ void Game::Update(float t_dt)
 			SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
 			checkMechOozeCollision();
 			m_collectibles_manager.Update(ooze, score);
-
-			//-----------JumpPad------------------------//
 			m_jumpPadd_manager.Update(ooze);
-
 			ooze.Update(t_dt, m_activeCommand);
+
+			// ----------- NEW: Respawn mech if off-screen ------------
+    		if (IsMechOffScreen(mech, camera))
+    		{
+        		Vector2 spawnPos = FindValidRespawnPosition(&m_level, camera);
+        		SuperMech_Reset(&mech, ooze.getPosition(), spawnPos);
+        		TraceLog(LOG_INFO, "Mech went off-screen, respawning at (%.1f, %.1f)", spawnPos.x, spawnPos.y);
+    		}
 		}
 		break;
 		case GAME_PAUSE:
@@ -268,8 +326,10 @@ void Game::Draw()
 
 void Game::Respawn()
 {
-    ooze.Reset({SCREEN_WIDTH/2, SCREEN_HEIGHT/2});
-    SuperMech_Reset(&mech, {100,200});
+	Vector2 oozeSpawn = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2};
+    ooze.Reset(oozeSpawn);
+    SuperMech_Reset(&mech, ooze.getPosition(), {100, 200});
+	chunkCacheUpdate(&m_level, oozeSpawn);
 }
 
 void Game::checkMechOozeCollision()

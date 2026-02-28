@@ -29,6 +29,8 @@ class CameraManager
 
 		void update(Vector2 positionCommand);
 
+		Rectangle getScreenRect() const;
+
 		Camera2D screen;
 	private:
 		void initialize();

@@ -51,3 +51,17 @@ void CameraManager::update(Vector2 t_position)
 	updateCamCenter(t_position);
 	moveCamInsideMap(t_position);
 }
+
+Rectangle CameraManager::getScreenRect() const
+{
+    // screen.target is the center of the camera in world space
+    float halfWidth = SCREEN_WIDTH / 2.0f / screen.zoom;
+    float halfHeight = SCREEN_HEIGHT / 2.0f / screen.zoom;
+
+    return {
+        screen.target.x - halfWidth,   // x
+        screen.target.y - halfHeight,  // y
+        halfWidth * 2.0f,              // width
+        halfHeight * 2.0f              // height
+    };
+}
