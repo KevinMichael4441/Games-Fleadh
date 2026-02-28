@@ -76,8 +76,8 @@ private:
 	static const int MAX_BOUNDARY_RECTS = 16;
 
 
-	float m_jumpToCollideTimer = 0.0f;
-	const float m_jumpToCollideDelay = 0.05f;
+	float m_toCollideTimer = 0.0f;
+	const float m_toCollideDelay = 0.1f;
 
 public:
 	Ooze();

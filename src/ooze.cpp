@@ -19,7 +19,7 @@ void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, 
 	}
 
 	m_collisionTimer = 0;
-	m_jumpToCollideTimer = 0.0f;
+	m_toCollideTimer = 0.0f;
 
 
 	m_gravity = {0.0f, GRAVITY};
@@ -134,8 +134,9 @@ void Ooze::HandleInput(Command t_activeCommand)
 
 void Ooze::HandleEvent(Event t_event)
 {
-		if (fsm.m_currentState == STATE_JUMPING &&
-		m_jumpToCollideTimer < m_jumpToCollideDelay)
+	if ((fsm.m_currentState == STATE_JUMPING	||
+		fsm.m_currentState == STATE_MOVING) &&
+		m_toCollideTimer < m_toCollideDelay)
 	{
 		return;
 	}
@@ -194,12 +195,13 @@ void Ooze::UpdateIdleState(float t_dt)
 void Ooze::UpdateMoveState(float t_dt)
 {
 	DefaultUpdate(t_dt);
+	m_toCollideTimer += t_dt;
 }
 
 void Ooze::UpdateJumpState(float t_dt)
 {
 	DefaultUpdate(t_dt);
-	m_jumpToCollideTimer += t_dt;
+	m_toCollideTimer += t_dt;
 }
 
 
@@ -596,20 +598,24 @@ void Ooze::DefaultUpdate(float t_dt)
 	//ResolveBoundaryCollision_C2();
 	Move();
 	
-	if (fsm.m_currentState != STATE_JUMPING
-		&& fsm.m_currentState != STATE_MOVING)
+	if (m_toCollideTimer < m_toCollideDelay)
 	{
-		float avgVel = 0;
-		for (int index = 0; index < MAX_POINTS; index++)
+		if (fsm.m_currentState != STATE_JUMPING
+			&& fsm.m_currentState != STATE_MOVING)
 		{
-			avgVel += m_points[index].m_velocity.y;
-		}
+			float avgVel = 0;
+			for (int index = 0; index < MAX_POINTS; index++)
+			{
+				avgVel += m_points[index].m_velocity.y;
+			}
 
-		if (avgVel > 3)
-		{
-			HandleEvent(EVENT_JUMP);
-		}
+			if (avgVel > 3)
+			{
+				HandleEvent(EVENT_JUMP);
+			}
 	}
+	}
+	
 	
 	//ResolveBoundaryCollision_C2();
 }
@@ -644,12 +650,13 @@ void Ooze::ExitIdleState()
 
 void Ooze::ExitJumpState()
 {
-	m_jumpToCollideTimer = 0.0f;
+	m_toCollideTimer = 0.0f;
 	std::cout << "Exited Jump State\n";
 }
 
 void Ooze::ExitMoveState()
 {
+	m_toCollideTimer = 0.0f;
 	std::cout << "Exited Move State\n";
 }
 
@@ -711,12 +718,13 @@ void Ooze::EnterIdleState()
 
 void Ooze::EnterMoveState()
 {
+	m_toCollideTimer = 0.0f;
 	std::cout << "Entered Move State\n";
 }
 
 void Ooze::EnterJumpState()
 {
-	m_jumpToCollideTimer = 0.0f;
+	m_toCollideTimer = 0.0f;
 	std::cout << "Entered Jump State\n";
 }
 
@@ -1132,47 +1140,99 @@ void Ooze::ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str
     //p.m_position.y -= m.n.y * pushY;
 
 
-	if (mX.n.x > 0.1 && mX.depths[0] > 2)
+	if (depthX < slop)
 	{
-		p.m_position.x -= pushX;
-		if (abs(p.m_velocity.x) > 6 &&
-			fsm.m_currentState != STATE_COLLIDE_HORIZONTAL)
+		if (mY.n.y > 0.1)
 		{
-			HandleEvent(EVENT_COLLIDE_HORIZONTAL);
-		}
-		p.m_velocity.x = 0;
-	}
-	else if(mX.n.x < -0.1 && mX.depths[0] > 2)
-	{
-		p.m_position.x += pushX;
-		if (abs(p.m_velocity.x) > 6 &&
-			fsm.m_currentState != STATE_COLLIDE_HORIZONTAL)
-		{
-			HandleEvent(EVENT_COLLIDE_HORIZONTAL);
-		}
-		p.m_velocity.x = 0;
-	}
-	else if (mY.n.y > 0.1)
-	{
-		p.m_position.y -= pushY;
+			p.m_position.y -= pushY;	
 
-		if (abs(p.m_velocity.y) > 1 &&
-			fsm.m_currentState != STATE_COLLIDE_DOWN)
-		{
-			HandleEvent(EVENT_COLLIDE_DOWN);
-		}
+			if (//abs(mY.depths[0]) > 5 &&
+				fsm.m_currentState != STATE_COLLIDE_DOWN)
+			{
+				HandleEvent(EVENT_COLLIDE_DOWN);
+			}	
 
-		p.m_velocity.y = 0;
-	}
-	else if (mY.n.y < -0.1)
-	{
-		p.m_position.y += pushY;
-		if (abs(p.m_velocity.y) > 6 &&
-			fsm.m_currentState != STATE_COLLIDE_UP)
-		{
-			HandleEvent(EVENT_COLLIDE_UP);
+			p.m_velocity.y = 0;
 		}
-		p.m_velocity.y = 0;
+		else if (mY.n.y < -0.1)
+		{
+			p.m_position.y += pushY;
+			if (//abs(mY.depths[0]) > 5 &&
+				fsm.m_currentState != STATE_COLLIDE_UP)
+			{
+				HandleEvent(EVENT_COLLIDE_UP);
+			}
+			p.m_velocity.y = 0;
+		}
+	}
+	else if (depthY < slop)
+	{
+		if (mX.n.x > 0.1)
+		{
+			p.m_position.x -= pushX;
+			if (//abs(mX.depths[0]) > 5 &&
+				fsm.m_currentState != STATE_COLLIDE_HORIZONTAL)
+			{
+				HandleEvent(EVENT_COLLIDE_HORIZONTAL);
+			}
+			p.m_velocity.x = 0;
+		}
+		else if(mX.n.x < -0.1)
+		{
+			p.m_position.x += pushX;
+			if	(//abs(mX.depths[0]) > 5 &&
+				fsm.m_currentState != STATE_COLLIDE_HORIZONTAL)
+			{
+				HandleEvent(EVENT_COLLIDE_HORIZONTAL);
+			}
+			p.m_velocity.x = 0;
+		}
+	}
+	else
+	{
+		if (mX.n.x > 0.1)
+		{
+			p.m_position.x -= pushX;
+			if (//abs(mX.depths[0]) > 5 &&
+				fsm.m_currentState != STATE_COLLIDE_HORIZONTAL)
+			{
+				HandleEvent(EVENT_COLLIDE_HORIZONTAL);
+			}
+			p.m_velocity.x = 0;
+		}
+		else if(mX.n.x < -0.1)
+		{
+			p.m_position.x += pushX;
+			if (//abs(mX.depths[0]) > 5 &&
+				fsm.m_currentState != STATE_COLLIDE_HORIZONTAL)
+			{
+				HandleEvent(EVENT_COLLIDE_HORIZONTAL);
+			}
+			p.m_velocity.x = 0;
+		}
+		
+		if (mY.n.y > 0.1)
+		{
+			p.m_position.y -= pushY;
+
+			if (//abs(mY.depths[0]) > 5 &&
+				fsm.m_currentState != STATE_COLLIDE_DOWN)
+			{
+				HandleEvent(EVENT_COLLIDE_DOWN);
+			}	
+
+			p.m_velocity.y = 0;
+		}
+		else if (mY.n.y < -0.1)
+		{
+			p.m_position.y += pushY;
+			if (//abs(mY.depths[0]) > 5 &&
+				fsm.m_currentState != STATE_COLLIDE_UP)
+			{
+				HandleEvent(EVENT_COLLIDE_UP);
+			}
+			p.m_velocity.y = 0;
+		}
 	}
 }
 
