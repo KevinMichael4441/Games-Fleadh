@@ -145,6 +145,10 @@ void Game::Run()
 
 void Game::InitGame()
 {
+	InitSpineManager();
+	SetSpineAssetsPath(SPINE_ASSETS_PATH);
+
+	TraceLog(LOG_INFO, "GAME_SPINE: Initialised");
 
 	// Initial GameState
 	gamestate = GAME_PLAY;
