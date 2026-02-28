@@ -52,7 +52,7 @@ GAME_TARGET			= GameBinaryName
 R36S_USER 			?= ark
 
 # R36S IP address
-R36S_HOST 			?= 192.168.68.138
+R36S_HOST 			?= 10.11.64.162
 
 # R36S Game directory path on R36S SD card 
 # Device path, verify `lsblk` or `df -h` on R36S

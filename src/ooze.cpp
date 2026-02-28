@@ -1146,7 +1146,7 @@ void Ooze::ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str
 		{
 			p.m_position.y -= pushY;	
 
-			if (//abs(mY.depths[0]) > 5 &&
+			if (abs(mX.depths[0]) > 5 &&
 				fsm.m_currentState != STATE_COLLIDE_DOWN)
 			{
 				HandleEvent(EVENT_COLLIDE_DOWN);
@@ -1157,7 +1157,7 @@ void Ooze::ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str
 		else if (mY.n.y < -0.1)
 		{
 			p.m_position.y += pushY;
-			if (//abs(mY.depths[0]) > 5 &&
+			if (abs(mX.depths[0]) > 5 &&
 				fsm.m_currentState != STATE_COLLIDE_UP)
 			{
 				HandleEvent(EVENT_COLLIDE_UP);
@@ -1170,7 +1170,7 @@ void Ooze::ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str
 		if (mX.n.x > 0.1)
 		{
 			p.m_position.x -= pushX;
-			if (//abs(mX.depths[0]) > 5 &&
+			if (abs(mY.depths[0]) > 5 &&
 				fsm.m_currentState != STATE_COLLIDE_HORIZONTAL)
 			{
 				HandleEvent(EVENT_COLLIDE_HORIZONTAL);
@@ -1180,7 +1180,7 @@ void Ooze::ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str
 		else if(mX.n.x < -0.1)
 		{
 			p.m_position.x += pushX;
-			if	(//abs(mX.depths[0]) > 5 &&
+			if	(abs(mY.depths[0]) > 5 &&
 				fsm.m_currentState != STATE_COLLIDE_HORIZONTAL)
 			{
 				HandleEvent(EVENT_COLLIDE_HORIZONTAL);
@@ -1193,7 +1193,7 @@ void Ooze::ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str
 		if (mX.n.x > 0.1)
 		{
 			p.m_position.x -= pushX;
-			if (//abs(mX.depths[0]) > 5 &&
+			if (abs(mY.depths[0]) > 2 &&
 				fsm.m_currentState != STATE_COLLIDE_HORIZONTAL)
 			{
 				HandleEvent(EVENT_COLLIDE_HORIZONTAL);
@@ -1203,7 +1203,7 @@ void Ooze::ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str
 		else if(mX.n.x < -0.1)
 		{
 			p.m_position.x += pushX;
-			if (//abs(mX.depths[0]) > 5 &&
+			if (abs(mY.depths[0]) > 2 &&
 				fsm.m_currentState != STATE_COLLIDE_HORIZONTAL)
 			{
 				HandleEvent(EVENT_COLLIDE_HORIZONTAL);
@@ -1215,7 +1215,7 @@ void Ooze::ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str
 		{
 			p.m_position.y -= pushY;
 
-			if (//abs(mY.depths[0]) > 5 &&
+			if (abs(mX.depths[0]) > 5 &&
 				fsm.m_currentState != STATE_COLLIDE_DOWN)
 			{
 				HandleEvent(EVENT_COLLIDE_DOWN);
@@ -1226,7 +1226,7 @@ void Ooze::ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str
 		else if (mY.n.y < -0.1)
 		{
 			p.m_position.y += pushY;
-			if (//abs(mY.depths[0]) > 5 &&
+			if (abs(mX.depths[0]) > 5 &&
 				fsm.m_currentState != STATE_COLLIDE_UP)
 			{
 				HandleEvent(EVENT_COLLIDE_UP);
