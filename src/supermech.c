@@ -334,8 +334,8 @@ void SuperMech_Reset(SuperMech *mech, Vector2 playerPos, Vector2 startPos)
     mech->playerVisible = true;
     mech->lastKnownPlayerPos = playerPos;
 
-    mech->previousState = MECH_SEARCH;
-    mech->currentState  = MECH_SEARCH;
+    mech->previousState = MECH_HUNT;
+    mech->currentState  = MECH_HUNT;
     mech->stateTimer    = 0.0f;
 
     mech->currentTexture = &mech->textureSearch;

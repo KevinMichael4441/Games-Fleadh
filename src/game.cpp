@@ -27,31 +27,80 @@ static bool Level_IsSolidTile(const LevelData* level, Vector2 pos)
     return false;
 }
 
-static Vector2 FindValidRespawnPosition(const LevelData* level, const CameraManager& camera)
+static bool FindGroundBelow(const LevelData* level, Vector2 startPos, Vector2& outPos, int maxFall = 512)
+{
+	float mechHeight = 98.0f;
+	int step = level->tileHeight;
+    Vector2 pos = startPos;
+
+    for (int i = 0; i < maxFall; i += step)
+    {
+        Vector2 below = { pos.x, pos.y + step };
+
+        if (Level_IsSolidTile(level, below))
+        {
+            // Move spawn UP by mech height so feet land on ground
+            outPos = { pos.x, below.y - mechHeight };
+            return true;
+        }
+
+        pos.y += step;
+    }
+
+    return false;
+}
+
+static Vector2 FindValidRespawnPosition(const LevelData* level, const CameraManager& camera, Vector2 playerPos)
 {
     Rectangle camRect = camera.getScreenRect();
-    int step = 32;
-    std::vector<Vector2> candidates;
+    int step = level->tileWidth;
 
-    //generate positions just outside camera bounds (left, right, top, bottom)
-    for (int y = (int)camRect.y; y < camRect.y + camRect.height; y += step) 
-	{
-        candidates.push_back({camRect.x - step, (float)y}); //left
-        candidates.push_back({camRect.x + camRect.width + step, (float)y}); //right
+    std::vector<Vector2> priorityCandidates;
+    std::vector<Vector2> fallbackCandidates;
+
+    //PRIORITY: same Y level as player (left/right of camera)
+    for (int xOffset = step; xOffset <= camRect.width; xOffset += step)
+    {
+        priorityCandidates.push_back({ camRect.x - xOffset, playerPos.y });
+        priorityCandidates.push_back({ camRect.x + camRect.width + xOffset, playerPos.y });
     }
 
-    for (int x = (int)camRect.x; x < camRect.x + camRect.width; x += step) 
-	{
-        candidates.push_back({(float)x, camRect.y - step}); //top
-        candidates.push_back({(float)x, camRect.y + camRect.height + step}); //bottom
+    //FALLBACK: camera edges
+    for (int y = (int)camRect.y; y < camRect.y + camRect.height; y += step)
+    {
+        fallbackCandidates.push_back({ camRect.x - step, (float)y });
+        fallbackCandidates.push_back({ camRect.x + camRect.width + step, (float)y });
     }
 
-    for (auto& pos : candidates) 
-	{
-        if (!Level_IsSolidTile(level, pos)) return pos;
+    for (int x = (int)camRect.x; x < camRect.x + camRect.width; x += step)
+    {
+        fallbackCandidates.push_back({ (float)x, camRect.y - step });
+        fallbackCandidates.push_back({ (float)x, camRect.y + camRect.height + step });
     }
 
-    return {camRect.x - step, camRect.y - step};
+    Vector2 groundPos;
+
+    //try priority candidates first
+    for (auto& pos : priorityCandidates)
+    {
+        if (!Level_IsSolidTile(level, pos) &&
+            FindGroundBelow(level, pos, groundPos))
+        {
+            return groundPos;
+        }
+    }
+
+    for (auto& pos : fallbackCandidates)
+    {
+        if (!Level_IsSolidTile(level, pos) &&
+            FindGroundBelow(level, pos, groundPos))
+        {
+            return groundPos;
+        }
+    }
+
+    //last resort
+    return { camRect.x - step, playerPos.y };
 }
 
 static void DebugCountBoundaryTiles(const LevelData* level);
@@ -181,12 +230,15 @@ void Game::Update(float t_dt)
 			ooze.Update(t_dt, m_activeCommand);
 
 			// ----------- NEW: Respawn mech if off-screen ------------
-    		if (IsMechOffScreen(mech, camera))
-    		{
-        		Vector2 spawnPos = FindValidRespawnPosition(&m_level, camera);
-        		SuperMech_Reset(&mech, ooze.getPosition(), spawnPos);
-        		TraceLog(LOG_INFO, "Mech went off-screen, respawning at (%.1f, %.1f)", spawnPos.x, spawnPos.y);
-    		}
+    		mechRespawnCooldown += t_dt;
+
+			if (IsMechOffScreen(mech, camera) && mechRespawnCooldown >= 5.0f)
+			{
+    			Vector2 spawnPos = FindValidRespawnPosition(&m_level, camera, ooze.getPosition());
+			    SuperMech_Reset(&mech, ooze.getPosition(), spawnPos);
+			    mechRespawnCooldown = 0.0f;
+			    TraceLog(LOG_INFO, "Mech respawned at (%.1f, %.1f)", spawnPos.x, spawnPos.y);
+			}
 		}
 		break;
 		case GAME_PAUSE:
