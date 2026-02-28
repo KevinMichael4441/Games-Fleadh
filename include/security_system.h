@@ -9,6 +9,7 @@
 #include "constants.h"
 #include "laserwall.h"
 #include "security_camera.h"
+#include "utility/camtype.h"
 
 
 
@@ -23,6 +24,7 @@ public:
 	
 private:
 	Laserwall m_lasers[MAX_LASERWALL];
+	SecurityCamera m_cameras[MAX_CAMERA];
 };
 
 #endif

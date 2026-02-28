@@ -4,6 +4,6 @@
 // .vscode/settings.json
 
 {
-  "r36s.host": "192.168.0.52",
-  "r36s.gdb_port": "2345"
+  "r36s.host": "192.168.0.0",
+  "r36s.gdb_port": "0000"
 }

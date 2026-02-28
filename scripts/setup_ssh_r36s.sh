@@ -13,11 +13,11 @@ R36S_HOST="${R36S_HOST:-${2:-}}"
 if [ -z "$R36S_HOST" ]; then
 	echo "ERROR: No R36S_HOST provided"
 	echo "Usage:"
-	echo "  export R36S_HOST=<device-ip>"
-	echo "  export [R36S_USER=<user>]"
-	echo "  bash $0"
-	echo "  or"
-	echo "  bash $0 [user] <device-ip>"
+	echo "\texport R36S_HOST=<device-ip>"
+	echo "\texport [R36S_USER=<user>]"
+	echo "\tbash $0"
+	echo "\tor"
+	echo "\tbash $0 [user] <device-ip>"
 	exit 1
 fi
 

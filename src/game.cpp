@@ -163,7 +163,7 @@ void Game::InitGame()
 	}
 
 	// Temporary ----------------------------------------------------
-	temp_background = LoadTexture("./assets/1280x960_temp.jpg");
+	temp_background = LoadTexture("./assets/1280x960_temp.png");
 	// --------------------------------------------------------------
 
 	//------------- OOZEY WHIZY------------------//

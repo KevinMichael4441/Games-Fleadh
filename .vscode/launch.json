@@ -10,7 +10,35 @@
       "MIMode": "gdb",
       "miDebuggerPath": "/usr/bin/gdb",
       "preLaunchTask": "Linux: Debug VSCode",
-      "externalConsole": false
+      "externalConsole": false,
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    },
+    {
+      "name": "Wine: Launch (windows debug)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "/usr/bin/wine64",
+      "args": [
+        "${workspaceFolder}/build/windows_debug/target_windows.exe"
+      ],
+      "cwd": "${workspaceFolder}",
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "preLaunchTask": "Windows: Debug VSCode",
+      "externalConsole": false,
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
     },
     {
       "name": "GDB: Remote Debug R36S (SSH default)",

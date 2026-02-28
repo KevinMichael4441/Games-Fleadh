@@ -10,6 +10,7 @@ RESOURCE_DIR			:= ./resources
 CONFIG_DIR				:= ./config
 WEB_DIR					:= ./web
 RULES_DIR				:= ./rules
+ACHIEVEMENTS_DATA		:= ./data
 
 #=================================================================
 # Configuration
@@ -21,7 +22,15 @@ include $(RESOURCE_DIR)/messages.mk
 #=================================================================
 # R36S Deployment Configuration
 #=================================================================
-include $(CONFIG_DIR)/config.mk
+CONFIG_FILE := $(CONFIG_DIR)/config.mk
+CONFIG_TEMPLATE := $(CONFIG_DIR)/config.mk.template
+
+# If config.mk does'nt exist, create it from config.mk.template
+$(CONFIG_FILE):
+	$(call WARNING_MSG,"config.mk not found. Creating from template")
+	@cp $(CONFIG_TEMPLATE) $(CONFIG_FILE)
+
+-include $(CONFIG_FILE)
 
 #-----------------------------------------------------------------
 # Strip config values (tabs/spaces)
@@ -134,8 +143,17 @@ include $(RULES_DIR)/windows.mk
 #=================================================================
 # Raylib paths are set in Dockerfile see ENV section
 #=================================================================
-CXXFLAGS				:= -I$(RAYLIB_INCLUDE) -Iinclude -std=c++17
-CFLAGS					:= -I$(RAYLIB_INCLUDE) -Iinclude -std=gnu11
+INCLUDES				:= -I$(XXHASH_INCLUDE) \
+            			-I$(CUTE_HEADERS_INCLUDE) \
+            			-I$(RAYLIB_INCLUDE) \
+            			-I$(SPINE_INCLUDE) \
+            			-Iinclude
+
+CFLAGS					:= $(INCLUDES) \
+						-std=gnu11
+
+CXXFLAGS				:= $(INCLUDES) \
+						-std=c++17
 
 #-----------------------------------------------------------------
 # Define Game Specific metadata for conditional compilation
@@ -204,14 +222,35 @@ ifeq ($(PLATFORM),$(R36S_TARGET))
 	CXXFLAGS			+= -DPLATFORM_R36S
 	CFLAGS				+= -DPLATFORM_R36S
 
+	# ARM Cortex-A35 optimisations
+	CFLAGS += -mcpu=cortex-a35 -mtune=cortex-a35
+	CFLAGS += -ffast-math -ftree-vectorize -funroll-loops
+	CFLAGS += -fomit-frame-pointer
+
+	# C++ same optimisations
+	CXXFLAGS += -mcpu=cortex-a35 -mtune=cortex-a35
+	CXXFLAGS += -ffast-math -ftree-vectorize -funroll-loops
+	CXXFLAGS += -fomit-frame-pointer
+
+	# LTO for release only
+	ifeq ($(CONFIG),$(RELEASE_BUILD))
+		CFLAGS			+= -flto
+		CXXFLAGS		+= -flto
+		LDFLAGS			+= -flto
+	endif
+
 	# R36S binary extension (blank)
 	TARGET_EXT			:= $(R36S_EXT)
 
 	# RAYLIB_LIB_AARCH64 is set in Dockerfile
 	LIBDIRS 			+= -Laarch64-linux-gnu-gcc/lib \
-						-L$(RAYLIB_LIB_AARCH64)
+						-L$(XXHASH_LIB_AARCH64) \
+						-L$(RAYLIB_LIB_AARCH64) \
+						-L$(SPINE_LIB_AARCH64)
 
-	LDLIBS	 			+= -lraylib \
+	LDLIBS				+= -lraylib \
+						-lspine-c\
+						-lxxhash \
 						-lm \
 						-ldl \
 						-lpthread \
@@ -236,9 +275,13 @@ else ifeq ($(PLATFORM),$(LINUX_TARGET))
 	TARGET_EXT			:= $(LINUX_EXT)
 
 	# RAYLIB_LIB_X64 is set in Dockerfile
-	LIBDIRS 			+= -L$(RAYLIB_LIB_X64)
+	LIBDIRS 			+= -L$(XXHASH_LIB_X64) \
+						-L$(RAYLIB_LIB_X64) \
+						-L$(SPINE_LIB_X64)
 
-	LDLIBS				+= -lraylib \
+	LDLIBS  			+= -lraylib \
+						-lspine-c \
+						-lxxhash \
 						-lm \
 						-ldl \
 						-lpthread \
@@ -263,16 +306,21 @@ else ifeq ($(PLATFORM),$(WEB_TARGET))
 	HTML_TEMPLATE		:= $(WEB_DIR)/template.html
 	
 	# RAYLIB_LIB_WEB is set in Dockerfile
-	LIBDIRS				+= -L$(RAYLIB_LIB_WEB)
+	LIBDIRS 			+= -L$(XXHASH_LIB_WEB) \
+						-L$(RAYLIB_LIB_WEB) \
+						-L$(SPINE_LIB_WEB)
 
-	LDLIBS				+= -lraylib
+	LDLIBS  			+= -lraylib \
+						-lspine-c \
+						-lxxhash
 
 	LDFLAGS				+= --shell-file $(HTML_TEMPLATE) \
 						-s USE_GLFW=3 \
 						-s ASYNCIFY \
 						-s INITIAL_MEMORY=134217728 \
 						-s ALLOW_MEMORY_GROWTH=1 \
-						--preload-file $(ASSETS_DIR)
+						-s 'EXPORTED_RUNTIME_METHODS=["HEAPF32","HEAPU8","HEAP32"]' \
+						--preload-file $(ASSETS_DIR)@/assets
 
 #-----------------------------------------------------------------
 # Windows x64 target (MinGW cross-compile)
@@ -289,18 +337,22 @@ else ifeq ($(PLATFORM),$(WINDOWS_TARGET))
 	TARGET_EXT			:= $(WINDOWS_EXT)
 
 	# RAYLIB_LIB_WIN64 is set in Dockerfile
-	LIBDIRS				+= -L$(RAYLIB_LIB_WIN64)
-	
-	LDFLAGS				+= -static-libgcc \
-						-static-libstdc++
+	LIBDIRS 			+= -L$(XXHASH_LIB_WIN64) \
+						-L$(RAYLIB_LIB_WIN64) \
+						-L$(SPINE_LIB_WIN64)
 
-	LDLIBS				+= -lraylib \
+	LDLIBS  			+= -lraylib \
+						-lspine-c \
+						-lxxhash \
 						-lopengl32 \
 						-lgdi32 \
 						-lwinmm \
 						-lkernel32 \
 						-luser32 \
 						-lshell32
+
+	# Static link Windows no external DLLs
+	LDFLAGS             += -static-libgcc -static-libstdc++
 else
   $(call ERROR_MSG,$(MSG_HELP_PLATFORM))
   $(error Invalid PLATFORM '$(PLATFORM)'. Expected one of: $(R36S_TARGET) $(LINUX_TARGET) $(WEB_TARGET) $(WINDOWS_TARGET))
@@ -423,16 +475,16 @@ print-r36s-ssh-key-pub:
 #-----------------------------------------------------------------
 print-r36s-config:
 	@echo "R36S Configuration:"
-	@echo "  GAME_NAME: $(GAME_NAME) v$(GAME_VERSION)"
-	@echo "  GAME_DESCRIPTION: $(GAME_DESCRIPTION)"
-	@echo "  R36S_USER: $(R36S_USER)"
-	@echo "  R36S_HOST: $(R36S_HOST)"
-	@echo "  R36S_PATH: $(R36S_PATH)"
-	@echo "  R36S_GDB_PORT: $(R36S_GDB_PORT)"
-	@echo "  PING_TIMEOUT: $(PING_TIMEOUT)"
-	@echo "  R36S_CONTROL_SOCKET: $(R36S_CONTROL_SOCKET)"
-	@echo "  R36S_SSH_KEY_PRIV: $(R36S_SSH_KEY_PRIV)"
-	@echo "  R36S_SSH_KEY_PUB: $(R36S_SSH_KEY_PUB)"
+	@echo "\tGAME_NAME: $(GAME_NAME) v$(GAME_VERSION)"
+	@echo "\tGAME_DESCRIPTION: $(GAME_DESCRIPTION)"
+	@echo "\tR36S_USER: $(R36S_USER)"
+	@echo "\tR36S_HOST: $(R36S_HOST)"
+	@echo "\tR36S_PATH: $(R36S_PATH)"
+	@echo "\tR36S_GDB_PORT: $(R36S_GDB_PORT)"
+	@echo "\tPING_TIMEOUT: $(PING_TIMEOUT)"
+	@echo "\tR36S_CONTROL_SOCKET: $(R36S_CONTROL_SOCKET)"
+	@echo "\tR36S_SSH_KEY_PRIV: $(R36S_SSH_KEY_PRIV)"
+	@echo "\tR36S_SSH_KEY_PUB: $(R36S_SSH_KEY_PUB)"
 
 #-----------------------------------------------------------------
 # Sync VSCode settings from config/config.mk
@@ -593,12 +645,20 @@ rebuild_component_db:
 #=================================================================
 # Clean targets
 #=================================================================
-.PHONY: clean clean_all
+.PHONY: clean clean_all clean_achievements
 
-#=================================================================
+#-----------------------------------------------------------------
+# Clean achievements
+#-----------------------------------------------------------------
+clean_achievements:
+	$(call INFO_MSG,$(MSG_CLEAN_START))
+	rm -rf $(ACHIEVEMENTS_DATA)/*
+	$(call SUCCESS_MSG,$(MSG_CLEAN_END))
+
+#-----------------------------------------------------------------
 # Clean target (platform-specific)
-#=================================================================
-clean:
+#-----------------------------------------------------------------
+clean: clean_achievements
 	$(call INFO_MSG,$(MSG_CLEAN_START))
 	rm -rf $(BUILD_DIR)
 	$(call SUCCESS_MSG,Removed target: $(BUILD_DIR))
@@ -607,7 +667,7 @@ clean:
 #-----------------------------------------------------------------
 # Clean all targets (no validation needed)
 #-----------------------------------------------------------------
-clean_all:
+clean_all: clean_achievements
 	$(call INFO_MSG,$(MSG_CLEAN_START))
 	rm -rf ./$(BUILD_ROOT)/
 	$(call SUCCESS_MSG,Cleaned all build targets ./$(BUILD_ROOT)/)
