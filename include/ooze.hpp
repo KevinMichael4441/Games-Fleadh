@@ -77,7 +77,7 @@ private:
 
 
 	float m_toCollideTimer = 0.0f;
-	const float m_toCollideDelay = 0.1f;
+	const float m_toCollideDelay = 0.3f;
 
 public:
 	Ooze();
