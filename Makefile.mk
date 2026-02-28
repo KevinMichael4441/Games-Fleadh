@@ -3,9 +3,9 @@
 #=================================================================
 .SILENT:
 
-#------------------------------------------------------------------
+#-----------------------------------------------------------------
 # Resource directory
-#------------------------------------------------------------------
+#-----------------------------------------------------------------
 RESOURCE_DIR			:= ./resources
 CONFIG_DIR				:= ./config
 WEB_DIR					:= ./web
@@ -97,9 +97,9 @@ LINUX_TARGET			:= linux
 WEB_TARGET				:= web
 WINDOWS_TARGET			:= windows
 
-#-----------------------------------------------------------------
+#=================================================================
 # Platform-specific file extensions
-#-----------------------------------------------------------------
+#=================================================================
 R36S_EXT				:=
 LINUX_EXT				:=
 WEB_EXT					:= .html
@@ -118,8 +118,8 @@ CONFIG   				?= $(DEBUG_BUILD)
 PLATFORM				:= $(strip $(PLATFORM))
 CONFIG					:= $(strip $(CONFIG))
 
-PLATFORM 				:= $(shell printf '%s' '$(PLATFORM)' | tr '[:upper:]' '[:lower:]')
-CONFIG   				:= $(shell printf '%s' '$(CONFIG)' | tr '[:upper:]' '[:lower:]')
+PLATFORM				:= $(shell printf '%s' '$(PLATFORM)' | tr '[:upper:]' '[:lower:]')
+CONFIG					:= $(shell printf '%s' '$(CONFIG)' | tr '[:upper:]' '[:lower:]')
 
 #=================================================================
 # GPP Build Variables
@@ -143,39 +143,54 @@ include $(RULES_DIR)/windows.mk
 #=================================================================
 # Raylib paths are set in Dockerfile see ENV section
 #=================================================================
-CFLAGS					:= -I$(XXHASH_INCLUDE) \
-							-I$(CUTE_HEADERS_INCLUDE) \
-							-I$(SPINE_INCLUDE) \
-							-I$(RAYLIB_INCLUDE) \
-							-Iinclude \
-							-std=gnu11
+INCLUDES				:= -I$(XXHASH_INCLUDE) \
+            			-I$(CUTE_HEADERS_INCLUDE) \
+            			-I$(RAYLIB_INCLUDE) \
+            			-I$(SPINE_INCLUDE) \
+            			-Iinclude
 
-#------------------------------------------------------------------
+CFLAGS					:= $(INCLUDES) \
+						-std=gnu11
+
+CXXFLAGS				:= $(INCLUDES) \
+						-std=c++17
+
+#-----------------------------------------------------------------
 # Define Game Specific metadata for conditional compilation
 # NOTE: Wrapped in single quotes to preserve spaces and 
 # special characters for C preprocessor
-#------------------------------------------------------------------
+#-----------------------------------------------------------------
+# C source files
 CFLAGS					+= '-DGAME_NAME=$(GAME_NAME)'
-CFLAGS 					+= '-DGAME_DESCRIPTION=$(GAME_DESCRIPTION)'
-CFLAGS 					+= '-DGAME_VERSION=$(GAME_VERSION)'
+CFLAGS					+= '-DGAME_DESCRIPTION=$(GAME_DESCRIPTION)'
+CFLAGS					+= '-DGAME_VERSION=$(GAME_VERSION)'
+# C++ source files
+CXXFLAGS				+= '-DGAME_NAME=$(GAME_NAME)'
+CXXFLAGS 				+= '-DGAME_DESCRIPTION=$(GAME_DESCRIPTION)'
+CXXFLAGS 				+= '-DGAME_VERSION=$(GAME_VERSION)'
 
 #=================================================================
 # Source files (recursive if there are sub directories)
 #=================================================================
+# Source files - wildcard includes all .cpp files in src/
+CPP_SRC					:= $(shell find src -name '*.cpp' 2>/dev/null)
 # Source files - wildcard includes all .c files in src/
 C_SRC					:= $(shell find src -name '*.c' 2>/dev/null)
 
 #=================================================================
 # Object files
 #=================================================================
+CPP_OBJ					:= $(patsubst src/%.cpp,$(BUILD_DIR)/obj/%.o,$(CPP_SRC))
 C_OBJ					:= $(patsubst src/%.c,$(BUILD_DIR)/obj/%.o,$(C_SRC))
-OBJ						:= $(C_OBJ)
+OBJ						:= $(CPP_OBJ) $(C_OBJ)
 
 #=================================================================
 # Header file updates (dependency tracking)
 #=================================================================
 CFLAGS					+= -MMD -MP
-DEPS 					:= $(OBJ:.o=.d)
+CXXFLAGS				+= -MMD -MP
+
+DEPS					:= $(OBJ:.o=.d)
 -include $(DEPS)
 
 #=================================================================
@@ -192,33 +207,35 @@ ASSETS_DIR				:= ./assets
 #=================================================================
 # Platform configuration
 #=================================================================
-LDFLAGS 				:=
-LIBDIRS 				:=
-LDLIBS  				:=
+LDFLAGS					:=
+LIBDIRS					:=
+LDLIBS					:=
 
 #-----------------------------------------------------------------
 # R36S aarch64 target
 #-----------------------------------------------------------------
 ifeq ($(PLATFORM),$(R36S_TARGET))
+	CXX 				:= aarch64-linux-gnu-g++
 	CC 					:= aarch64-linux-gnu-gcc
 
 	# Define PLATFORM_R36S for conditional compilation
+	CXXFLAGS			+= -DPLATFORM_R36S
 	CFLAGS				+= -DPLATFORM_R36S
 
-	# RK3326 (Cortex-A35) specific optimizations
-	# CRITICAL: These flags provide approximately 50 percent CPU reduction
-	# - mcpu=cortex-a35: Optimize for Cortex-A35 specifically
-	# - ffast-math: Aggressive math optimisations
-	# - ftree-vectorize: Auto-vectorize loops with NEON
-	# - funroll-loops: Unroll hot loops
+	# ARM Cortex-A35 optimisations
 	CFLAGS += -mcpu=cortex-a35 -mtune=cortex-a35
 	CFLAGS += -ffast-math -ftree-vectorize -funroll-loops
 	CFLAGS += -fomit-frame-pointer
 
-	# Link-time optimization for release builds only
-	# Provides additional 5-10 percent speedup but increases compile time
+	# C++ same optimisations
+	CXXFLAGS += -mcpu=cortex-a35 -mtune=cortex-a35
+	CXXFLAGS += -ffast-math -ftree-vectorize -funroll-loops
+	CXXFLAGS += -fomit-frame-pointer
+
+	# LTO for release only
 	ifeq ($(CONFIG),$(RELEASE_BUILD))
 		CFLAGS			+= -flto
+		CXXFLAGS		+= -flto
 		LDFLAGS			+= -flto
 	endif
 
@@ -228,8 +245,8 @@ ifeq ($(PLATFORM),$(R36S_TARGET))
 	# RAYLIB_LIB_AARCH64 is set in Dockerfile
 	LIBDIRS 			+= -Laarch64-linux-gnu-gcc/lib \
 						-L$(XXHASH_LIB_AARCH64) \
-						-L$(SPINE_LIB_AARCH64) \
-						-L$(RAYLIB_LIB_AARCH64)
+						-L$(RAYLIB_LIB_AARCH64) \
+						-L$(SPINE_LIB_AARCH64)
 
 	LDLIBS				+= -lraylib \
 						-lspine-c\
@@ -247,9 +264,11 @@ ifeq ($(PLATFORM),$(R36S_TARGET))
 # Linux x64 target
 #-----------------------------------------------------------------
 else ifeq ($(PLATFORM),$(LINUX_TARGET))
+	CXX 				:= g++
 	CC 					:= gcc
 
 	# Define PLATFORM_LINUX for conditional compilation
+	CXXFLAGS			+= -DPLATFORM_LINUX
 	CFLAGS				+= -DPLATFORM_LINUX
 
 	# Linux binary extension (blank)
@@ -257,8 +276,8 @@ else ifeq ($(PLATFORM),$(LINUX_TARGET))
 
 	# RAYLIB_LIB_X64 is set in Dockerfile
 	LIBDIRS 			+= -L$(XXHASH_LIB_X64) \
-						-L$(SPINE_LIB_X64) \
-						-L$(RAYLIB_LIB_X64)
+						-L$(RAYLIB_LIB_X64) \
+						-L$(SPINE_LIB_X64)
 
 	LDLIBS  			+= -lraylib \
 						-lspine-c \
@@ -271,13 +290,15 @@ else ifeq ($(PLATFORM),$(LINUX_TARGET))
 						-lGLESv2 \
 						-lX11
 
-#------------------------------------------------------------------
+#-----------------------------------------------------------------
 # Web target using emscripten
-#------------------------------------------------------------------
+#-----------------------------------------------------------------
 else ifeq ($(PLATFORM),$(WEB_TARGET))
+	CXX					:= $(EMSCRIPTEN)/em++
 	CC					:= $(EMSCRIPTEN)/emcc
 
 	# Define DPLATFORM_WEB for conditional compilation
+	CXXFLAGS			+= -DPLATFORM_WEB
 	CFLAGS				+= -DPLATFORM_WEB
 
 	# Web binary extension html (Emscripten generates an HTML file by default)
@@ -286,8 +307,8 @@ else ifeq ($(PLATFORM),$(WEB_TARGET))
 	
 	# RAYLIB_LIB_WEB is set in Dockerfile
 	LIBDIRS 			+= -L$(XXHASH_LIB_WEB) \
-						-L$(SPINE_LIB_WEB) \
-						-L$(RAYLIB_LIB_WEB)
+						-L$(RAYLIB_LIB_WEB) \
+						-L$(SPINE_LIB_WEB)
 
 	LDLIBS  			+= -lraylib \
 						-lspine-c \
@@ -301,13 +322,15 @@ else ifeq ($(PLATFORM),$(WEB_TARGET))
 						-s 'EXPORTED_RUNTIME_METHODS=["HEAPF32","HEAPU8","HEAP32"]' \
 						--preload-file $(ASSETS_DIR)@/assets
 
-#------------------------------------------------------------------
+#-----------------------------------------------------------------
 # Windows x64 target (MinGW cross-compile)
-#------------------------------------------------------------------
+#-----------------------------------------------------------------
 else ifeq ($(PLATFORM),$(WINDOWS_TARGET))
+	CXX					:= x86_64-w64-mingw32-g++
 	CC					:= x86_64-w64-mingw32-gcc
 
 	# Define PLATFORM_WINDOWS for conditional compilation
+	CXXFLAGS			+= -DPLATFORM_WINDOWS
 	CFLAGS				+= -DPLATFORM_WINDOWS
 
 	# Windows binary extension .exe
@@ -328,7 +351,8 @@ else ifeq ($(PLATFORM),$(WINDOWS_TARGET))
 						-luser32 \
 						-lshell32
 
-	LDFLAGS				+= -static-libgcc
+	# Static link Windows no external DLLs
+	LDFLAGS             += -static-libgcc -static-libstdc++
 else
   $(call ERROR_MSG,$(MSG_HELP_PLATFORM))
   $(error Invalid PLATFORM '$(PLATFORM)'. Expected one of: $(R36S_TARGET) $(LINUX_TARGET) $(WEB_TARGET) $(WINDOWS_TARGET))
@@ -339,8 +363,10 @@ endif
 # setting and debug flags)
 #=================================================================
 ifeq ($(CONFIG),$(DEBUG_BUILD))
+	CXXFLAGS			+= -O0 -g -DDEBUG
 	CFLAGS				+= -O0 -g -DDEBUG
 else ifeq ($(CONFIG),$(RELEASE_BUILD))
+	CXXFLAGS			+= -O3 -DNDEBUG
 	CFLAGS				+= -O3 -DNDEBUG
 else
   # or a config-specific message
@@ -367,22 +393,27 @@ all: 	__validate_platform_value \
 compile_only: $(OBJ)
 
 #=================================================================
+# Build target
+#=================================================================
+# Compile C++ source files
+$(BUILD_DIR)/obj/%.o: src/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) -c $< -o $@ $(CXXFLAGS)
+
+#=================================================================
 # Compile C source files
 #=================================================================
 $(BUILD_DIR)/obj/%.o: src/%.c
 	@mkdir -p $(dir $@)
 	$(CC) -c $< -o $@ $(CFLAGS)
 
-#=================================================================
-# Build target and create symlink to target build
-#=================================================================
 $(TARGET): $(OBJ)
 	$(call SUCCESS_MSG,Build Started: $(TARGET))
 	$(call INFO_MSG,$(MSG_BUILD_START))
 	$(call INFO_MSG,Building: \"$(TARGET)$(TARGET_EXT)\")
 	$(call INFO_MSG,PLATFORM=$(PLATFORM) CONFIG=$(CONFIG))
 	mkdir -p $(BUILD_DIR)
-	$(CC) $(OBJ) -o $(TARGET)$(TARGET_EXT) $(LDFLAGS) $(LIBDIRS) $(LDLIBS)
+	$(CXX) $(OBJ) -o $(TARGET)$(TARGET_EXT) $(LDFLAGS) $(LIBDIRS) $(LDLIBS)
 	ln -sf "$(notdir $@$(TARGET_EXT))" "$(BUILD_DIR)/target_$(PLATFORM)$(TARGET_EXT)"
 ifeq ($(CONFIG),$(RELEASE_BUILD))
 ifneq ($(PLATFORM),$(WEB_TARGET))
@@ -598,7 +629,7 @@ release_windows:
 # Rebuild Database
 # Adding new '.c' files requires regenerating 'compile_commands.json'
 # with 'bear'. This keeps IntelliSense in sync
-# NOTE: Only run when a new '.c' file is added to build
+# NOTE: Only run when a new '.c' or new 'cpp' file is added to build
 #=================================================================
 .PHONY: rebuild_component_db
 
