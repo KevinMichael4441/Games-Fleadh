@@ -2,6 +2,10 @@
 
 #include "supermech.h"
 
+static bool HasLineOfSight(const SuperMech* mech, Vector2 target);
+static int SuperMech_FindBoundaryAABBs(const SuperMech* mech, c2AABB outRects[MAX_BOUNDARY_RECTS]);
+static bool WallAhead(SuperMech* mech);
+
 static void TryJump(SuperMech *mech, Vector2 target);
 static bool AtLedge(SuperMech *mech, Vector2 target);
 static void ApplyGravity(SuperMech *mech, float dt);
@@ -65,10 +69,48 @@ static void SetLevel(SuperMech *mech, LevelData* level)
     mech->currentLevel = *level;
 }
 
+static bool RayVsAABB(Vector2 origin, Vector2 dir, float maxDist, c2AABB box)
+{
+    c2Ray ray;
+    ray.p = c2V(origin.x, origin.y);
+    ray.d = c2V(dir.x, dir.y);
+    ray.t = maxDist;
+
+    c2Raycast cast;
+    int hit = c2RaytoAABB(ray, box, &cast);
+
+    return hit != 0;
+}
+
 static bool CanSeePlayer(const SuperMech *mech, Vector2 playerPos) 
 {
-    float dist = Vec2Distance(mech->position, playerPos);
-    return dist <= mech->visionRange;
+    //float dist = Vec2Distance(mech->position, playerPos);
+    //return dist <= mech->visionRange;
+    return HasLineOfSight(mech, playerPos);
+}
+
+static bool HasLineOfSight(const SuperMech* mech, Vector2 target)
+{
+    Vector2 origin = { mech->position.x + mech->frameWidth * 0.5f, mech->position.y + mech->frameHeight * 0.5f };
+    Vector2 dir = Vec2Sub(target, origin);
+    float dist = Vec2Length(dir);
+
+    if (dist > mech->visionRange) return false;
+
+    dir = Vec2Normalize(dir);
+
+    c2AABB tiles[MAX_BOUNDARY_RECTS];
+    int count = SuperMech_FindBoundaryAABBs(mech, tiles);
+
+    for (int i = 0; i < count; i++)
+    {
+        if (RayVsAABB(origin, dir, dist, tiles[i]))
+        {
+            return false; //blocked by wall
+        }
+    }
+
+    return true;
 }
 
 static void MoveTowards(SuperMech *mech, Vector2 target, float speed, float dt)
@@ -97,15 +139,42 @@ static void MoveTowards(SuperMech *mech, Vector2 target, float speed, float dt)
 
 static void TryJump(SuperMech *mech, Vector2 target)
 {
-    float mechBottom = mech->position.y + mech->frameHeight * mech->scale;
-    float xDist = fabsf(target.x - mech->position.x);
-    float yDiff = mechBottom - target.y;
+    if (!mech->isGrounded || mech->jumpCooldown > 0) return;
 
-    if ((yDiff > 40.0f) && (xDist < 220.0f) && mech->isGrounded)
+    if (WallAhead(mech))
     {
         mech->velocity.y = -mech->jumpForce;
         mech->isGrounded = false;
+        mech->jumpCooldown = 0.35f;
     }
+}
+
+static bool WallAhead(SuperMech* mech)
+{
+    float dir = mech->facingRight ? 1.0f : -1.0f;
+    float mechWidth  = mech->frameWidth  * mech->scale;
+    float mechHeight = mech->frameHeight * mech->scale;
+
+    float footY = mech->position.y + mechHeight - 2;
+    float originX = mech->position.x + mechWidth * 0.5f + dir * (mechWidth * 0.5f + 2);
+
+    Vector2 origin = { originX, footY - mech->currentLevel.tileHeight * 0.5f };
+    Vector2 rayDir = { dir, 0 };
+
+    float checkDist = mech->currentLevel.tileWidth * 0.4f;
+
+    c2AABB tiles[MAX_BOUNDARY_RECTS];
+    int count = SuperMech_FindBoundaryAABBs(mech, tiles);
+
+    for (int i = 0; i < count; i++)
+    {
+        if (RayVsAABB(origin, rayDir, checkDist, tiles[i]))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 static bool AtLedge(SuperMech *mech, Vector2 target)
@@ -218,7 +287,7 @@ static void SuperMech_ResolveVsTile( SuperMech* mech, const c2AABB* tile)
     float tileTop = tile->min.y;
     float tileBottom = tile->max.y;
 
-    const float epsilon = 0.5f;
+    const float epsilon = 2.0f;
 
     if (fabsf(mechBottom - tileTop) < epsilon && mech->velocity.y >= 0)
     {
@@ -248,16 +317,25 @@ void SuperMech_ResolveBoundaryCollision(SuperMech* mech)
     }
 }
 
-void SuperMech_Reset(SuperMech *mech, Vector2 startPos)
+c2AABB SuperMech_GetBoundingBox(const SuperMech* mech)
+{
+    c2AABB box;
+    box.min = c2V(mech->position.x, mech->position.y);
+    box.max = c2V(mech->position.x + mech->frameWidth * mech->scale, mech->position.y + mech->frameHeight * mech->scale);
+    return box;
+}
+
+void SuperMech_Reset(SuperMech *mech, Vector2 playerPos, Vector2 startPos)
 {
     mech->position = startPos;
     mech->velocity = (Vector2){0,0};
     mech->isGrounded = false;
 
-    mech->playerVisible = false;
+    mech->playerVisible = true;
+    mech->lastKnownPlayerPos = playerPos;
 
-    mech->previousState = MECH_SEARCH;
-    mech->currentState  = MECH_SEARCH;
+    mech->previousState = MECH_HUNT;
+    mech->currentState  = MECH_HUNT;
     mech->stateTimer    = 0.0f;
 
     mech->currentTexture = &mech->textureSearch;
@@ -338,10 +416,13 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos, LevelData* level)
 
     mech->gravity = 900.0f;
     mech->isGrounded = true;
+    mech->jumpCooldown = 0;
     mech->jumpForce = 450.0f;
 
     mech->stateTimer = 0.0f;
     mech->lastKnownPlayerPos = startPos;
+    mech->scanAngle = 0;
+    mech->scanSpeed = 2.5f;
     mech->playerVisible = false;
 
     mech->currentState = MECH_SEARCH;
@@ -411,17 +492,13 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos, LevelData* level)
 
 void SuperMech_Uppdate(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, float dt) 
 {
+    if (mech->jumpCooldown > 0) mech->jumpCooldown -= dt;
+    else if (mech->jumpCooldown < 0) mech->jumpCooldown = 0;
+
     mech->playerVisible = CanSeePlayer(mech, playerPos);
+    if (mech->playerVisible) mech->lastKnownPlayerPos = playerPos;
 
-    if (cameraTriggered && mech->currentState != MECH_HUNT)
-    {
-        ChangeState(mech, MECH_HUNT, dt);
-    }
-
-    if (mech->playerVisible)
-    {
-        mech->lastKnownPlayerPos = playerPos;
-    }
+    if (cameraTriggered && mech->currentState != MECH_HUNT) ChangeState(mech, MECH_HUNT, dt);
 
     mech->velocity.y += mech->gravity * dt;
 
@@ -472,6 +549,16 @@ void SuperMech_Draw(SuperMech *mech)
     c2AABB box = SuperMech_GetAABB(mech);
 
     DrawRectangleLines( box.min.x, box.min.y, box.max.x - box.min.x, box.max.y - box.min.y, GREEN );
+
+    float scanRange = PI / 3.0f;
+    float baseAngle = mech->facingRight ? 0.0f : PI;
+    float sweep = sinf(mech->scanAngle) * scanRange;
+    float finalAngle = baseAngle + sweep;
+
+    Vector2 dir = { cosf(finalAngle), sinf(finalAngle) };
+    Vector2 rayOrigin = { mech->position.x + mech->frameWidth * 0.5f, mech->position.y + mech->frameHeight * 0.5f };
+    
+    DrawLine( rayOrigin.x, rayOrigin.y, rayOrigin.x + dir.x * mech->visionRange, rayOrigin.y + dir.y * mech->visionRange, RED );
 }
 
 const char *SuperMech_GetStateName(SupermechState state) 
@@ -536,11 +623,11 @@ static void Hunt_Entry(SuperMech *mech, float dt)
 
 static void Hunt_Update(SuperMech *mech, float dt)
 {
-    if (mech->playerVisible)
-    {
-        MoveTowards(mech, mech->lastKnownPlayerPos, mech->speedHunt, dt);
-    }
-    else
+    MoveTowards(mech, mech->lastKnownPlayerPos, mech->speedHunt, dt);
+
+    float dist = Vec2Distance(mech->position, mech->lastKnownPlayerPos);
+
+    if (!mech->playerVisible && dist < 10.0f)
     {
         ChangeState(mech, MECH_SEARCH, dt);
     }
@@ -562,22 +649,24 @@ static void Search_Update(SuperMech *mech, float dt)
 {
     mech->stateTimer += dt;
 
-    if (mech->playerVisible)
+    float scanRange = PI / 3.0f;
+    mech->scanAngle += mech->scanSpeed * dt;
+
+    float baseAngle = mech->facingRight ? 0.0f : PI;
+    float sweep = sinf(mech->scanAngle) * scanRange;
+    float finalAngle = baseAngle + sweep;
+
+    Vector2 origin = { mech->position.x + mech->frameWidth * 0.5f, mech->position.y + mech->frameHeight * 0.5f };
+    Vector2 dir = { cosf(finalAngle), sinf(finalAngle) };
+    Vector2 target = { origin.x + dir.x * mech->visionRange, origin.y + dir.y * mech->visionRange };
+
+    if (HasLineOfSight(mech, mech->lastKnownPlayerPos))
     {
         ChangeState(mech, MECH_HUNT, dt);
         return;
     }
 
-    if (mech->stateTimer < 1.0f)
-    {
-        mech->facingRight = true;
-    }
-    else if (mech->stateTimer < 2.0f)
-    {
-        mech->facingRight = false;
-    }
-
-    if (mech->stateTimer > 3.0f)
+    if (mech->stateTimer > 5.0f)
     {
         ChangeState(mech, MECH_IDLE, dt);
     }
