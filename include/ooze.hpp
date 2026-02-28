@@ -75,6 +75,10 @@ private:
 	LevelData* m_level = nullptr;
 	static const int MAX_BOUNDARY_RECTS = 16;
 
+
+	float m_jumpToCollideTimer = 0.0f;
+	const float m_jumpToCollideDelay = 0.2f;
+
 public:
 	Ooze();
 	void Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount);

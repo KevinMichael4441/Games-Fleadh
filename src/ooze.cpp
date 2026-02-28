@@ -18,6 +18,9 @@ void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, 
 		collisionParts[index] = false;
 	}
 
+	m_collisionTimer = 0;
+	m_jumpToCollideTimer = 0.0f;
+
 
 	m_gravity = {0.0f, GRAVITY};
 
