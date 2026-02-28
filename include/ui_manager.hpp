@@ -14,7 +14,7 @@ class UI_Manager
 		~UI_Manager();
 
 		void changeUI(GameState t_newScreen, Vector2 t_pos);
-		void updateUI(float& t_dt);
+		void updateUI(float& t_dt, Vector2 t_pos);
 		void drawUI();
 
 		StingAnim stingAnim;
@@ -22,6 +22,16 @@ class UI_Manager
 	private:
 		
 		GameState screen;
+		Vector2 center;
+
+		int const WIDTH = 160;
+		int const HEIGHT = 60;
+
+		Vector2 button1Pos{0.0f,0.0f};
+		Vector2 button2Pos{0.0f,0.0f};
+		Vector2 button3Pos{0.0f,0.0f};
+		Vector2 button4Pos{0.0f,0.0f};
+		Vector2 button5Pos{0.0f,0.0f};
 
 		void initialize();
 		void loadUI(Vector2& t_pos);

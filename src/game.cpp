@@ -43,9 +43,8 @@ void Game::Run()
 
 void Game::InitGame()
 {
-
 	// Initial GameState
-	gamestate = GAME_PLAY;
+	gamestate = GAME_START;
 
 	//-------------Level Loading-----------------//
 
@@ -59,10 +58,6 @@ void Game::InitGame()
 	{
     	TraceLog(LOG_ERROR, "chunkCacheInit failed");
 	}
-
-	// Temporary ----------------------------------------------------
-	temp_background = LoadTexture("./assets/1280x960_temp.png");
-	// --------------------------------------------------------------
 
 	//------------- OOZEY WHIZY------------------//
 	Vector2 centrePoint = {0,0};
@@ -98,6 +93,8 @@ void Game::InitGame()
 		glslVersionStr = (const char *)glGetString(GL_SHADING_LANGUAGE_VERSION);
 		InitTelemetry(&r36s_telemetry);
 	#endif // Init Telemetry R36S and Linux only
+
+	gamestate = GAME_PLAY;
 }
 
 void Game::Update(float t_dt)
@@ -108,7 +105,7 @@ void Game::Update(float t_dt)
 	NonGameInputs();
 	
 	ui_manager.changeUI(gamestate, camera.screen.target);
-	ui_manager.updateUI(t_dt);
+	ui_manager.updateUI(t_dt, camera.screen.target);
 
 	switch (gamestate)
 	{
@@ -203,14 +200,22 @@ void Game::NonGameInputs()
 		gamestate = GAME_START;
 	}
 	if (IsKeyPressed(KEY_TWO))
+		if(gamestate != GAME_MENU){
+		gamestate = GAME_MENU;
+	}
+	if (IsKeyPressed(KEY_THREE))
 		if(gamestate != GAME_PLAY){
 		gamestate = GAME_PLAY;
 	}
-	if (IsKeyPressed(KEY_THREE))
+	if (IsKeyPressed(KEY_FOUR))
 		if(gamestate != GAME_PAUSE){
 		gamestate = GAME_PAUSE;
 	}
-	if (IsKeyPressed(KEY_FOUR))
+	if (IsKeyPressed(KEY_FIVE))
+		if(gamestate != GAME_INSTRUCTION){
+		gamestate = GAME_INSTRUCTION;
+	}
+	if (IsKeyPressed(KEY_SIX))
 		if(gamestate != GAME_END){
 		gamestate = GAME_END;
 	}
@@ -223,6 +228,7 @@ void Game::Draw()
 		case GAME_START:
 		break;
 		case GAME_MENU:
+			chunkCacheDraw(&m_level);
 		break;
 		case GAME_PLAY:
 			chunkCacheDraw(&m_level);
