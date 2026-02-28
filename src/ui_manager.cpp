@@ -23,7 +23,23 @@ void UI_Manager::changeUI(GameState t_newScreen, Vector2 t_pos){
 }
 void UI_Manager::updateUI(float& t_dt, Vector2 t_pos){
 
-	center = {t_pos.x - SCREEN_WIDTH / 2, t_pos.y - SCREEN_HEIGHT /2};
+	if(t_pos.x >= SCREEN_WIDTH / 2)
+	{
+		center.x = t_pos.x - SCREEN_WIDTH / 2;
+	}
+	else
+	{
+		center.x = SCREEN_WIDTH / 2;
+	}
+	if(t_pos.y >= SCREEN_HEIGHT / 2)
+	{
+		center.y = t_pos.y - SCREEN_HEIGHT / 2;
+	}
+	else
+	{
+		center.y = SCREEN_HEIGHT / 2;
+	}
+	
 	switch (screen){
 		case GAME_START:
 			updateStartUI();
@@ -131,11 +147,9 @@ void UI_Manager::loadMenuUI(){
 	std::cout << "Loading MENU Screen UI\n";
 
 	button1Pos = {center.x + 200, center.y + 240}; // BigRed
-	button2Pos = {center.x + 400, center.y + 90};
-	button3Pos = {center.x + 400, center.y + 170};
-	button4Pos = {center.x + 400, center.y + 250};
-	button5Pos = {center.x + 400, center.y + 330};
-
+	button2Pos = {center.x + 400, center.y + 100};
+	button3Pos = {center.x + 400, center.y + 210};
+	button4Pos = {center.x + 400, center.y + 320};
 }
 void UI_Manager::updateMenuUI(){
 
@@ -143,18 +157,16 @@ void UI_Manager::updateMenuUI(){
 void UI_Manager::drawMenuUI(){
 	//DrawRectangle(center.x,center.y,SCREEN_WIDTH,SCREEN_HEIGHT, PURPLE);
 
-	DrawCircle(button1Pos.x, button1Pos.y + 25,  125.0f, DARKPURPLE);
+	DrawCircle(button1Pos.x, button1Pos.y + 15,  125.0f, DARKPURPLE);
 	DrawCircle(button1Pos.x, button1Pos.y,  125.0f, RED);
 	DrawRectangle(button2Pos.x, button2Pos.y,WIDTH,HEIGHT, GREEN);
 	DrawRectangle(button3Pos.x, button3Pos.y,WIDTH,HEIGHT, GREEN);
 	DrawRectangle(button4Pos.x, button4Pos.y,WIDTH,HEIGHT, GREEN);
-	DrawRectangle(button5Pos.x, button5Pos.y,WIDTH,HEIGHT, GREEN);
 
 	DrawText(TextFormat("START"), button1Pos.x - 67.5, button1Pos.y - 7.5, 40, WHITE);
-	DrawText(TextFormat("HOW TO PLAY"), button2Pos.x, button2Pos.y + 30 - 7.5f, 15, WHITE);
-	DrawText(TextFormat("ACHIEVMENTS"), button3Pos.x, button3Pos.y + 30 - 7.5f, 15, WHITE);
-	DrawText(TextFormat("EXIT"), button4Pos.x, button4Pos.y + 30 - 7.5f, 15, WHITE);
-	DrawText(TextFormat("ELSE"), button5Pos.x, button5Pos.y + 30 - 7.5f, 15, WHITE);
+	DrawText(TextFormat("HOW TO PLAY"), button2Pos.x + 25, button2Pos.y + 30 - 7.5f, 15, WHITE);
+	DrawText(TextFormat("ACHIEVMENTS"), button3Pos.x + 25, button3Pos.y + 30 - 7.5f, 15, WHITE);
+	DrawText(TextFormat("EXIT"), button4Pos.x + 25, button4Pos.y + 30 - 7.5f, 15, WHITE);
 }
 void UI_Manager::unloadMenuUI(){
 	std::cout << "Unloading MENU Screen UI\n";
