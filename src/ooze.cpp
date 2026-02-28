@@ -134,11 +134,18 @@ void Ooze::HandleInput(Command t_activeCommand)
 
 void Ooze::HandleEvent(Event t_event)
 {
+		if (fsm.m_currentState == STATE_JUMPING &&
+		m_jumpToCollideTimer < m_jumpToCollideDelay)
+	{
+		return;
+	}
+
+
 	fsm.m_previousState = fsm.m_currentState;
 	if (fsm.CheckValidTransition(fsm.m_currentState, t_event))
 	{
 		ExitState();
-		EnterState(fsm.m_currentState);
+		EnterState(fsm.m_currentState, t_event);
 	}
 }
 
@@ -192,6 +199,7 @@ void Ooze::UpdateMoveState(float t_dt)
 void Ooze::UpdateJumpState(float t_dt)
 {
 	DefaultUpdate(t_dt);
+	m_jumpToCollideTimer += t_dt;
 }
 
 
@@ -588,7 +596,8 @@ void Ooze::DefaultUpdate(float t_dt)
 	//ResolveBoundaryCollision_C2();
 	Move();
 	
-	if (fsm.m_currentState != STATE_JUMPING)
+	if (fsm.m_currentState != STATE_JUMPING
+		&& fsm.m_currentState != STATE_MOVING)
 	{
 		float avgVel = 0;
 		for (int index = 0; index < MAX_POINTS; index++)
@@ -596,7 +605,7 @@ void Ooze::DefaultUpdate(float t_dt)
 			avgVel += m_points[index].m_velocity.y;
 		}
 
-		if (avgVel > 1)
+		if (avgVel > 3)
 		{
 			HandleEvent(EVENT_JUMP);
 		}
@@ -620,9 +629,9 @@ void Ooze::ExitState()
 		case STATE_JUMPING:
 			ExitJumpState();
 			break;
-		case STATE_COLLIDE_HORIZONTAL:
 		case STATE_COLLIDE_DOWN:
 		case STATE_COLLIDE_UP:
+		case STATE_COLLIDE_HORIZONTAL:
 			ExitCollideState();
 			break;
 	}
@@ -635,6 +644,7 @@ void Ooze::ExitIdleState()
 
 void Ooze::ExitJumpState()
 {
+	m_jumpToCollideTimer = 0.0f;
 	std::cout << "Exited Jump State\n";
 }
 
@@ -671,7 +681,7 @@ void Ooze::ExitCollideState()
 
 
 
-void Ooze::EnterState(State t_stateToEnter)
+void Ooze::EnterState(State t_stateToEnter, Event t_event)
 {
 	switch (t_stateToEnter)
 	{
@@ -706,13 +716,13 @@ void Ooze::EnterMoveState()
 
 void Ooze::EnterJumpState()
 {
+	m_jumpToCollideTimer = 0.0f;
 	std::cout << "Entered Jump State\n";
 }
 
 void Ooze::EnterCollideHorizontalState()
 {
 	std::cout << "Entered Collide Left or Right State\n";
-	m_collisionTimer = 0.0f;
 
 	float avgVelocity = 0.0f;
 
@@ -728,6 +738,8 @@ void Ooze::EnterCollideHorizontalState()
 
 	avgVelocity /= MAX_POINTS;
 
+
+	m_collisionTimer = 0.0f;
 	if (avgVelocity < 6)
 	{
 		for (int index = 0; index < MAX_POINTS; index++)
@@ -1120,39 +1132,47 @@ void Ooze::ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str
     //p.m_position.y -= m.n.y * pushY;
 
 
-	if (mY.n.y > 0.1)
+	if (mX.n.x > 0.1 && mX.depths[0] > 2)
+	{
+		p.m_position.x -= pushX;
+		if (abs(p.m_velocity.x) > 6 &&
+			fsm.m_currentState != STATE_COLLIDE_HORIZONTAL)
+		{
+			HandleEvent(EVENT_COLLIDE_HORIZONTAL);
+		}
+		p.m_velocity.x = 0;
+	}
+	else if(mX.n.x < -0.1 && mX.depths[0] > 2)
+	{
+		p.m_position.x += pushX;
+		if (abs(p.m_velocity.x) > 6 &&
+			fsm.m_currentState != STATE_COLLIDE_HORIZONTAL)
+		{
+			HandleEvent(EVENT_COLLIDE_HORIZONTAL);
+		}
+		p.m_velocity.x = 0;
+	}
+	else if (mY.n.y > 0.1)
 	{
 		p.m_position.y -= pushY;
-		HandleEvent(EVENT_COLLIDE_DOWN);
+
+		if (abs(p.m_velocity.y) > 1 &&
+			fsm.m_currentState != STATE_COLLIDE_DOWN)
+		{
+			HandleEvent(EVENT_COLLIDE_DOWN);
+		}
+
 		p.m_velocity.y = 0;
 	}
 	else if (mY.n.y < -0.1)
 	{
 		p.m_position.y += pushY;
-		//if (p.m_velocity.y < 6)
-		//{
+		if (abs(p.m_velocity.y) > 6 &&
+			fsm.m_currentState != STATE_COLLIDE_UP)
+		{
 			HandleEvent(EVENT_COLLIDE_UP);
-		//}
+		}
 		p.m_velocity.y = 0;
-	}
-
-	if (mX.n.x > 0.1)
-	{
-		p.m_position.x -= pushX;
-		//if (abs(p.m_velocity.x) > 6)
-		//{
-			HandleEvent(EVENT_COLLIDE_HORIZONTAL);
-		//}
-		p.m_velocity.x = 0;
-	}
-	else if(mX.n.x < -0.1)
-	{
-		p.m_position.x += pushX;
-		//if (abs(p.m_velocity.x) > 6)
-		//{
-			HandleEvent(EVENT_COLLIDE_HORIZONTAL);
-		//}
-		p.m_velocity.x = 0;
 	}
 }
 
@@ -1160,7 +1180,7 @@ void Ooze::Reset(Vector2 startPos)
 {
     m_centrePoint = startPos;
 	ExitState();
-	EnterState(STATE_IDLE);
+	EnterState(STATE_IDLE, EVENT_NONE);
 
     float angleStep = 2.0f * PI / MAX_POINTS;
     float radius = BASE_RADIUS;

@@ -77,7 +77,7 @@ private:
 
 
 	float m_jumpToCollideTimer = 0.0f;
-	const float m_jumpToCollideDelay = 0.2f;
+	const float m_jumpToCollideDelay = 0.05f;
 
 public:
 	Ooze();
@@ -86,7 +86,7 @@ public:
 	void HandleInput(Command t_activeCommand);
 	void HandleEvent(Event t_event);
 
-	void EnterState(State t_state);
+	void EnterState(State t_state, Event t_event);
     void EnterIdleState();
 	void EnterMoveState();
 	void EnterJumpState();
