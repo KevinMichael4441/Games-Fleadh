@@ -32,6 +32,11 @@ class UI_Manager
 		void drawStartUI();
 		void unloadStartUI();
 
+		void loadMenuUI();
+		void updateMenuUI();
+		void drawMenuUI();
+		void unloadMenuUI();
+
 		void loadGameplayUI();
 		void updateGameplayUI();
 		void drawGameplayUI();
@@ -41,6 +46,11 @@ class UI_Manager
 		void updatePauseUI();
 		void drawPauseUI();
 		void unloadPauseUI();
+
+		void loadInstructionUI();
+		void updateInstructionUI();
+		void drawInstructionUI();
+		void unloadInstructionUI();
 
 		void loadEndUI(Vector2& t_pos);
 		void updateEndUI(float& t_dt);

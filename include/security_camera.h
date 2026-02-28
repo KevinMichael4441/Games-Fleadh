@@ -39,7 +39,7 @@ public:
 private:
 	Rectangle m_body;
 
-	CamType m_type{CAM_NONE};
+	CamType m_type{CAM_SPOT};
 	CamDirection m_fix{S};
 
 	static const int WIDTH = 32;

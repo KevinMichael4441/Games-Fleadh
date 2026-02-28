@@ -114,6 +114,8 @@ void Game::Update(float t_dt)
 	{
 		case GAME_START:
 		break;
+		case GAME_MENU:
+		break;
 		case GAME_PLAY:
 		{
 			Vector2 center = ooze.CalculateCenter();
@@ -132,6 +134,8 @@ void Game::Update(float t_dt)
 		}
 		break;
 		case GAME_PAUSE:
+		break;
+		case GAME_INSTRUCTION:
 		break;
 		case GAME_END:
 			if(ui_manager.stingAnim.timeToSpawn())
@@ -217,10 +221,10 @@ void Game::Draw()
 {
 	switch (gamestate){
 		case GAME_START:
-			DrawTexture(temp_background, 0, 0, WHITE);
+		break;
+		case GAME_MENU:
 		break;
 		case GAME_PLAY:
-			DrawTexture(temp_background, 0, 0, WHITE);
 			chunkCacheDraw(&m_level);
 
 			m_securitySystem.draw();
@@ -235,7 +239,6 @@ void Game::Draw()
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
 		break;
 		case GAME_PAUSE:
-			DrawTexture(temp_background, 0, 0, WHITE);
 			chunkCacheDraw(&m_level);
 
 			m_securitySystem.draw();
@@ -249,8 +252,9 @@ void Game::Draw()
 
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
 		break;
+		case GAME_INSTRUCTION:
+		break;
 		case GAME_END:
-			DrawTexture(temp_background, 0, 0, WHITE);
 			chunkCacheDraw(&m_level);
 		break;
 	}

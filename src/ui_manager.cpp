@@ -20,11 +20,17 @@ void UI_Manager::updateUI(float& t_dt){
 		case GAME_START:
 			updateStartUI();
 		break;
+		case GAME_MENU:
+			updateMenuUI();
+		break;
 		case GAME_PLAY:
 			updateGameplayUI();
 		break;
 		case GAME_PAUSE:
 			updatePauseUI();
+		break;
+		case GAME_INSTRUCTION:
+			updateInstructionUI();
 		break;
 		case GAME_END:
 			updateEndUI(t_dt);
@@ -36,11 +42,17 @@ void UI_Manager::drawUI(){
 		case GAME_START:
 			drawStartUI();
 		break;
+		case GAME_MENU:
+			drawMenuUI();
+		break;
 		case GAME_PLAY:
 			drawGameplayUI();
 		break;
 		case GAME_PAUSE:
 			drawPauseUI();
+		break;
+		case GAME_INSTRUCTION:
+			drawInstructionUI();
 		break;
 		case GAME_END:
 			drawEndUI();
@@ -56,11 +68,17 @@ void UI_Manager::loadUI(Vector2& t_pos){
 		case GAME_START:
 			loadStartUI();
 		break;
+		case GAME_MENU:
+			loadMenuUI();
+		break;
 		case GAME_PLAY:
 			loadGameplayUI();
 		break;
 		case GAME_PAUSE:
 			loadPauseUI();
+		break;
+		case GAME_INSTRUCTION:
+			loadInstructionUI();
 		break;
 		case GAME_END:
 			loadEndUI(t_pos);
@@ -72,11 +90,17 @@ void UI_Manager::unloadUI(){
 		case GAME_START:
 			unloadStartUI();
 		break;
+		case GAME_MENU:
+			unloadMenuUI();
+		break;
 		case GAME_PLAY:
 			unloadGameplayUI();
 		break;
 		case GAME_PAUSE:
 			unloadPauseUI();
+		break;
+		case GAME_INSTRUCTION:
+			unloadInstructionUI();
 		break;
 		case GAME_END:
 			unloadEndUI();
@@ -95,6 +119,19 @@ void UI_Manager::drawStartUI(){
 }
 void UI_Manager::unloadStartUI(){
 	std::cout << "Unloading START Screen UI\n";
+}
+
+void UI_Manager::loadMenuUI(){
+	std::cout << "Loading MENU Screen UI\n";
+}
+void UI_Manager::updateMenuUI(){
+
+}
+void UI_Manager::drawMenuUI(){
+
+}
+void UI_Manager::unloadMenuUI(){
+	std::cout << "Unloading MENU Screen UI\n";
 }
 
 void UI_Manager::loadGameplayUI(){
@@ -121,6 +158,19 @@ void UI_Manager::drawPauseUI(){
 }
 void UI_Manager::unloadPauseUI(){
 	std::cout << "Unloading PAUSE Screen UI\n";
+}
+
+void UI_Manager::loadInstructionUI(){
+	std::cout << "Loading INSTRUCTION Screen UI\n";
+}
+void UI_Manager::updateInstructionUI(){
+
+}
+void UI_Manager::drawInstructionUI(){
+
+}
+void UI_Manager::unloadInstructionUI(){
+	std::cout << "Unloading INSTRUCTION Screen UI\n";
 }
 
 void UI_Manager::loadEndUI(Vector2& t_pos){
