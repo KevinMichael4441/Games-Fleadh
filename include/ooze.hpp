@@ -84,7 +84,7 @@ public:
 	void Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount);
 	
 	void HandleInput(Command t_activeCommand);
-	void HandleEvent(Event t_event);
+	bool HandleEvent(Event t_event);
 
 	void EnterState(State t_state, Event t_event);
     void EnterIdleState();
