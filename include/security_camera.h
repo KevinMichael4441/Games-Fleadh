@@ -24,10 +24,12 @@ class SecurityCamera
 {
 public:
 	SecurityCamera();
-	void initialize(float t_x, float t_y, float t_distance, CamType t_type, CamDirection t_direction);
+	void initialize(float t_x, float t_y, float t_distance, CamType t_type, CamMount t_mount, LaserDir t_dir);
 
 	void update(float t_dt, Vector2 playerPos);
 	void draw();
+	void Frame_Update(float dt);
+	void Animate();
 
 	void drawRaycast();
 	bool raycastPlayerCollision(Vector2& t_center);
@@ -39,14 +41,28 @@ public:
 private:
 	Rectangle m_body;
 
-	CamType m_type{CAM_SPOT};
-	CamDirection m_fix{S};
+	float m_sourceY;
+	Vector2 m_position;
+	Texture2D m_texture;
+	int m_frameWidth;
+    int m_frameHeight;
+    float m_scale;
+
+    int m_frameCount;
+    float m_frameTime;
+    int m_currentFrame;
+    float m_animationTimer;
+
+	int m_targetFrame = 0;
+	bool m_animating = false;
+	bool m_previousActive = false;
+
+	CamType m_type{CAM_NONE};
 
 	static const int WIDTH = 32;
 	static const int HEIGHT = 32;
 	float MAX_ANGLE = 0.75f;
 	float MIN_ANGLE = -0.75f;
-
 
 	c2Ray m_laser;
 	Vector2 m_origin;
@@ -61,6 +77,9 @@ private:
 	bool m_isActive;
     bool m_playerDetected;
 	bool m_movingRight;
+	float m_activeDuration;
+	float m_inactiveDuration;
+	float m_timer;
 
 	LevelData* m_level = nullptr;
 };

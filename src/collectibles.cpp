@@ -14,12 +14,15 @@ void Collectible::Initialize(Vector2 pos, float radius)
     m_position = pos;
     m_radius = radius;
     m_active = true;
+    m_bobTimer = 0.0f;
+    m_texture = LoadTexture("./assets/images/ENVIRONMENT/COIN.png");
 }
 
-void Collectible::Update(Ooze& player, int& score)
+void Collectible::Update(Ooze& player, int& score, float dt)
 {
-    if (!m_active)
-        return;
+    if (!m_active) return;
+
+    m_bobTimer += dt;
 
     const Point* points = player.GetPoints();
     int count = player.GetPointCount();
@@ -47,10 +50,12 @@ void Collectible::Update(Ooze& player, int& score)
 
 void Collectible::Draw() const
 {
-    if (!m_active)
-        return;
+    if (!m_active) return;
 
-    DrawCircleV(m_position, m_radius, GOLD);
+    float bobOffset = 4.0f * sinf(m_bobTimer * 3.0f);
+    Vector2 drawPos = { m_position.x - m_texture.width * 0.5f, m_position.y - m_texture.height * 0.5f + bobOffset };
+
+    DrawTextureV(m_texture, drawPos, WHITE);
 }
 
 bool Collectible::IsActive() const
@@ -72,11 +77,11 @@ void Collectibles_Manager::Initialize(Vector2 pos, float radius)
     }
 }
 
-void Collectibles_Manager::Update(Ooze& player, int& score)
+void Collectibles_Manager::Update(Ooze& player, int& score, float dt)
 {
     for (int i = 0; i < MAX_COLLECTIBLES; i++)
     {
-        m_collectibles[i].Update(player, score);
+        m_collectibles[i].Update(player, score, dt);
     }
 }
 

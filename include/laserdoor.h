@@ -22,11 +22,12 @@ public:
     Key();
 	void Initialize(Vector2 pos, float radius);
 
-    bool Update(Ooze& player);
+    bool Update(Ooze& player, float dt);
     void Draw() const;
 
 private:
 	bool m_active;
+	float m_bobTimer;
     Vector2 m_position;
     float m_radius;
 };
@@ -53,6 +54,13 @@ private:
 	bool m_active;
 	c2AABB m_boundingBox;
 	Rectangle m_bars[MAX_BARS];
+
+	Texture2D m_texture;
+	int m_currentFrame;
+	int m_targetFrame;
+	bool m_animating;
+	float m_animTimer;
+	float m_animSpeed;
 };
 
 //------------------Manager------------------//
