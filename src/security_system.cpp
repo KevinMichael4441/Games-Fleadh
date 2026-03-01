@@ -25,6 +25,7 @@ void SecuritySystem::initialize(LevelData *t_level)
 
             CamType type = (CamType)LevelObjectGetInt(&obj, "CamType", CAM_SPOT);
             float distance = LevelObjectGetFloat(&obj, "distance", 200.0f);
+            //distance = 200.0f;
             CamMount mount = (CamMount)LevelObjectGetInt(&obj, "CamMount", MOUNT_BACKGROUND);
             LaserDir dir = (LaserDir)LevelObjectGetInt(&obj, "laserDir", LASER_S);
 

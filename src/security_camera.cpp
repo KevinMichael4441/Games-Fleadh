@@ -49,7 +49,7 @@ void SecurityCamera::initialize(float t_x, float t_y, float t_distance, CamType 
     m_origin = { t_x + WIDTH / 2.0f, t_y + HEIGHT / 2.0f };
     m_minX = t_x - 50.0f;
     m_maxX = t_x + 50.0f;
-    m_yLevel = t_y - t_distance;
+    m_yLevel = t_y + t_distance;
 
     m_length = t_distance;
 	m_activeDuration   = 5.0f;
@@ -144,73 +144,49 @@ void SecurityCamera::update(float t_dt, Vector2 playerPos)
 {
     m_timer += t_dt;
 
-    if (m_isActive)
+    if (!m_animating)
     {
-        if (m_timer >= m_activeDuration)
+        if (m_isActive && m_timer >= m_activeDuration)
         {
             m_isActive = false;
             m_timer = 0.0f;
+            m_animating = true;
+            m_targetFrame = 0;
         }
-    }
-    else
-    {
-        if (m_timer >= m_inactiveDuration)
+        else if (!m_isActive && m_timer >= m_inactiveDuration)
         {
             m_isActive = true;
             m_timer = 0.0f;
-            }
-    }
-
-    if (m_isActive != m_previousActive)
-    {
-        m_animating = true;
-
-        if (m_isActive)
+            m_animating = true;
             m_targetFrame = m_frameCount - 1;
-        else
-            m_targetFrame = 0;
-
-        m_previousActive = m_isActive;
+        }
     }
 
     Frame_Update(t_dt);
-	
-    if (!m_isActive) return;
-    
-    if(m_angle >= MAX_ANGLE && angleV > 0.0f){
-        angleV *= -1;
-        m_movingRight = false;
-    }
-    if(m_angle <= MIN_ANGLE && angleV <= 0.0f){
-        angleV *= -1;
-        m_movingRight = true;
-    }
-    m_angle += angleV; 
-    
-    switch(m_type){
-        case CAM_SPOT:
-            if (m_movingRight) 
-            {
-                m_end.x += extendSpd;
-                if (m_end.x >= m_maxX) m_movingRight = false;
-            } else 
-            {
-                m_end.x -= extendSpd;
-                if (m_end.x <= m_minX) m_movingRight = true;
-            }
-            m_end.y = m_yLevel;
-        break;
-        case CAM_SWEEP:
-            m_end = (Vector2){sin(m_angle) * m_length + m_origin.x, cos(m_angle) * m_length + m_origin.y};
-        break;
-        default:
-        break;
-    }
 
-    m_direction = Vector2Normalize((Vector2){m_end.x - m_origin.x, m_end.y - m_origin.y});
-    m_laser.d = c2V(m_direction.x , m_direction.y);
-    m_laser.p = c2V(m_origin.x, m_origin.y);
-    m_playerDetected = raycastPlayerCollision(playerPos);
+    if (!m_isLaserActive) return;
+
+    if (m_type == CAM_SPOT)
+    {
+        if (m_movingRight)
+        {
+            m_end.x += extendSpd;
+            if (m_end.x >= m_maxX) m_movingRight = false;
+        }
+        else
+        {
+            m_end.x -= extendSpd;
+            if (m_end.x <= m_minX) m_movingRight = true;
+        }
+
+        m_end.y = m_yLevel;
+
+        m_direction = Vector2Normalize({ m_end.x - m_origin.x, m_end.y - m_origin.y });
+        m_laser.d = c2V(m_direction.x, m_direction.y);
+        m_laser.p = c2V(m_origin.x, m_origin.y);
+
+        m_playerDetected = raycastPlayerCollision(playerPos);
+    }
 }
 
 void SecurityCamera::SetLevel(LevelData* level)
@@ -227,7 +203,7 @@ void SecurityCamera::draw()
 {
     Animate();
 
-    if (!m_isActive) return;
+    if (!m_isLaserActive) return;
 
     drawRaycast();
 
@@ -248,19 +224,13 @@ void SecurityCamera::Frame_Update(float dt)
     {
         m_animationTimer = 0.0f;
 
-        if (m_currentFrame < m_targetFrame)
-        {
-            m_currentFrame++;
-        }
-        else if (m_currentFrame > m_targetFrame)
-        {
-            m_currentFrame--;
-        }
+        if (m_currentFrame < m_targetFrame) m_currentFrame++;
+        else if (m_currentFrame > m_targetFrame) m_currentFrame--;
 
-        if (m_currentFrame == m_targetFrame)
-        {
-            m_animating = false;
-        }
+        if (m_currentFrame >= 6 && m_targetFrame == m_frameCount - 1) m_isLaserActive = true;
+        else if (m_currentFrame < 6 && m_targetFrame == 0) m_isLaserActive = false;
+
+        if (m_currentFrame == m_targetFrame) m_animating = false;
     }
 }
 

@@ -229,6 +229,7 @@ void Game::Update(float t_dt)
 				m_laseDoor_manager.Update(ooze, t_dt);
 				m_teleporter_manager.Update(ooze, t_dt);
 				chunkCacheUpdate(&m_level, center);
+				m_securitySystem.update(t_dt, ooze);
 				//SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
 				checkMechOozeCollision();
 				m_collectibles_manager.Update(ooze, score, t_dt);

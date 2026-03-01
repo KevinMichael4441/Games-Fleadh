@@ -82,6 +82,7 @@ private:
 
 	//detection
 	bool m_isActive;
+	bool m_isLaserActive = false;
     bool m_playerDetected;
 	bool m_movingRight;
 	float m_activeDuration;
