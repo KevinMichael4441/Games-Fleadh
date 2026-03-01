@@ -510,8 +510,7 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos, LevelData* level)
 
 void SuperMech_Uppdate(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, float dt) 
 {
-    UpdateSpineEntity(mech->spineBody, dt);
-    SetSpinePosition(mech->spineBody, mech->position.x, mech->position.y);
+    //UpdateAllSpineEntities(dt);
     
     if (mech->jumpCooldown > 0) mech->jumpCooldown -= dt;
     else if (mech->jumpCooldown < 0) mech->jumpCooldown = 0;
@@ -530,6 +529,8 @@ void SuperMech_Uppdate(SuperMech *mech, Vector2 playerPos, bool cameraTriggered,
 
     UpdateState(mech, dt);
     SuperMech_Frame_Update(mech);
+
+    SetSpinePosition(mech->spineBody, mech->position.x + 32, mech->position.y + 96);
 }
 
 void SuperMech_Frame_Update(SuperMech *mech)
@@ -562,7 +563,7 @@ void SuperMech_Draw(SuperMech *mech)
     Vector2 origin = { (mech->frameWidth * mech->scale) / 2.0f, (mech->frameHeight * mech->scale) / 2.0f };
     Rectangle dest = { mech->position.x + origin.x, mech->position.y + origin.y, mech->frameWidth * mech->scale, mech->frameHeight * mech->scale };
 
-     DrawSpineEntity(mech->spineBody);
+    DrawAllSpineEntities();
     //DrawTexturePro( *mech->currentTexture, source, dest, origin, 0.0f, WHITE);
 
     const char *stateName = SuperMech_GetStateName(mech->currentState);
