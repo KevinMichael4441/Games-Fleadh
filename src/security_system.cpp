@@ -1,47 +1,12 @@
 #include "security_system.h"
 
 SecuritySystem::SecuritySystem()
-{}
-
-bool SecuritySystem::update(float t_dt, Vector2 playerPos)
 {
-	bool detected = false;
-
-	for(int i = 0; i < m_cameraCount; i++)
-    {
-        m_cameras[i].update(t_dt, playerPos);
-
-        if (m_cameras[i].isPlayerDetected())
-        {
-            detected = true;
-        }
-    }
-
-	for (int i = 0; i < MAX_LASERWALL; i++)
-    {
-        m_lasers[i].update(t_dt);
-    }
-
-    return detected;
 }
 
-void SecuritySystem::draw()
+void SecuritySystem::initialize(LevelData *t_level)
 {
-	for(int index = 0; index < m_cameraCount; index++)
-	{
-		m_cameras[index].draw();
-	}
-
-	for (int index = 0; index < MAX_LASERWALL; index++)
-	{
-		m_lasers[index].draw();
-	}
-
-}
-
-void SecuritySystem::initialize(LevelData* t_level)
-{
-    m_cameraCount = 0;
+	m_cameraCount = 0;
 
     if (!t_level || !t_level->objects || t_level->objectCount <= 0)
     {
@@ -70,4 +35,39 @@ void SecuritySystem::initialize(LevelData* t_level)
 
         m_cameraCount++;
     }
+}
+
+bool SecuritySystem::update(float t_dt, Ooze &t_ooze)
+{
+	bool detected = false;
+
+	for (int i = 0; i < MAX_LASERWALL; i++)
+    {
+        m_lasers[i].update(t_ooze, t_dt);
+    }
+
+	for(int i = 0; i < m_cameraCount; i++)
+	{
+		m_cameras[i].update(t_dt, t_ooze.CalculateCenter());
+        if (m_cameras[i].isPlayerDetected())
+        {
+            detected = true;
+        }
+	}
+
+    return detected;
+}
+
+void SecuritySystem::draw()
+{
+	for(int index = 0; index < m_cameraCount; index++)
+	{
+		m_cameras[index].draw();
+	}
+
+	for (int index = 0; index < MAX_LASERWALL; index++)
+	{
+		m_lasers[index].draw();
+	}
+
 }

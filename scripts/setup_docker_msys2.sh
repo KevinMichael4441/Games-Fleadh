@@ -2,13 +2,6 @@
 set -euo pipefail
 
 #=================================================================
-# After some testing the only reliable way to get Docker running 
-# on Windows for this project is to install 
-# WSL linux distro (Ubuntu)
-# Configure Docker and project container 
-#=================================================================
-
-#=================================================================
 # Check docker installation location on system
 #=================================================================
 DOCKER_BIN="/c/Program Files/Docker/Docker/resources/bin"

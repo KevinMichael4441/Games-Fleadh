@@ -1,0 +1,38 @@
+services:
+  gpp:
+
+    #-----------------------------------------------------------------
+    # AMD / Intel iGPU passthrough via DRI (WSL2)
+    #-----------------------------------------------------------------
+    devices:
+      - /dev/dri:/dev/dri
+
+    group_add:
+      - video
+      - render
+
+    environment:
+      #---------------------------------------------------------------
+      # WSLg display passthrough
+      #---------------------------------------------------------------
+      - DISPLAY=${DISPLAY:-:0}
+      - WAYLAND_DISPLAY=${WAYLAND_DISPLAY}
+      - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
+      #---------------------------------------------------------------
+      # Mesa / DRI settings for Raylib on AMD or Intel
+      #---------------------------------------------------------------
+      - LIBGL_ALWAYS_SOFTWARE=0
+      - MESA_GL_VERSION_OVERRIDE=3.3
+      #---------------------------------------------------------------
+      # WSLg audio passthrough (PulseAudio via wslg socket)
+      #---------------------------------------------------------------
+      - PULSE_SERVER=${PULSE_SERVER:-unix:/mnt/wslg/runtime-dir/pulse/native}
+
+    volumes:
+      - ./:/gpp
+      - ~/.ssh:/host_ssh:ro
+      # WSLg X11 socket
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # WSLg shared directory (display + audio)
+      - /mnt/wslg:/mnt/wslg
+      - /mnt/wslg/runtime-dir/pulse:/mnt/wslg/runtime-dir/pulse:ro

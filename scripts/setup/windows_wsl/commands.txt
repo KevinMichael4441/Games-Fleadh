@@ -1,0 +1,2 @@
+powershell -ExecutionPolicy Bypass -NoProfile -File .\step1.ps1
+powershell -ExecutionPolicy Bypass -NoProfile -File .\step2.ps1

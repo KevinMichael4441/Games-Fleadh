@@ -1,6 +1,6 @@
 services:
   gpp:
-  
+
     image: r36s-build
 
     build:
@@ -23,12 +23,11 @@ services:
     command: tail -f /dev/null
     shm_size: '2gb'
 
-# Allow Ping test to test access R36S from Docker
+    # Allow ping tests to R36S from Docker
     cap_add:
       - NET_RAW
-# Added for debug
       - SYS_PTRACE
 
-# Added for debug
+    # Allow GDB to work correctly
     security_opt:
       - seccomp:unconfined

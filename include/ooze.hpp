@@ -1,20 +1,19 @@
 #ifndef OOZE_H
 #define OOZE_H
 
-
 #include <raylib.h>
 #include <raymath.h>
 
 #include "constants.h"
-
 #include "command.h"
 #include "input_manager.h"
-#include "fsm.h"
+
 #include "level_loader.h"
+#include "fsm.h"
+
 extern "C" {
 #include "cute_c2.h"
 }
-
 
 static const int MAX_COLLISION_PARTS = 4;
 
@@ -37,21 +36,18 @@ typedef struct Point
 	float lerpTimeElapsedX;
 	float lerpTimeElapsedY;
 	float lerpTime;
-	
-} Point;
 
+	int id;
+} Point;
 
 typedef struct Spring
 {
 	float springConstant;
 	float restLength;
 	
-
 	Point *a;
 	Point *b;
-
 } Spring;
-
 
 class Ooze
 {
@@ -81,24 +77,24 @@ private:
 	LevelData* m_level = nullptr;
 	static const int MAX_BOUNDARY_RECTS = 16;
 
-	Vector2 m_newPointPosition;
+
+	float m_toCollideTimer = 0.0f;
+	const float m_toCollideDelay = 0.3f;
 
 public:
 	Ooze();
 	void Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount);
 	
 	void HandleInput(Command t_activeCommand);
-	void HandleEvent(Event t_event);
+	bool HandleEvent(Event t_event);
 
-	void EnterState(State t_state);
+	void EnterState(State t_state, Event t_event);
     void EnterIdleState();
 	void EnterMoveState();
 	void EnterJumpState();
 	void EnterCollideHorizontalState();
 	void EnterCollideVerticalState();
    
-
-
     void ExitState();
 	void ExitIdleState();
 	void ExitMoveState();
@@ -141,14 +137,10 @@ public:
 	void Reset(Vector2 startPos);
 
 	Vector2 getPosition();
-	const Point* GetPoints() const;
+	Point* GetPoints();
 	int GetPointCount() const;
 	
 	FSM fsm;
-
-	int collideDownCount = 0;
-	int collideUpCount = 0;
-	int collideHorizontalCount = 0;
 };
 
 #endif

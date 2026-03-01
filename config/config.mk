@@ -14,10 +14,10 @@
 # Quotes will be preserved and passed correctly to the compiler.
 #
 # If a value contains a literal double-quote character, escape it:
-#   GAME_DESCRIPTION = "The game\"s story begins"
+#   GAME_DESCRIPTION = "The game\'s story begins"
 #=================================================================
-GAME_NAME     		= "Slilab"
-GAME_DESCRIPTION	= "Jump"
+GAME_NAME     		= "OOZ3"
+GAME_DESCRIPTION	= "A game made with love"
 GAME_VERSION  		= "1.0.0"
 
 #-----------------------------------------------------------------
