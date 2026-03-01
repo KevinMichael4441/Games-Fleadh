@@ -22,7 +22,7 @@ void LaserDoor_Manager::Update(Ooze& player, float dt)
 {
 	for(int i = 0; i < MAX_PAIRS; i++)
 	{
-		if(m_laserdoor_pairs[i].first.Update(player))
+		if(m_laserdoor_pairs[i].first.Update(player, dt))
 		{
 			m_laserdoor_pairs[i].second.Disactivate();
 		}
@@ -54,11 +54,14 @@ void Key::Initialize(Vector2 pos, float radius)
     m_position = pos;
     m_radius = radius;
     m_active = true;
+    m_bobTimer = 0.0f;
 }
 
-bool Key::Update(Ooze& player)
+bool Key::Update(Ooze& player,  float dt)
 {
     if (!m_active) return false;
+
+    m_bobTimer += dt;
 
     const Point* points = player.GetPoints();
     int count = player.GetPointCount();
@@ -69,27 +72,24 @@ bool Key::Update(Ooze& player)
         float dy = points[i].m_position.y - m_position.y;
 
         float distSq = dx*dx + dy*dy;
-
-        float playerRadius =
-            (points[i].m_radiusX + points[i].m_radiusY) * 0.5f;
-
+        float playerRadius = (points[i].m_radiusX + points[i].m_radiusY) * 0.5f;
         float combined = playerRadius + m_radius;
 
         if (distSq <= combined * combined)
         {
             m_active = false;
-			return true;
+            return true;
         }
     }
-
-	return false;
+    return false;
 }
 
 void Key::Draw() const
 {
     if (!m_active) return;
 
-    DrawCircleV(m_position, m_radius, PINK);
+    float bobOffset = 4.0f * sinf(m_bobTimer * 3.0f);
+    DrawCircleV({m_position.x, m_position.y + bobOffset}, m_radius, PINK);
 }
 
 //------------------LaserDoor------------------//
@@ -113,11 +113,11 @@ void LaserDoor::Initialize(Vector2 pos)
 	m_active = true;
 
 	m_texture = LoadTexture("./assets/images/ENVIRONMENT/LASER_DOOR.png");
-	m_currentFrame = 13;
-	m_targetFrame = 13;
+	m_currentFrame = 12;
+	m_targetFrame = 12;
 	m_animating = false;
 	m_animTimer = 0.0f;
-	m_animSpeed = 0.08f;
+	m_animSpeed = 0.04f;
 }
 
 void LaserDoor::Update(Ooze &player, float dt)
@@ -184,10 +184,8 @@ void LaserDoor::Disactivate()
 
 void LaserDoor::Draw() const
 {
-	if (!m_texture.id) return;
-
 	Rectangle source = { (float)(m_currentFrame * 64), 0, 64, 96 };
-	Vector2 position = { m_boundingBox.min.x, m_boundingBox.min.y };
+	Vector2 position = { m_boundingBox.min.x, m_boundingBox.min.y + 16 };
 
 	DrawTextureRec(m_texture, source, position, WHITE);
 }

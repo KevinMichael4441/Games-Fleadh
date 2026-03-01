@@ -22,11 +22,12 @@ public:
     Key();
 	void Initialize(Vector2 pos, float radius);
 
-    bool Update(Ooze& player);
+    bool Update(Ooze& player, float dt);
     void Draw() const;
 
 private:
 	bool m_active;
+	float m_bobTimer;
     Vector2 m_position;
     float m_radius;
 };
