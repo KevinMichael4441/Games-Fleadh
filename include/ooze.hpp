@@ -36,6 +36,8 @@ typedef struct Point
 	float lerpTimeElapsedX;
 	float lerpTimeElapsedY;
 	float lerpTime;
+
+	int id;
 } Point;
 
 typedef struct Spring

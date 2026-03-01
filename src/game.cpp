@@ -65,7 +65,7 @@ void Game::InitGame()
 	// --------------------------------------------------------------
 
 	//------------- OOZEY WHIZY------------------//
-	Vector2 centrePoint = {0,0};
+	Vector2 centrePoint = {SCREEN_WIDTH/2,SCREEN_HEIGHT/2};
 	ooze.Initialize(SPRING_CONSTANT, DAMP, centrePoint, OOZE_SPEED, JUMP_AMOUNT);
 	ooze.SetLevel(&m_level);
 
