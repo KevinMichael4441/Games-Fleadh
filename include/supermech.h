@@ -11,6 +11,7 @@
 #include <math.h>
 
 #include "level_loader.h"
+#include "spine_manager.h"
 
 #define MAX_BOUNDARY_RECTS 16
 
@@ -45,6 +46,8 @@ typedef struct {
 
 typedef struct SuperMech {
     LevelData currentLevel;
+
+    SpineEntity *spineBody;
 
     Vector2 position;
     Vector2 velocity;

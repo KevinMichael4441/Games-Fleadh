@@ -407,6 +407,24 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos, LevelData* level)
 {
     SetLevel(mech, level);
 
+    mech->spineBody = CreateSpineEntity(
+		"Supermech_Spine_fix.atlas",
+		"Supermech_Spine_fix.json",
+		startPos.x,
+		startPos.y,
+		1.0f);
+
+    if (!mech->spineBody)
+	{
+		TraceLog(LOG_ERROR, "GAME: Failed to create player Spine entity");
+        ExitSpineManager();
+		return;
+	}
+
+    PlaySpineAnimation(mech->spineBody, 1, "walk", SPINE_ANIM_LOOP);
+	SetSpineFlip(mech->spineBody, true, false);
+	SetSpineAnimationSpeed(mech->spineBody, 1.0f);
+
     mech->position = startPos;
     mech->velocity = (Vector2){0,0};
 
@@ -492,6 +510,9 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos, LevelData* level)
 
 void SuperMech_Uppdate(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, float dt) 
 {
+    UpdateSpineEntity(mech->spineBody, dt);
+    SetSpinePosition(mech->spineBody, mech->position.x, mech->position.y);
+    
     if (mech->jumpCooldown > 0) mech->jumpCooldown -= dt;
     else if (mech->jumpCooldown < 0) mech->jumpCooldown = 0;
 
@@ -541,7 +562,8 @@ void SuperMech_Draw(SuperMech *mech)
     Vector2 origin = { (mech->frameWidth * mech->scale) / 2.0f, (mech->frameHeight * mech->scale) / 2.0f };
     Rectangle dest = { mech->position.x + origin.x, mech->position.y + origin.y, mech->frameWidth * mech->scale, mech->frameHeight * mech->scale };
 
-    DrawTexturePro( *mech->currentTexture, source, dest, origin, 0.0f, WHITE);
+     DrawSpineEntity(mech->spineBody);
+    //DrawTexturePro( *mech->currentTexture, source, dest, origin, 0.0f, WHITE);
 
     const char *stateName = SuperMech_GetStateName(mech->currentState);
     DrawText( stateName, (int)mech->position.x, (int)(mech->position.y - 20), 16, RED );

@@ -72,6 +72,23 @@
 #define IP_ADDRESS_MAX_LEN 16
 
 //=================================================================
+// Spine Animation Configuration
+//=================================================================
+#define MAX_SPINE_ENTITIES 				64
+#define MAX_CACHED_SKELETONS 			16
+#define MAX_DEBUG_QUADS 				512
+//-----------------------------------------------------------------
+// Mesh Pool Configuration (optimised for multiple entities)
+//-----------------------------------------------------------------
+#define MAX_ATTACHMENTS_PER_SKELETON 	50
+#define MAX_CONCURRENT_SKELETONS 		40
+//-----------------------------------------------------------------
+// MAX_CACHED_MODELS will have to be reduced after testing
+//-----------------------------------------------------------------
+#define MAX_CACHED_MODELS 				(MAX_ATTACHMENTS_PER_SKELETON * MAX_CONCURRENT_SKELETONS)
+
+
+//=================================================================
 // R32S Device Telemetry
 // Tested on device that returned following from ark@rg351mp:~$ cat /proc/cpuinfo
 // CPU implementer : 0x41 		=> ARM Ltd

@@ -171,6 +171,7 @@ void Game::InitGame()
 	ooze.SetLevel(&m_level);
 
 	//--------Mech--------------//
+	GameSpineInit();
 	SuperMech_Init(&mech, {100,200}, &m_level);
 
 	//---------------Security System------------//

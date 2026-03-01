@@ -20,6 +20,7 @@
 
 #include "command.h"
 #include "input_manager.h"
+#include "game_spine.h"
 
 #include "camera_manager.hpp"
 #include "ooze.hpp"
