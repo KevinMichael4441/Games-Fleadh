@@ -9,6 +9,7 @@ typedef enum GameState
 	GAME_PAUSE,
 	GAME_INSTRUCTION,
 	GAME_END,
+	GAME_EXIT
 } GameState;
 
 #endif

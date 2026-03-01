@@ -187,6 +187,9 @@ void Game::InitGame()
 	//--------Input Manager---------------------//
 	InitInputManager();
 
+	//------------UI Manager-------------------//
+	ui_manager.initialize();
+
 	//----------------Telemetry------------------//
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 		// Telemetry Init
@@ -196,7 +199,7 @@ void Game::InitGame()
 		InitTelemetry(&r36s_telemetry);
 	#endif // Init Telemetry R36S and Linux only
 
-	gamestate = GAME_PLAY;
+	gamestate = GAME_START;
 }
 
 void Game::Update(float t_dt)
@@ -208,12 +211,22 @@ void Game::Update(float t_dt)
 	
 	ui_manager.changeUI(gamestate, camera.screen.target);
 	ui_manager.updateUI(t_dt, camera.screen.target);
+	std::pair<GameState,bool> stateSwitching;
+
 
 	switch (gamestate)
 	{
 		case GAME_START:
+			stateSwitching = ui_manager.handleInput(m_activeCommand);
+			if (stateSwitching.second)
+				gamestate = GAME_MENU;
 		break;
 		case GAME_MENU:
+			stateSwitching = ui_manager.handleInput(m_activeCommand);
+			if (stateSwitching.second)
+			{
+				gamestate = stateSwitching.first;
+			}
 		break;
 		case GAME_PLAY:
 		{
@@ -253,6 +266,9 @@ void Game::Update(float t_dt)
 		case GAME_PAUSE:
 		break;
 		case GAME_INSTRUCTION:
+			stateSwitching = ui_manager.handleInput(m_activeCommand);
+			if (stateSwitching.second)
+				gamestate = stateSwitching.first;
 		break;
 		case GAME_END:
 			if(ui_manager.stingAnim.timeToSpawn()){
@@ -280,15 +296,15 @@ void Game::Update(float t_dt)
 
 void Game::NonGameInputs()
 {
-	if(IsCommandActive(VOLUME_UP, m_activeCommand))
-	{
-		// Increase Volume
-	}
+	// if(IsCommandActive(VOLUME_UP, m_activeCommand))
+	// {
+	// 	// Increase Volume
+	// }
 
-	if (IsCommandActive(VOLUME_DOWN, m_activeCommand))
-	{
-		// Decrease Volume
-	}
+	// if (IsCommandActive(VOLUME_DOWN, m_activeCommand))
+	// {
+	// 	// Decrease Volume
+	// }
 
 	if (IsCommandActive(MENU_TOGGLE, m_activeCommand))
 	{
@@ -298,20 +314,20 @@ void Game::NonGameInputs()
 		#endif
 	}
 
-	if (IsCommandActive(START_GAME, m_activeCommand))
-	{
-		// (?)
-	}
+	// if (IsCommandActive(START_GAME, m_activeCommand))
+	// {
+	// 	// (?)
+	// }
 
-	if (IsCommandActive(EXIT_COMMAND, m_activeCommand))
-	{
-		// (?)
-	}
+	// if (IsCommandActive(EXIT_COMMAND, m_activeCommand))
+	// {
+	// 	// (?)
+	// }
 
-	if (IsCommandActive(POWER_COMMAND, m_activeCommand))
-	{
-		// (?)
-	}
+	// if (IsCommandActive(POWER_COMMAND, m_activeCommand))
+	// {
+	// 	// (?)
+	// }
 	// Temporary GameState switching --
 	if (IsKeyPressed(KEY_ONE))
 	if(gamestate != GAME_START){
