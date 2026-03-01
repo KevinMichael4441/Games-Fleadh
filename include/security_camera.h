@@ -62,9 +62,11 @@ private:
 	CamType m_type{CAM_NONE};
 
 	//ray
-	float m_minX;
-	float m_maxX;
-	float m_yLevel;
+	LaserDir m_laserDir;
+	float m_minX, m_maxX;
+	float m_minY, m_maxY;
+	float m_fixedX, m_fixedY;
+
 	static const int WIDTH = 32;
 	static const int HEIGHT = 32;
 	float MAX_ANGLE = 0.75f;

@@ -176,8 +176,8 @@ void Game::InitGame()
 	//---------------Security System------------//
 	m_securitySystem.initialize(&m_level);
 	m_laseDoor_manager.Initialize({576, 300}, {520, 350}, 8);
-	m_securitySystem.m_lasers[0].initialize(800.0f, 200.0f);
-    m_securitySystem.m_laserCount = 1;
+	//m_securitySystem.m_lasers[0].initialize(800.0f, 200.0f);
+    //m_securitySystem.m_laserCount = 1;
 	
 	//-------Collectibles-------//
 	score = 0;

@@ -47,9 +47,41 @@ void SecurityCamera::initialize(float t_x, float t_y, float t_distance, CamType 
     m_type = t_type;
     //m_fix = t_direction; //not sure what you were using fix for but t_direction has been replaced with either t_dir or t_mount depending on if you used it for camera direction or laser direction
     m_origin = { t_x + WIDTH / 2.0f, t_y + HEIGHT / 2.0f };
-    m_minX = t_x - 50.0f;
-    m_maxX = t_x + 50.0f;
-    m_yLevel = t_y + t_distance;
+    float sweepAmount = 50.0f;
+
+    m_laserDir = t_dir;
+
+    switch (m_laserDir)
+    {
+    case LASER_N: //laser points upward, sweeps horizontally
+        m_fixedY = m_origin.y - t_distance;
+        m_minX = m_origin.x - sweepAmount;
+        m_maxX = m_origin.x + sweepAmount;
+
+        m_end = { m_origin.x, m_fixedY };
+    break;
+    case LASER_S: //laser points downward, sweeps horizontally
+        m_fixedY = m_origin.y + t_distance;
+        m_minX = m_origin.x - sweepAmount;
+        m_maxX = m_origin.x + sweepAmount;
+
+        m_end = { m_origin.x, m_fixedY };
+    break;
+    case LASER_E: //laser points right, sweeps vertically
+        m_fixedX = m_origin.x + t_distance;
+        m_minY = m_origin.y - sweepAmount;
+        m_maxY = m_origin.y + sweepAmount;
+
+        m_end = { m_fixedX, m_origin.y };
+    break;
+    case LASER_W: //laser points left, sweeps vertically
+        m_fixedX = m_origin.x - t_distance;
+        m_minY = m_origin.y - sweepAmount;
+        m_maxY = m_origin.y + sweepAmount;
+
+        m_end = { m_fixedX, m_origin.y };
+    break;
+    }
 
     m_length = t_distance;
 	m_activeDuration   = 5.0f;
@@ -108,6 +140,8 @@ void SecurityCamera::initialize(float t_x, float t_y, float t_distance, CamType 
         break;
         case CAM_SWEEP:
             m_end = (Vector2){m_origin.x, m_origin.y + m_length};
+        break;
+        default:
         break;
     }
     
@@ -168,25 +202,50 @@ void SecurityCamera::update(float t_dt, Vector2 playerPos)
 
     if (m_type == CAM_SPOT)
     {
-        if (m_movingRight)
+        switch (m_laserDir)
         {
-            m_end.x += extendSpd;
-            if (m_end.x >= m_maxX) m_movingRight = false;
-        }
-        else
+        case LASER_N:
+        case LASER_S:
         {
-            m_end.x -= extendSpd;
-            if (m_end.x <= m_minX) m_movingRight = true;
+            if (m_movingRight)
+            {
+                m_end.x += extendSpd;
+                if (m_end.x >= m_maxX) m_movingRight = false;
+            }                
+            else
+            {
+                m_end.x -= extendSpd;
+                if (m_end.x <= m_minX) m_movingRight = true;
+            }
+
+            m_end.y = m_fixedY;
+        break;
         }
+        case LASER_E:
+        case LASER_W:
+        {
+            if (m_movingRight)
+            {
+                m_end.y += extendSpd;
+                if (m_end.y >= m_maxY) m_movingRight = false;
+            }
+            else
+            {
+                m_end.y -= extendSpd;
+                if (m_end.y <= m_minY) m_movingRight = true;
+            }
 
-        m_end.y = m_yLevel;
-
-        m_direction = Vector2Normalize({ m_end.x - m_origin.x, m_end.y - m_origin.y });
-        m_laser.d = c2V(m_direction.x, m_direction.y);
-        m_laser.p = c2V(m_origin.x, m_origin.y);
-
-        m_playerDetected = raycastPlayerCollision(playerPos);
+            m_end.x = m_fixedX;
+        break;
+        }
+        }
     }
+
+    m_direction = Vector2Normalize({ m_end.x - m_origin.x, m_end.y - m_origin.y });
+    m_laser.d = c2V(m_direction.x, m_direction.y);
+    m_laser.p = c2V(m_origin.x, m_origin.y);
+
+    m_playerDetected = raycastPlayerCollision(playerPos);
 }
 
 void SecurityCamera::SetLevel(LevelData* level)
