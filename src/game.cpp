@@ -406,6 +406,18 @@ void Game::Draw()
 		case GAME_INSTRUCTION:
 		break;
 		case GAME_END:
+			DrawTexture(temp_background, 0, 0, WHITE);
+			chunkCacheDrawBackground(&m_level);
+
+			m_securitySystem.draw();
+			m_laseDoor_manager.Draw();
+			m_jumpPadd_manager.Draw();
+			m_teleporter_manager.Draw();
+			m_collectibles_manager.Draw();
+
+			SuperMech_Draw(&mech);
+			ooze.Draw();
+
 			chunkCacheDraw(&m_level);
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
 		break;
@@ -425,9 +437,9 @@ void Game::Draw()
 void Game::Respawn()
 {
 	Vector2 oozeSpawn = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2};
+	chunkCacheUpdate(&m_level, oozeSpawn);
     ooze.Reset(oozeSpawn);
     SuperMech_Reset(&mech, ooze.getPosition(), {100, 200});
-	chunkCacheUpdate(&m_level, oozeSpawn);
 }
 
 void Game::checkMechOozeCollision()
