@@ -107,8 +107,11 @@ void chunkCacheDraw(const LevelData* level);
 
 void chunkCacheDrawBackground(const LevelData* level);
 
-
 bool LevelLoadObjects(LevelData* level, const char* objectLayerName);
+
+int LevelObjectGetInt(const LevelObject* obj, const char* propName, int defaultValue);
+
+float LevelObjectGetFloat(const LevelObject* obj, const char* propName, float defaultValue);
 
 
 #ifdef __cplusplus

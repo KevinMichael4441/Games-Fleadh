@@ -55,10 +55,10 @@ void Game::InitGame()
         TraceLog(LOG_ERROR, "Failed to load level");
     }
 	DebugCountBoundaryTiles(&m_level);
-	/*if (!LevelLoadObjects(level, "Objects"))
+	if (!LevelLoadObjects(&m_level, "Objects"))
 	{
 		TraceLog(LOG_ERROR, "Failed to load objects");
-	}*/
+	}
 
 	if (!chunkCacheInit(&m_level, SCREEN_WIDTH, SCREEN_HEIGHT))
 	{
@@ -78,7 +78,7 @@ void Game::InitGame()
 	SuperMech_Init(&mech, {100,200}, &m_level);
 
 	//---------------Security System------------//
-	m_securitySystem.initialize();
+	m_securitySystem.initialize(&m_level);
 
 	//--------Input Manager---------------------//
 	InitInputManager();
@@ -208,13 +208,16 @@ void Game::Draw()
 		case GAME_PLAY:
 			DrawTexture(temp_background, 0, 0, WHITE);
 			chunkCacheDrawBackground(&m_level);
+			
 			SuperMech_Draw(&mech);
 			ooze.Draw();
 			chunkCacheDraw(&m_level);
+			m_securitySystem.draw();
 		break;
 		case GAME_PAUSE:
 			DrawTexture(temp_background, 0, 0, WHITE);
 			chunkCacheDraw(&m_level);
+			m_securitySystem.draw();
 			ooze.Draw();
 			SuperMech_Draw(&mech);
 			m_securitySystem.draw();

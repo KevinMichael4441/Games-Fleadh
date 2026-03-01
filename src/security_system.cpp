@@ -3,25 +3,11 @@
 SecuritySystem::SecuritySystem()
 {}
 
-void SecuritySystem::initialize()
-{
-	for(int index = 0; index < MAX_CAMERA; index++)
-	{
-		m_cameras[index].initialize(200, 120, 110, 90);
-	}
-
-	for (int index = 0; index < MAX_LASERWALL; index++)
-	{
-		m_lasers[index].initialize(500, SCREEN_HEIGHT - 128);
-	}
-}
-
-
 bool SecuritySystem::update(float t_dt, Vector2 playerPos)
 {
 	bool detected = false;
 
-	for(int i = 0; i < MAX_CAMERA; i++)
+	for(int i = 0; i < m_cameraCount; i++)
     {
         m_cameras[i].update(t_dt, playerPos);
 
@@ -41,7 +27,7 @@ bool SecuritySystem::update(float t_dt, Vector2 playerPos)
 
 void SecuritySystem::draw()
 {
-	for(int index = 0; index < MAX_CAMERA; index++)
+	for(int index = 0; index < m_cameraCount; index++)
 	{
 		m_cameras[index].draw();
 	}
@@ -51,4 +37,37 @@ void SecuritySystem::draw()
 		m_lasers[index].draw();
 	}
 
+}
+
+void SecuritySystem::initialize(LevelData* t_level)
+{
+    m_cameraCount = 0;
+
+    if (!t_level || !t_level->objects || t_level->objectCount <= 0)
+    {
+        return;
+    }
+
+    for (int i = 0; i < t_level->objectCount; i++)
+    {
+        const LevelObject& obj = t_level->objects[i];
+
+        if (!obj.type || strcmp(obj.type, "SecurityCamera") != 0)
+        {
+            continue;
+        }
+
+        if (m_cameraCount >= MAX_CAMERA)
+        {
+            break;
+        }
+
+        CamType type = (CamType)LevelObjectGetInt(&obj, "CamType", CAM_SPOT);
+        float distance = LevelObjectGetFloat(&obj, "distance", 200.0f);
+        CamMount mount = (CamMount)LevelObjectGetInt(&obj, "CamMount", MOUNT_BACKGROUND);
+        LaserDir dir = (LaserDir)LevelObjectGetInt(&obj, "laserDir", LASER_S);
+        m_cameras[m_cameraCount].initialize(obj.x, obj.y, distance, type, mount, dir);
+
+        m_cameraCount++;
+    }
 }

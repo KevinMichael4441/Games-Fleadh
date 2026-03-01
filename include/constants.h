@@ -30,7 +30,7 @@
 // For SecuritySystem
 //=================================================================
 #define MAX_LASERWALL		1
-#define MAX_CAMERA			1
+#define MAX_CAMERA			99
 #define MAX_WORKER			1
 
 #define WALL_PUSHBACK		50

@@ -7,95 +7,161 @@ SecurityCamera::SecurityCamera()
 }
 
 
-void SecurityCamera::initialize(float t_x, float t_y, float t_maxRotation, float t_minRotation)
+void SecurityCamera::initialize(float t_x, float t_y, float t_distance, CamType t_type, CamMount t_mount, LaserDir t_dir)
 {
-	m_body = {t_x, t_y, m_width, m_height};
-	m_origin = { t_x + m_width / 2.0f, t_y + m_height / 2.0f };
+    // This now takes new data from tiled
+    // t_distance is still used for m_length to set the length of the laser beam
+    // CamType is used to determine the behavior (line that moves side to side on a fixed axis versys line that seeps on a radius) of the laser. 1 = CAM_SPOT, 2 = CAM_SWEEP
+    // CamMount is used to determine what texture the camera should use and also the rotation of the camera
+    // MOUNT_BACKGROUND uses the front facing texture and the other three types us the side facing texture
+    // MOUNT_LEFT_WALL, MOUNT_RIGHT_WALL, and MOUNT_CEILING can also be used to determine what way the side facing texture should be rotated (not sure what the default rotation is)
+    // LaserDir is used to determine which direction from the camera the laser should be pointing
 
-    m_maxAngle = DEG2RAD * t_maxRotation;
-	m_minAngle = DEG2RAD * t_minRotation;
+    m_type = t_type;
+    //m_fix = t_direction; //not sure what you were using fix for but t_direction has been replaced with either t_dir or t_mount depending on if you used it for camera direction or laser direction
+    m_origin = { t_x + WIDTH / 2.0f, t_y + HEIGHT / 2.0f };
+    m_length = t_distance;
+	m_activeDuration   = 5.0f;
+	m_inactiveDuration = 5.0f;
+	m_timer            = 0.0f;
+	m_isActive         = true;
 
-	m_angle = m_minAngle;
-	m_range = 250.0f;
 
-	m_speed =  DEG2RAD * (rand() % 20 + 20); //20 to 40 degrees per second
+    //this needs to be changed *****************************************
+    /*switch(m_fix){
+        case N:
+            m_angle = 3.125f;
+            MAX_ANGLE = 3.85f;
+	        MIN_ANGLE = 2.35f;
+        break;
+        case S:
+            m_angle = 0.625f;
+            MAX_ANGLE = 0.75f;
+	        MIN_ANGLE = -0.75f;
+        break;
+        case E:
+            m_angle = 1.875f;
+            MAX_ANGLE = 2.40f;
+	        MIN_ANGLE = 0.825f;
+        break;
+        case W:
+            m_angle = -1.875f;
+            MAX_ANGLE = -0.825f;
+	        MIN_ANGLE = -2.40f;
+        break;
+        case NE:
+            m_angle = 2.5f;
+            MAX_ANGLE = 3.125f;
+	        MIN_ANGLE = 1.575f;
+        break;
+        case NW:
+            m_angle = 3.75f;
+            MAX_ANGLE = 4.725f;
+	        MIN_ANGLE = 3.125f;
+        break;
+        case SE:
+            m_angle = 0.75f;
+            MAX_ANGLE = 1.5f;
+	        MIN_ANGLE = 0.0f;
+        break;
+        case SW: // Good
+            m_angle = -0.75f;
+            MAX_ANGLE = 0.0f;
+	        MIN_ANGLE = -1.575f;
+        break;
+    }*/
+
+    switch(m_type){
+        case CAM_SPOT:
+            m_end = (Vector2){sin(m_angle) * m_length + m_origin.x, cos(m_angle) * m_length + m_origin.y};
+        break;
+        case CAM_SWEEP:
+            m_end = (Vector2){m_origin.x, m_origin.y + m_length};
+        break;
+    }
+    
+    m_direction = Vector2Normalize((Vector2){m_end.x - m_origin.x, m_end.y - m_origin.y});
+
+	m_body = {t_x, t_y, WIDTH, HEIGHT}; // Temp
 
     m_isActive = true;
-	m_activeDuration = 5.0f;
-    m_inactiveDuration = 5.0f;
-	m_timer = 0.0f;
-
 	m_playerDetected = false;
+    m_movingRight = true;
+
+    m_laser.p = c2V(m_origin.x, m_origin.y);// Starting point
+    m_laser.d = c2V(m_direction.x , m_direction.y); // Direction
+    m_laser.t = m_length; // Length
+
+    angleV = 0.015f;
 }
 
+bool SecurityCamera::raycastPlayerCollision(Vector2& t_center){
+    c2Circle player;
+    c2Raycast laserCast;
+    player.p = c2V(t_center.x, t_center.y);
+    player.r = 30.0f;
 
-void SecurityCamera::update(float t_dt, Vector2 playerPos)
+    return c2RaytoCircle(m_laser, player, &laserCast);
+}
+void SecurityCamera::drawRaycast()
 {
-	m_timer += t_dt;
+    float r = 2.0f;
+	DrawLineEx((Vector2){m_laser.p.x, m_laser.p.y}, m_end, r, RED);
+}
 
-	if (m_isActive && m_timer >= m_activeDuration)
-    {
-        m_isActive = false;
-        m_timer = 0.0f;
-    }
-    else if (!m_isActive && m_timer >= m_inactiveDuration)
-    {
-        m_isActive = true;
-        m_timer = 0.0f;
-    }
+void SecurityCamera::update(float t_dt, Vector2 playerPos){
+	m_timer += t_dt;
 
 	if (m_isActive)
 	{
-    	m_angle += m_speed * t_dt;
-
-    	if (m_angle >= m_maxAngle)
+    	if (m_timer >= m_activeDuration)
     	{
-        	m_angle = m_maxAngle;
-        	m_speed *= -1;
-    	}
-    	else if (m_angle <= m_minAngle)
-    	{
-        	m_angle = m_minAngle;
-        	m_speed *= -1;
+        	m_isActive = false;
+        	m_timer = 0.0f;
     	}
 	}
-	
-	m_playerDetected = false;
+	else
+	{
+    	if (m_timer >= m_inactiveDuration)
+    	{
+        	m_isActive = true;
+        	m_timer = 0.0f;
+    	}
+	}
+
 
     if (!m_isActive) return;
+    
+    if(m_angle >= MAX_ANGLE && angleV > 0.0f){
+        angleV *= -1;
+        m_movingRight = false;
+    }
+    if(m_angle <= MIN_ANGLE && angleV <= 0.0f){
+        angleV *= -1;
+        m_movingRight = true;
+    }
+    m_angle += angleV; 
+    
+    switch(m_type){
+        case CAM_SWEEP:
+            if(m_movingRight == true){m_end.x += extendSpd;}
+            else{m_end.x -= extendSpd;}
+        break;
+        case CAM_SPOT:
+            m_end = (Vector2){sin(m_angle) * m_length + m_origin.x, cos(m_angle) * m_length + m_origin.y};
+        break;
+        default:
+        break;
+    }
 
-	Vector2 beamEnd = { m_origin.x + cosf(m_angle) * m_range, m_origin.y + sinf(m_angle) * m_range };
-
-	const float playerRadius = 12.0f;
-
-	if (Cam_CheckCollision_Player(playerPos, playerRadius, m_origin, beamEnd))
-	{
-    	m_playerDetected = true;
-	}
+    m_direction = Vector2Normalize((Vector2){m_end.x - m_origin.x, m_end.y - m_origin.y});
+    m_laser.d = c2V(m_direction.x , m_direction.y);
+    m_playerDetected = raycastPlayerCollision(playerPos);
 }
 
-static bool Cam_CheckCollision_Player( Vector2 t_center, float t_radius, Vector2 t_lineStart, Vector2 t_lineEnd)
+void SecurityCamera::SetLevel(LevelData* level)
 {
-	Vector2 line = Vector2Subtract(t_lineEnd, t_lineStart);
-    Vector2 toCircle = Vector2Subtract(t_center, t_lineStart);
-
-    float lineLengthSquared = line.x * line.x + line.y * line.y;
-
-    if (lineLengthSquared <= 0.0001f) return false;
-
-    float t = Vector2DotProduct(toCircle, line) / lineLengthSquared;
-
-    if (t < 0.0f) t = 0.0f;
-    if (t > 1.0f) t = 1.0f;
-
-    Vector2 closest = { t_lineStart.x + line.x * t, t_lineStart.y + line.y * t };
-
-    float dx = t_center.x - closest.x;
-    float dy = t_center.y - closest.y;
-
-    float distanceSquared = dx * dx + dy * dy;
-
-    return distanceSquared <= t_radius * t_radius;
+    m_level = level;
 }
 
 bool SecurityCamera::isPlayerDetected() const
@@ -109,11 +175,11 @@ void SecurityCamera::draw()
 
 	if (!m_isActive) return;
 
-	Vector2 end = { m_origin.x + cosf(m_angle) * m_range, m_origin.y + sinf(m_angle) * m_range };
-	DrawLineV(m_origin, end, RED);
+    drawRaycast();
 
 	if (m_playerDetected)
 	{
+        printf("Player Detected\n");
     	DrawCircleV(m_origin, 6, GREEN);
 	}
 }

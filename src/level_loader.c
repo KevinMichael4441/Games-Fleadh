@@ -883,7 +883,7 @@ static cJSON* FindObjectLayer(cJSON* levelJson, const char* layerName)
     return NULL;
 }
 
-bool Level_LoadObjects(LevelData* level, const char* objectLayerName)
+bool LevelLoadObjects(LevelData* level, const char* objectLayerName)
 {
     if (!level || !level->mapRoot || !objectLayerName)
     {
@@ -964,4 +964,72 @@ bool Level_LoadObjects(LevelData* level, const char* objectLayerName)
     level->objects = arr;
     level->objectCount = count;
     return true;
+}
+
+static bool GetObjectPropNumber(const cJSON* props, const char* propName, double* value)
+{
+    if (!props || !propName || !value)
+    {
+        return false;
+    }
+
+    int propCount = cJSON_GetArraySize((cJSON*)props);
+
+    for (int i = 0; i < propCount; i++)
+    {
+        cJSON* prop = cJSON_GetArrayItem((cJSON*)props, i);
+        if (!prop)
+        {
+            continue;
+        }
+        cJSON* nameItem = cJSON_GetObjectItem(prop, "name");
+        cJSON* valueItem = cJSON_GetObjectItem(prop, "value");
+
+        if (!cJSON_IsString(nameItem) || !valueItem)
+        {
+            continue;
+        }
+
+        if (strcmp(nameItem->valuestring, propName) == 0 && cJSON_IsNumber(valueItem))
+        {
+            *value = valueItem->valuedouble;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+int LevelObjectGetInt(const LevelObject* obj, const char* propName, int defaultValue)
+{
+    if (!obj)
+    {
+        return defaultValue;
+    }
+
+    double v = 0.0;
+
+    if (GetObjectPropNumber(obj->properties, propName, &v))
+    {
+        return (int)v;
+    }
+
+    return defaultValue;
+}
+
+float LevelObjectGetFloat(const LevelObject* obj, const char* propName, float defaultValue)
+{
+    if (!obj)
+    {
+        return defaultValue;
+    }
+
+    double v = 0.0;
+
+    if (GetObjectPropNumber(obj->properties, propName, &v))
+    {
+        return (float)v;
+    }
+
+    return defaultValue;
 }
