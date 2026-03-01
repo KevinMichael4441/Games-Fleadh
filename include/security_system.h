@@ -21,9 +21,10 @@ public:
 	
 	bool update(float t_dt, Ooze &t_ooze);
 	void draw();
+	Laserwall m_lasers[MAX_LASERWALL];
+	int m_laserCount;
 	
 private:
-	Laserwall m_lasers[MAX_LASERWALL];
 	SecurityCamera m_cameras[MAX_CAMERA];
 	int m_cameraCount;
 };

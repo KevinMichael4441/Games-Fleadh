@@ -53,6 +53,13 @@ private:
 	bool m_active;
 	c2AABB m_boundingBox;
 	Rectangle m_bars[MAX_BARS];
+
+	Texture2D m_texture;
+	int m_currentFrame;
+	int m_targetFrame;
+	bool m_animating;
+	float m_animTimer;
+	float m_animSpeed;
 };
 
 //------------------Manager------------------//

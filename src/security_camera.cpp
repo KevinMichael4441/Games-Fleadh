@@ -9,6 +9,33 @@ SecurityCamera::SecurityCamera()
 
 void SecurityCamera::initialize(float t_x, float t_y, float t_distance, CamType t_type, CamMount t_mount, LaserDir t_dir)
 {
+    m_position = {t_x, t_y};
+
+    m_texture = LoadTexture("./assets/images/ENVIRONMENT/CAMS.png");
+
+    m_frameWidth = 32;
+    m_frameHeight = 32;
+    m_scale = 1;
+
+    m_frameCount = 9;
+    m_frameTime = 0.12f;
+    m_currentFrame = 0;
+    m_animationTimer = 0.0f;
+
+    m_currentFrame = 0;
+    m_targetFrame = 0;
+    m_animating = false;
+    m_previousActive = true;
+
+    if(MOUNT_BACKGROUND == t_mount)
+    {
+        m_sourceY = (float)m_frameHeight;
+    }
+    else
+    {
+        m_sourceY = 0.0f;
+    }
+
     // This now takes new data from tiled
     // t_distance is still used for m_length to set the length of the laser beam
     // CamType is used to determine the behavior (line that moves side to side on a fixed axis versys line that seeps on a radius) of the laser. 1 = CAM_SPOT, 2 = CAM_SWEEP
@@ -109,27 +136,41 @@ void SecurityCamera::drawRaycast()
 	DrawLineEx((Vector2){m_laser.p.x, m_laser.p.y}, m_end, r, RED);
 }
 
-void SecurityCamera::update(float t_dt, Vector2 playerPos){
-	m_timer += t_dt;
+void SecurityCamera::update(float t_dt, Vector2 playerPos)
+{
+    m_timer += t_dt;
 
-	if (m_isActive)
-	{
-    	if (m_timer >= m_activeDuration)
-    	{
-        	m_isActive = false;
-        	m_timer = 0.0f;
-    	}
-	}
-	else
-	{
-    	if (m_timer >= m_inactiveDuration)
-    	{
-        	m_isActive = true;
-        	m_timer = 0.0f;
-    	}
-	}
+    if (m_isActive)
+    {
+        if (m_timer >= m_activeDuration)
+        {
+            m_isActive = false;
+            m_timer = 0.0f;
+        }
+    }
+    else
+    {
+        if (m_timer >= m_inactiveDuration)
+        {
+            m_isActive = true;
+            m_timer = 0.0f;
+            }
+    }
 
+    if (m_isActive != m_previousActive)
+    {
+        m_animating = true;
 
+        if (m_isActive)
+            m_targetFrame = m_frameCount - 1;
+        else
+            m_targetFrame = 0;
+
+        m_previousActive = m_isActive;
+    }
+
+    Frame_Update(t_dt);
+	
     if (!m_isActive) return;
     
     if(m_angle >= MAX_ANGLE && angleV > 0.0f){
@@ -171,15 +212,47 @@ bool SecurityCamera::isPlayerDetected() const
 
 void SecurityCamera::draw()
 {
-	DrawRectangleRec(m_body, m_isActive ? ORANGE : DARKGRAY);
+    Animate();
 
-	if (!m_isActive) return;
+    if (!m_isActive) return;
 
     drawRaycast();
 
-	if (m_playerDetected)
-	{
+    if (m_playerDetected)
+    {
         printf("Player Detected\n");
-    	DrawCircleV(m_origin, 6, GREEN);
-	}
+        DrawCircleV(m_origin, 6, GREEN);
+    }
+}
+
+void SecurityCamera::Frame_Update(float dt)
+{
+    if (!m_animating) return;
+
+    m_animationTimer += dt;
+
+    if (m_animationTimer >= m_frameTime)
+    {
+        m_animationTimer = 0.0f;
+
+        if (m_currentFrame < m_targetFrame)
+        {
+            m_currentFrame++;
+        }
+        else if (m_currentFrame > m_targetFrame)
+        {
+            m_currentFrame--;
+        }
+
+        if (m_currentFrame == m_targetFrame)
+        {
+            m_animating = false;
+        }
+    }
+}
+
+void SecurityCamera::Animate() 
+{
+    Rectangle source = { (float)(m_currentFrame * m_frameWidth), m_sourceY, (float)m_frameWidth, (float)m_frameHeight };
+    DrawTextureRec(m_texture, source, m_position, WHITE);
 }

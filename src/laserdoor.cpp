@@ -111,8 +111,14 @@ void LaserDoor::Initialize(Vector2 pos)
 	}
 
 	m_active = true;
-}
 
+	m_texture = LoadTexture("./assets/images/ENVIRONMENT/LASER_DOOR.png");
+	m_currentFrame = 13;
+	m_targetFrame = 13;
+	m_animating = false;
+	m_animTimer = 0.0f;
+	m_animSpeed = 0.08f;
+}
 
 void LaserDoor::Update(Ooze &player, float dt)
 {
@@ -145,22 +151,43 @@ void LaserDoor::Update(Ooze &player, float dt)
 			}	
 		}
 	}
+
+	if (m_animating)
+	{
+		m_animTimer += dt;
+		if (m_animTimer >= m_animSpeed)
+		{
+			m_animTimer = 0.0f;
+
+			if (m_currentFrame > m_targetFrame)
+			{
+				m_currentFrame--;
+			}
+			else
+			{
+				m_animating = false;
+				m_currentFrame = m_targetFrame;
+			}
+		}
+	}
 }
 
 void LaserDoor::Disactivate()
 {
-	m_active = false;
+	if (m_active)
+	{
+		m_active = false;
+		m_targetFrame = 1;
+		m_animating = true;
+	}
 }
 
 void LaserDoor::Draw() const
 {
-	if(m_active)
-	{
-		DrawRectangle(m_boundingBox.min.x, m_boundingBox.min.y, m_WIDTH, m_HEIGHT, WHITE );
-		
-		for (int index = 0; index < MAX_BARS; index++)
-		{
-			DrawRectangleRec(m_bars[index], BLUE);
-		}
-	}
+	if (!m_texture.id) return;
+
+	Rectangle source = { (float)(m_currentFrame * 64), 0, 64, 96 };
+	Vector2 position = { m_boundingBox.min.x, m_boundingBox.min.y };
+
+	DrawTextureRec(m_texture, source, position, WHITE);
 }

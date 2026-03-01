@@ -23,6 +23,15 @@ public:
 
 
 private:
+	Texture2D m_texture;
+	int m_frameWidth = 32;
+	int m_frameHeight = 32;
+	int m_currentFrame = 0;
+
+	float m_animTimer = 0.0f;
+	float m_animSpeed = 0.08f;
+
+	bool m_targetActive = true;
 
 	static const int MAX_BARS = 6;
 	static const int m_BAR_WIDTH = 4;
