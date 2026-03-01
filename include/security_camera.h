@@ -39,6 +39,7 @@ public:
 	void SetLevel(LevelData* level);
 
 private:
+	//animation
 	Rectangle m_body;
 
 	float m_sourceY;
@@ -57,8 +58,13 @@ private:
 	bool m_animating = false;
 	bool m_previousActive = false;
 
+	//cam type
 	CamType m_type{CAM_NONE};
 
+	//ray
+	float m_minX;
+	float m_maxX;
+	float m_yLevel;
 	static const int WIDTH = 32;
 	static const int HEIGHT = 32;
 	float MAX_ANGLE = 0.75f;
@@ -74,6 +80,7 @@ private:
 	float angleV; // Velocity
 	float extendSpd{3.0f};
 
+	//detection
 	bool m_isActive;
     bool m_playerDetected;
 	bool m_movingRight;

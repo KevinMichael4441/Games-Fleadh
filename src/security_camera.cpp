@@ -47,6 +47,10 @@ void SecurityCamera::initialize(float t_x, float t_y, float t_distance, CamType 
     m_type = t_type;
     //m_fix = t_direction; //not sure what you were using fix for but t_direction has been replaced with either t_dir or t_mount depending on if you used it for camera direction or laser direction
     m_origin = { t_x + WIDTH / 2.0f, t_y + HEIGHT / 2.0f };
+    m_minX = t_x - 50.0f;
+    m_maxX = t_x + 50.0f;
+    m_yLevel = t_y - t_distance;
+
     m_length = t_distance;
 	m_activeDuration   = 5.0f;
 	m_inactiveDuration = 5.0f;
@@ -184,11 +188,19 @@ void SecurityCamera::update(float t_dt, Vector2 playerPos)
     m_angle += angleV; 
     
     switch(m_type){
-        case CAM_SWEEP:
-            if(m_movingRight == true){m_end.x += extendSpd;}
-            else{m_end.x -= extendSpd;}
-        break;
         case CAM_SPOT:
+            if (m_movingRight) 
+            {
+                m_end.x += extendSpd;
+                if (m_end.x >= m_maxX) m_movingRight = false;
+            } else 
+            {
+                m_end.x -= extendSpd;
+                if (m_end.x <= m_minX) m_movingRight = true;
+            }
+            m_end.y = m_yLevel;
+        break;
+        case CAM_SWEEP:
             m_end = (Vector2){sin(m_angle) * m_length + m_origin.x, cos(m_angle) * m_length + m_origin.y};
         break;
         default:
@@ -197,6 +209,7 @@ void SecurityCamera::update(float t_dt, Vector2 playerPos)
 
     m_direction = Vector2Normalize((Vector2){m_end.x - m_origin.x, m_end.y - m_origin.y});
     m_laser.d = c2V(m_direction.x , m_direction.y);
+    m_laser.p = c2V(m_origin.x, m_origin.y);
     m_playerDetected = raycastPlayerCollision(playerPos);
 }
 
