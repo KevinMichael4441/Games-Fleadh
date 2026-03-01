@@ -1,6 +1,108 @@
 #include "game.hpp"
 #include "cJSON.h"
 
+Rectangle AABBToRectangle(const c2AABB& box)
+{
+    return Rectangle{ box.min.x, box.min.y, box.max.x - box.min.x, box.max.y - box.min.y };
+}
+
+static bool IsMechOffScreen(const SuperMech& mech, const CameraManager& camera)
+{
+    Rectangle camRect = camera.getScreenRect();
+    Rectangle mechRect = AABBToRectangle(SuperMech_GetBoundingBox(&mech));
+
+    return !CheckCollisionRecs(camRect, mechRect);
+}
+
+static bool Level_IsSolidTile(const LevelData* level, Vector2 pos)
+{
+    int tx = (int)(pos.x / level->tileWidth);
+    int ty = (int)(pos.y / level->tileHeight);
+
+    if (tx < 0 || ty < 0 || tx >= level->levelWidth || ty >= level->levelHeight) return true;
+
+    cJSON* tileItem = cJSON_GetArrayItem(level->boundaryLayer, ty * level->levelWidth + tx);
+    if (tileItem && cJSON_IsNumber(tileItem) && tileItem->valueint != 0) return true;
+
+    return false;
+}
+
+static bool FindGroundBelow(const LevelData* level, Vector2 startPos, Vector2& outPos, int maxFall = 512)
+{
+	float mechHeight = 98.0f;
+	int step = level->tileHeight;
+    Vector2 pos = startPos;
+
+    for (int i = 0; i < maxFall; i += step)
+    {
+        Vector2 below = { pos.x, pos.y + step };
+
+        if (Level_IsSolidTile(level, below))
+        {
+            // Move spawn UP by mech height so feet land on ground
+            outPos = { pos.x, below.y - mechHeight };
+            return true;
+        }
+
+        pos.y += step;
+    }
+
+    return false;
+}
+
+static Vector2 FindValidRespawnPosition(const LevelData* level, const CameraManager& camera, Vector2 playerPos)
+{
+    Rectangle camRect = camera.getScreenRect();
+    int step = level->tileWidth;
+
+    std::vector<Vector2> priorityCandidates;
+    std::vector<Vector2> fallbackCandidates;
+
+    //PRIORITY: same Y level as player (left/right of camera)
+    for (int xOffset = step; xOffset <= camRect.width; xOffset += step)
+    {
+        priorityCandidates.push_back({ camRect.x - xOffset, playerPos.y });
+        priorityCandidates.push_back({ camRect.x + camRect.width + xOffset, playerPos.y });
+    }
+
+    //FALLBACK: camera edges
+    for (int y = (int)camRect.y; y < camRect.y + camRect.height; y += step)
+    {
+        fallbackCandidates.push_back({ camRect.x - step, (float)y });
+        fallbackCandidates.push_back({ camRect.x + camRect.width + step, (float)y });
+    }
+
+    for (int x = (int)camRect.x; x < camRect.x + camRect.width; x += step)
+    {
+        fallbackCandidates.push_back({ (float)x, camRect.y - step });
+        fallbackCandidates.push_back({ (float)x, camRect.y + camRect.height + step });
+    }
+
+    Vector2 groundPos;
+
+    //try priority candidates first
+    for (auto& pos : priorityCandidates)
+    {
+        if (!Level_IsSolidTile(level, pos) &&
+            FindGroundBelow(level, pos, groundPos))
+        {
+            return groundPos;
+        }
+    }
+
+    for (auto& pos : fallbackCandidates)
+    {
+        if (!Level_IsSolidTile(level, pos) &&
+            FindGroundBelow(level, pos, groundPos))
+        {
+            return groundPos;
+        }
+    }
+
+    //last resort
+    return { camRect.x - step, playerPos.y };
+}
+
 static void DebugCountBoundaryTiles(const LevelData* level);
 
 Game::Game()
@@ -43,9 +145,8 @@ void Game::Run()
 
 void Game::InitGame()
 {
-
 	// Initial GameState
-	gamestate = GAME_PLAY;
+	gamestate = GAME_START;
 
 	//-------------Level Loading-----------------//
 
@@ -59,10 +160,6 @@ void Game::InitGame()
 	{
     	TraceLog(LOG_ERROR, "chunkCacheInit failed");
 	}
-
-	// Temporary ----------------------------------------------------
-	temp_background = LoadTexture("./assets/1280x960_temp.jpg");
-	// --------------------------------------------------------------
 
 	//------------- OOZEY WHIZY------------------//
 	Vector2 centrePoint = {SCREEN_WIDTH/2,SCREEN_HEIGHT/2};
@@ -79,20 +176,13 @@ void Game::InitGame()
 	
 	//-------Collectibles-------//
 	score = 0;
-	collectibles.AddCollectible({400, 200}, 8);
-	collectibles.AddCollectible({300, 220}, 8);
-	collectibles.AddCollectible({400, 100}, 8);
-	collectibles.AddCollectible({260, 260}, 8);
-	collectibles.AddCollectible({100, 200}, 8);
+	m_collectibles_manager.Initialize({640, 350}, 8);
 
 	//-----------Teleporter------------------------//
 	m_teleporter_manager.Initialize({960, 384}, {1120, 384});
 
 	//-----------JumpPad------------------------//
-	for (int index = 0; index < MAX_JUMPPADS; index++)
-	{
-		m_jumpPadds[index].initialize({672,384});
-	}
+	m_jumpPadd_manager.Initialize({672, 384});
 
 	//--------Input Manager---------------------//
 	InitInputManager();
@@ -105,6 +195,8 @@ void Game::InitGame()
 		glslVersionStr = (const char *)glGetString(GL_SHADING_LANGUAGE_VERSION);
 		InitTelemetry(&r36s_telemetry);
 	#endif // Init Telemetry R36S and Linux only
+
+	gamestate = GAME_PLAY;
 }
 
 void Game::Update(float t_dt)
@@ -115,11 +207,13 @@ void Game::Update(float t_dt)
 	NonGameInputs();
 	
 	ui_manager.changeUI(gamestate, camera.screen.target);
-	ui_manager.updateUI(t_dt);
+	ui_manager.updateUI(t_dt, camera.screen.target);
 
 	switch (gamestate)
 	{
 		case GAME_START:
+		break;
+		case GAME_MENU:
 		break;
 		case GAME_PLAY:
 		{
@@ -130,18 +224,25 @@ void Game::Update(float t_dt)
 			chunkCacheUpdate(&m_level, center);
 			SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
 			checkMechOozeCollision();
-			collectibles.Update(ooze, score);
-
-			//-----------JumpPad------------------------//
-			for (int index = 0; index < MAX_JUMPPADS; index++)
-			{
-				m_jumpPadds[index].update(ooze);
-			}
-
+			m_collectibles_manager.Update(ooze, score);
+			m_jumpPadd_manager.Update(ooze);
 			ooze.Update(t_dt, m_activeCommand);
+
+			// ----------- NEW: Respawn mech if off-screen ------------
+    		mechRespawnCooldown += t_dt;
+
+			if (IsMechOffScreen(mech, camera) && mechRespawnCooldown >= 5.0f)
+			{
+    			Vector2 spawnPos = FindValidRespawnPosition(&m_level, camera, ooze.getPosition());
+			    SuperMech_Reset(&mech, ooze.getPosition(), spawnPos);
+			    mechRespawnCooldown = 0.0f;
+			    TraceLog(LOG_INFO, "Mech respawned at (%.1f, %.1f)", spawnPos.x, spawnPos.y);
+			}
 		}
 		break;
 		case GAME_PAUSE:
+		break;
+		case GAME_INSTRUCTION:
 		break;
 		case GAME_END:
 			if(ui_manager.stingAnim.timeToSpawn())
@@ -209,14 +310,22 @@ void Game::NonGameInputs()
 		gamestate = GAME_START;
 	}
 	if (IsKeyPressed(KEY_TWO))
+		if(gamestate != GAME_MENU){
+		gamestate = GAME_MENU;
+	}
+	if (IsKeyPressed(KEY_THREE))
 		if(gamestate != GAME_PLAY){
 		gamestate = GAME_PLAY;
 	}
-	if (IsKeyPressed(KEY_THREE))
+	if (IsKeyPressed(KEY_FOUR))
 		if(gamestate != GAME_PAUSE){
 		gamestate = GAME_PAUSE;
 	}
-	if (IsKeyPressed(KEY_FOUR))
+	if (IsKeyPressed(KEY_FIVE))
+		if(gamestate != GAME_INSTRUCTION){
+		gamestate = GAME_INSTRUCTION;
+	}
+	if (IsKeyPressed(KEY_SIX))
 		if(gamestate != GAME_END){
 		gamestate = GAME_END;
 	}
@@ -227,42 +336,41 @@ void Game::Draw()
 {
 	switch (gamestate){
 		case GAME_START:
-			DrawTexture(temp_background, 0, 0, WHITE);
+		break;
+		case GAME_MENU:
+			chunkCacheDraw(&m_level);
 		break;
 		case GAME_PLAY:
-			DrawTexture(temp_background, 0, 0, WHITE);
-			
 			chunkCacheDraw(&m_level);
-			SuperMech_Draw(&mech);
-			ooze.Draw();
+
 			m_securitySystem.draw();
 			m_laseDoor_manager.Draw();
+			m_jumpPadd_manager.Draw();
 			m_teleporter_manager.Draw();
-			collectibles.Draw();
-			//-----------JumpPad------------------------//
-			for (int index = 0; index < MAX_JUMPPADS; index++)
-			{
-				m_jumpPadds[index].draw();
-			}
+			m_collectibles_manager.Draw();
+
+			SuperMech_Draw(&mech);
+			ooze.Draw();
+
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
 		break;
 		case GAME_PAUSE:
-			DrawTexture(temp_background, 0, 0, WHITE);
 			chunkCacheDraw(&m_level);
-			ooze.Draw();
-			SuperMech_Draw(&mech);
+
 			m_securitySystem.draw();
-			collectibles.Draw();
+			m_laseDoor_manager.Draw();
+			m_jumpPadd_manager.Draw();
+			m_teleporter_manager.Draw();
+			m_collectibles_manager.Draw();
 
-			//-----------JumpPad------------------------//
-			for (int index = 0; index < MAX_JUMPPADS; index++)
-			{
-				m_jumpPadds[index].draw();
-			}
+			SuperMech_Draw(&mech);
+			ooze.Draw();
 
+			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
+		break;
+		case GAME_INSTRUCTION:
 		break;
 		case GAME_END:
-			DrawTexture(temp_background, 0, 0, WHITE);
 			chunkCacheDraw(&m_level);
 		break;
 	}
@@ -280,8 +388,10 @@ void Game::Draw()
 
 void Game::Respawn()
 {
-    ooze.Reset({SCREEN_WIDTH/2, SCREEN_HEIGHT/2});
-    SuperMech_Reset(&mech, {100,200});
+	Vector2 oozeSpawn = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2};
+    ooze.Reset(oozeSpawn);
+    SuperMech_Reset(&mech, ooze.getPosition(), {100, 200});
+	chunkCacheUpdate(&m_level, oozeSpawn);
 }
 
 void Game::checkMechOozeCollision()

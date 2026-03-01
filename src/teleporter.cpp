@@ -1,5 +1,41 @@
 #include "teleporter.h"
 
+//------------------Teleporter------------------//
+
+Teleporter::Teleporter()
+{
+	m_boundingBox = {0, 0, m_WIDTH, m_HEIGHT};
+}
+
+void Teleporter::Initialize(Vector2 pos)
+{
+	m_boundingBox = {pos.x, pos.y, m_WIDTH, m_HEIGHT};
+}
+
+bool Teleporter::Update(Ooze &player)
+{
+	if (CheckCollisionPointRec(player.CalculateCenter(), m_boundingBox))
+    {
+		Point *currentPoint;
+		for (int index = 0; index < MAX_POINTS; index++)
+		{
+			return true;
+		}
+    }
+
+	return false;
+}
+
+void Teleporter::Teleport_To(Ooze &player)
+{
+	player.Reset({m_boundingBox.x + (m_WIDTH / 2), m_boundingBox.y + (m_HEIGHT / 2)});
+}
+
+void Teleporter::Draw() const
+{
+	DrawRectangle(m_boundingBox.x, m_boundingBox.y, m_WIDTH, m_HEIGHT, ORANGE );
+}
+
 //------------------Manager------------------//
 
 Teleporter_Manager::Teleporter_Manager()
@@ -56,40 +92,4 @@ void Teleporter_Manager::Draw() const
 		m_teleporter_pairs[i].first.Draw();
 		m_teleporter_pairs[i].second.Draw();
 	}
-}
-
-//------------------Teleporter------------------//
-
-Teleporter::Teleporter()
-{
-	m_boundingBox = {0, 0, m_WIDTH, m_HEIGHT};
-}
-
-void Teleporter::Initialize(Vector2 pos)
-{
-	m_boundingBox = {pos.x, pos.y, m_WIDTH, m_HEIGHT};
-}
-
-bool Teleporter::Update(Ooze &player)
-{
-	if (CheckCollisionPointRec(player.CalculateCenter(), m_boundingBox))
-    {
-		Point *currentPoint;
-		for (int index = 0; index < MAX_POINTS; index++)
-		{
-			return true;
-		}
-    }
-
-	return false;
-}
-
-void Teleporter::Teleport_To(Ooze &player)
-{
-	player.Reset({m_boundingBox.x + (m_WIDTH / 2), m_boundingBox.y + (m_HEIGHT / 2)});
-}
-
-void Teleporter::Draw() const
-{
-	DrawRectangle(m_boundingBox.x, m_boundingBox.y, m_WIDTH, m_HEIGHT, ORANGE );
 }

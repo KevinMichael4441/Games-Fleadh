@@ -79,9 +79,10 @@ private:
 	CameraManager camera;
 	Ooze ooze;
 	SuperMech mech;
+	float mechRespawnCooldown = 0.0f;
 
-	Collectibles_Manager collectibles;
-	JumpPad m_jumpPadds[MAX_JUMPPADS];
+	Collectibles_Manager m_collectibles_manager;
+	JumpPad_Manager m_jumpPadd_manager;
 	Teleporter_Manager m_teleporter_manager;
 	LaserDoor_Manager m_laseDoor_manager;
 	SecuritySystem m_securitySystem;

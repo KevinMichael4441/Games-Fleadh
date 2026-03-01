@@ -68,6 +68,27 @@
       }
     },
     // =================================================================
+    // Windows Build Debug Tasks (Binary build only)
+    // =================================================================
+    {
+      "label": "Windows: Build Debug",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "debug_windows"
+      ],
+      "group": "test",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    // =================================================================
     // GDB Debug Build Tasks (explicit PLATFORM/CONFIG)
     // Todo : unify with above tasks?
     // =================================================================
@@ -151,6 +172,66 @@
       }
     },
     // =================================================================
+    // VS Code build task for Windows (explicit PLATFORM/CONFIG)
+    // =================================================================
+    {
+      "label": "Windows: Debug VSCode",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "PLATFORM=windows",
+        "CONFIG=debug",
+        "all",
+        "-j"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    // =================================================================
+    // Run Windows build via Wine (for testing)
+    // =================================================================
+    {
+      "label": "Windows: Run Debug via Wine",
+      "type": "shell",
+      "command": "wine64",
+      "args": [
+        "${workspaceFolder}/build/windows_debug/target_windows.exe"
+      ],
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true
+      }
+    },
+    {
+      "label": "Windows: Run Release via Wine",
+      "type": "shell",
+      "command": "wine64",
+      "args": [
+        "${workspaceFolder}/build/windows_release/target_windows.exe"
+      ],
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true
+      }
+    },
+    // =================================================================
     // Linux Build Release Tasks
     // =================================================================
     {
@@ -203,6 +284,27 @@
         "-f",
         "Makefile.mk",
         "release_r36s"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    // =================================================================
+    // Windows Build Release Tasks
+    // =================================================================
+    {
+      "label": "Windows: Build Release",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "-f",
+        "Makefile.mk",
+        "release_windows"
       ],
       "group": "build",
       "problemMatcher": [
@@ -336,8 +438,9 @@
         "sync-vscode-settings",
         "--no-print-directory"
       ],
-      "presentation": {
-        "reveal": "silent", // Runs invisibly without stealing focus
+      "presentation": { 
+        // Runs invisibly without stealing focus
+        "reveal": "silent",
         "panel": "shared",
         "close": true
       }

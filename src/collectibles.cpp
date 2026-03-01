@@ -1,5 +1,7 @@
 #include "collectibles.h"
 
+//------------------Collectible------------------//
+
 Collectible::Collectible()
 {
     m_position = {0,0};
@@ -12,21 +14,6 @@ void Collectible::Initialize(Vector2 pos, float radius)
     m_position = pos;
     m_radius = radius;
     m_active = true;
-}
-
-bool Collectible::IsActive() const
-{
-    return m_active;
-}
-
-Vector2 Collectible::GetPosition() const
-{
-    return m_position;
-}
-
-float Collectible::GetRadius() const
-{
-    return m_radius;
 }
 
 void Collectible::Update(Ooze& player, int& score)
@@ -66,25 +53,28 @@ void Collectible::Draw() const
     DrawCircleV(m_position, m_radius, GOLD);
 }
 
+bool Collectible::IsActive() const
+{
+    return m_active;
+}
+
 //------------------Manager------------------//
 
 Collectibles_Manager::Collectibles_Manager()
 {
-    m_count = 0;
 }
 
-void Collectibles_Manager::AddCollectible(Vector2 pos, float radius)
+void Collectibles_Manager::Initialize(Vector2 pos, float radius)
 {
-    if (m_count >= MAX_COLLECTIBLES)
-        return;
-
-    m_collectibles[m_count].Initialize(pos, radius);
-    m_count++;
+    for (int i = 0; i < MAX_COLLECTIBLES; i++)
+    {
+        m_collectibles[i].Initialize({pos.x + 30 * i, pos.y}, radius);
+    }
 }
 
 void Collectibles_Manager::Update(Ooze& player, int& score)
 {
-    for (int i = 0; i < m_count; i++)
+    for (int i = 0; i < MAX_COLLECTIBLES; i++)
     {
         m_collectibles[i].Update(player, score);
     }
@@ -92,13 +82,8 @@ void Collectibles_Manager::Update(Ooze& player, int& score)
 
 void Collectibles_Manager::Draw() const
 {
-    for (int i = 0; i < m_count; i++)
+    for (int i = 0; i < MAX_COLLECTIBLES; i++)
     {
         m_collectibles[i].Draw();
     }
-}
-
-void Collectibles_Manager::Reset()
-{
-    m_count = 0;
 }

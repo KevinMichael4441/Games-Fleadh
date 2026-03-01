@@ -55,11 +55,14 @@ typedef struct SuperMech {
 
     float gravity;
     bool isGrounded;
+    float jumpCooldown;
     float jumpForce;
 
     float stateTimer;
-    Vector2 lastKnownPlayerPos;
     bool playerVisible;
+    float scanAngle;
+    float scanSpeed;
+    Vector2 lastKnownPlayerPos;
 
     //---Sprite Properties---//
     Texture2D* currentTexture;
@@ -87,12 +90,14 @@ typedef struct SuperMech {
 void SuperMech_Init(SuperMech *mech, Vector2 startPos, LevelData* level);
 
 void SuperMech_Uppdate(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, float dt);
+void SuperMech_Frame_Update(SuperMech *mech);
 void SuperMech_Draw(SuperMech *mech);
 
 bool SuperMech_CheckCollision_Player(const SuperMech *mech, Vector2 center, float radius);
-void SuperMech_Reset(SuperMech *mech, Vector2 startPos);
+void SuperMech_Reset(SuperMech *mech, Vector2 playerPos, Vector2 startPos);
 
 const char *SuperMech_GetStateName(SupermechState state);
+c2AABB SuperMech_GetBoundingBox(const SuperMech* mech);
 
 #ifdef __cplusplus
 }

@@ -176,13 +176,17 @@ __r36s_ssh_ensure:
 # Prevents: rsync / chmod overwriting a running binary
 #=================================================================
 __stop_r36s_target: __r36s_ssh_ensure
-	$(call INFO_MSG,Stopping running $(notdir $(TARGET)) if present...)
-	@ssh $(SSH_DEFAULT_OPTS) $(R36S_USER)@$(R36S_HOST) \
-		"if pgrep -x '$(notdir $(TARGET))' >/dev/null 2>&1; then \
-			echo 'Stopping $(notdir $(TARGET))...'; \
-			sudo pkill -x '$(notdir $(TARGET))'; \
+	$(call INFO_MSG,Stopping running $(R36S_GAME_ALIAS) if present...)
+	@ssh $(SSH_DEFAULT_OPTS) $(R36S_USER)@$(R36S_HOST) "\
+		if pgrep -f '(^|/)\./$(R36S_GAME_ALIAS)( |$$)' >/dev/null 2>&1 || pgrep -x '$(R36S_GAME_ALIAS)' >/dev/null 2>&1; then \
+			echo 'Stopping $(R36S_GAME_ALIAS)...'; \
+			sudo pkill -TERM -f '(^|/)\./$(R36S_GAME_ALIAS)( |$$)' || true; \
+			sudo pkill -TERM -x '$(R36S_GAME_ALIAS)' || true; \
+			sleep 0.5; \
+			sudo pkill -KILL -f '(^|/)\./$(R36S_GAME_ALIAS)( |$$)' || true; \
+			sudo pkill -KILL -x '$(R36S_GAME_ALIAS)' || true; \
 		else \
-			echo 'No $(notdir $(TARGET)) process running'; \
+			echo 'No $(R36S_GAME_ALIAS) process running'; \
 		fi"
 
 #=================================================================

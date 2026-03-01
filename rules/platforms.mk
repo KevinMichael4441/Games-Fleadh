@@ -3,7 +3,7 @@
 #=================================================================
 .PHONY: __validate_config_value __validate_platform_value __validate_debug_config \
         __validate_release_config __validate_r36s_platform __validate_linux_platform \
-        __validate_web_platform
+        __validate_web_platform __validate_windows_platform
 
 #=================================================================
 # Validate config is a valid value
