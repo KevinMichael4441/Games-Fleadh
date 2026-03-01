@@ -1,22 +1,27 @@
-#ifndef CAMTYPE_H
-#define CAMTYPE_H
+//#ifndef CAMTYPE_H
+//#define CAMTYPE_H
+#pragma once
 
-typedef enum CamType
+enum CamType
 {
 	CAM_SPOT,
 	CAM_SWEEP
-} CamType;
+};
 
-typedef enum CamDirection
+enum CamMount
 {
-	N,
-	S,
-	E,
-	W,
-	NE,
-	NW,
-	SE,
-	SW
-} CamDirection;
+    MOUNT_BACKGROUND = 0,
+    MOUNT_LEFT_WALL = 1,
+	MOUNT_RIGHT_WALL = 2,
+    MOUNT_CEILING = 3
+};
 
-#endif
+enum LaserDir
+{
+    LASER_N = 0,
+    LASER_E = 1,
+    LASER_S = 2,
+    LASER_W = 3
+};
+
+//#endif

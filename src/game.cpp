@@ -154,6 +154,10 @@ void Game::InitGame()
         TraceLog(LOG_ERROR, "Failed to load level");
     }
 	DebugCountBoundaryTiles(&m_level);
+	if (!LevelLoadObjects(&m_level, "Objects"))
+	{
+		TraceLog(LOG_ERROR, "Failed to load objects");
+	}
 
 	if (!chunkCacheInit(&m_level, SCREEN_WIDTH, SCREEN_HEIGHT))
 	{
@@ -170,7 +174,8 @@ void Game::InitGame()
 	//---------------Security System------------//
 	m_securitySystem.initialize(&m_level);
 	m_laseDoor_manager.Initialize({576, 300}, {520, 350}, 8);
-
+	m_securitySystem.m_lasers[0].initialize(800.0f, 200.0f);
+    m_securitySystem.m_laserCount = 1;
 	
 	//-------Collectibles-------//
 	score = 0;
@@ -184,6 +189,9 @@ void Game::InitGame()
 
 	//--------Input Manager---------------------//
 	InitInputManager();
+
+	//------------UI Manager-------------------//
+	ui_manager.initialize();
 
 	//----------------Telemetry------------------//
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
@@ -224,7 +232,7 @@ void Game::Update(float t_dt)
 				chunkCacheUpdate(&m_level, center);
 				SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
 				checkMechOozeCollision();
-				m_collectibles_manager.Update(ooze, score);
+				m_collectibles_manager.Update(ooze, score, t_dt);
 				m_jumpPadd_manager.Update(ooze);
 				ooze.Update(t_dt, m_activeCommand);
 			}
@@ -262,6 +270,8 @@ void Game::Update(float t_dt)
 				gamestate = GAME_PLAY;
 			}
 		break;
+		case GAME_EXIT:
+		break;
 	}
 
 // -----------------TELEMETRY UPDATES----------------------------------------//
@@ -278,15 +288,15 @@ void Game::Update(float t_dt)
 
 void Game::NonGameInputs()
 {
-	if(IsCommandActive(VOLUME_UP, m_activeCommand))
-	{
-		// Increase Volume
-	}
+	// if(IsCommandActive(VOLUME_UP, m_activeCommand))
+	// {
+	// 	// Increase Volume
+	// }
 
-	if (IsCommandActive(VOLUME_DOWN, m_activeCommand))
-	{
-		// Decrease Volume
-	}
+	// if (IsCommandActive(VOLUME_DOWN, m_activeCommand))
+	// {
+	// 	// Decrease Volume
+	// }
 
 	if (IsCommandActive(MENU_TOGGLE, m_activeCommand))
 	{
@@ -296,20 +306,20 @@ void Game::NonGameInputs()
 		#endif
 	}
 
-	if (IsCommandActive(START_GAME, m_activeCommand))
-	{
-		// (?)
-	}
+	// if (IsCommandActive(START_GAME, m_activeCommand))
+	// {
+	// 	// (?)
+	// }
 
-	if (IsCommandActive(EXIT_COMMAND, m_activeCommand))
-	{
-		// (?)
-	}
+	// if (IsCommandActive(EXIT_COMMAND, m_activeCommand))
+	// {
+	// 	// (?)
+	// }
 
-	if (IsCommandActive(POWER_COMMAND, m_activeCommand))
-	{
-		// (?)
-	}
+	// if (IsCommandActive(POWER_COMMAND, m_activeCommand))
+	// {
+	// 	// (?)
+	// }
 	// Temporary GameState switching --
 	if (IsKeyPressed(KEY_ONE))
 	if(gamestate != GAME_START){
@@ -347,7 +357,8 @@ void Game::Draw()
 			chunkCacheDraw(&m_level);
 		break;
 		case GAME_PLAY:
-			chunkCacheDraw(&m_level);
+			DrawTexture(temp_background, 0, 0, WHITE);
+			chunkCacheDrawBackground(&m_level);
 
 			m_securitySystem.draw();
 			m_laseDoor_manager.Draw();
@@ -357,11 +368,15 @@ void Game::Draw()
 
 			SuperMech_Draw(&mech);
 			ooze.Draw();
+
+			chunkCacheDraw(&m_level);
+
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
 			if(ui_manager.stingAnim.playingAnim()){ui_manager.stingAnim.draw();}
 		break;
 		case GAME_PAUSE:
-			chunkCacheDraw(&m_level);
+			DrawTexture(temp_background, 0, 0, WHITE);
+			chunkCacheDrawBackground(&m_level);
 
 			m_securitySystem.draw();
 			m_laseDoor_manager.Draw();
@@ -371,13 +386,29 @@ void Game::Draw()
 
 			SuperMech_Draw(&mech);
 			ooze.Draw();
+
+			chunkCacheDraw(&m_level);
+
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
-		break;
 		case GAME_INSTRUCTION:
 		break;
 		case GAME_END:
+			DrawTexture(temp_background, 0, 0, WHITE);
+			chunkCacheDrawBackground(&m_level);
+
+			m_securitySystem.draw();
+			m_laseDoor_manager.Draw();
+			m_jumpPadd_manager.Draw();
+			m_teleporter_manager.Draw();
+			m_collectibles_manager.Draw();
+
+			SuperMech_Draw(&mech);
+			ooze.Draw();
+
 			chunkCacheDraw(&m_level);
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
+		break;
+		case GAME_EXIT:
 		break;
 	}
 
@@ -395,9 +426,9 @@ void Game::Draw()
 void Game::Respawn()
 {
 	Vector2 oozeSpawn = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2};
+	chunkCacheUpdate(&m_level, oozeSpawn);
     ooze.Reset(oozeSpawn);
     SuperMech_Reset(&mech, ooze.getPosition(), {100, 200});
-	chunkCacheUpdate(&m_level, oozeSpawn);
 }
 
 void Game::checkMechOozeCollision()

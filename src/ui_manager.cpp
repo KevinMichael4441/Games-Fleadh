@@ -1,7 +1,6 @@
 #include "ui_manager.hpp"
 
 UI_Manager::UI_Manager(){
-	initialize();
 	std::cout << "UI_Manager Object Created\n";
 }
 UI_Manager::~UI_Manager(){
@@ -61,9 +60,12 @@ GameState UI_Manager::updateUI(float& t_dt, Vector2 t_pos, Command& t_activeComm
 		case GAME_END:
 			updateEndUI(t_dt);
 		break;
+		case GAME_EXIT:
+		break;
 	}
 	return screen;
 }
+
 void UI_Manager::drawUI(){
 	switch (screen){
 		case GAME_START:
@@ -83,6 +85,8 @@ void UI_Manager::drawUI(){
 		break;
 		case GAME_END:
 			drawEndUI();
+		break;
+		case GAME_EXIT:
 		break;
 	}
 }
@@ -107,6 +111,8 @@ void UI_Manager::loadUI(Vector2& t_pos){
 		case GAME_END:
 			loadEndUI(t_pos);
 		break;
+		case GAME_EXIT:
+		break;
 	}
 }
 void UI_Manager::unloadUI(){
@@ -128,6 +134,8 @@ void UI_Manager::unloadUI(){
 		break;
 		case GAME_END:
 			unloadEndUI();
+		break;
+		case GAME_EXIT:
 		break;
 	}
 }
@@ -218,6 +226,8 @@ void UI_Manager::updateMenuUI(float& t_dt, Command& t_newCommand){
 					selectWidth = 120;
 					selectHeight = 5;
 					selectPos = {button4Pos.x + (WIDTH / 2) - (selectWidth / 2), button4Pos.y + HEIGHT - 15};
+				break;
+				case BUTTON_PAUSE:
 				break;
 			}
 		}

@@ -7,6 +7,7 @@
 #include "command.h"
 #include "gamestates.hpp"
 #include "sting_anim.hpp"
+#include "command.h"
 
 typedef enum Button{
 	BUTTON_START,
@@ -22,6 +23,7 @@ class UI_Manager
 		UI_Manager();
 		~UI_Manager();
 
+		void initialize();
 		void changeUI(GameState t_newScreen, Vector2 t_pos);
 		GameState updateUI(float& t_dt, Vector2 t_pos, Command& t_activeCommand);
 		void drawUI();
@@ -52,7 +54,6 @@ class UI_Manager
 		Vector2 button4Pos{0.0f,0.0f};
 		Vector2 button5Pos{0.0f,0.0f};
 
-		void initialize();
 		void loadUI(Vector2& t_pos);
 		void unloadUI();
 

@@ -16,6 +16,14 @@ typedef struct ChunkCache
     RenderTexture2D tex[9];
 } ChunkCache;
 
+typedef struct LevelObject
+{
+    const char* type;
+    float x;
+    float y;
+    cJSON* properties;
+} LevelObject;
+
 typedef struct
 {
     int levelWidth;             // number of tiles in the width of the level
@@ -35,10 +43,13 @@ typedef struct
     cJSON* levelLayer;
     cJSON* foregroundLayer;
     cJSON* boundaryLayer;
+    cJSON* backgroundLayer;
+    cJSON* objectLayer;
 
     int* levelGids;
     int* foregroundGids;
     int* boundaryGids;
+    int* backgroundGids;
 
     int chunkWidthPx;           // chunk pixel size (screen size)
     int chunkHeightPx;
@@ -48,9 +59,13 @@ typedef struct
     int centreChunkY;
 
     ChunkCache levelCache;
+    ChunkCache backgroundCache;
     int slotTex[3][3];              // storage for the individual chunks 0-8
     unsigned char slotValid[3][3];  // used for edge cases where the player (centre chunk) is at the edge of the map so adjacent chunks could be out of bounds
     unsigned char chunkCacheReady; 
+
+    LevelObject* objects;
+    int objectCount;
 } LevelData;
 
 
@@ -89,6 +104,14 @@ void chunkCacheUpdate(LevelData* level, Vector2 playerWorldPos);
 
 // draws the chunks
 void chunkCacheDraw(const LevelData* level);
+
+void chunkCacheDrawBackground(const LevelData* level);
+
+bool LevelLoadObjects(LevelData* level, const char* objectLayerName);
+
+int LevelObjectGetInt(const LevelObject* obj, const char* propName, int defaultValue);
+
+float LevelObjectGetFloat(const LevelObject* obj, const char* propName, float defaultValue);
 
 
 #ifdef __cplusplus
