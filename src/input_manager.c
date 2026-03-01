@@ -337,13 +337,13 @@ Command PollInput()
 
 	// If no gamepad input check keyboard
 	// Movement
-	if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP))
+	if (IsKeyDown(KEY_UP))
 		command |= MOVE_UP;
-	if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
+	if (IsKeyDown(KEY_DOWN))
 		command |= MOVE_DOWN;
-	if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT))
+	if (IsKeyDown(KEY_LEFT))
 		command |= MOVE_LEFT;
-	if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT))
+	if (IsKeyDown(KEY_RIGHT))
 		command |= MOVE_RIGHT;
 
 	// Attacks

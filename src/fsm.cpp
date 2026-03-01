@@ -52,7 +52,7 @@ void FSM::initCollideDownTransitions()
 
 void FSM::initCollideHorizontalTransitions()
 {
-    validCollideHorizontalTransitions[0] = {EVENT_TIMER, STATE_JUMPING};
+    validCollideHorizontalTransitions[0] = {EVENT_TIMER, STATE_MOVING};
 }
 
 
