@@ -34,6 +34,7 @@ class UI_Manager
 		
 		GameState screen;
 		Vector2 center;
+		Vector2 corner;
 
 		Button activeSelection;
 		Button newSelection;
@@ -54,6 +55,14 @@ class UI_Manager
 		Vector2 button4Pos{0.0f,0.0f};
 		Vector2 button5Pos{0.0f,0.0f};
 
+		bool paused{false};
+		Color fader;
+		float alpha{0.0f};
+		float const MAX_ALPHA = 0.5f;
+		float const FADE_SPEED = 0.075f;
+
+		void recenter(Vector2& t_pos);
+
 		void loadUI(Vector2& t_pos);
 		void unloadUI();
 
@@ -67,12 +76,12 @@ class UI_Manager
 		void drawMenuUI();
 		void unloadMenuUI();
 
-		void loadGameplayUI();
-		void updateGameplayUI(float& t_dt);
+		void loadGameplayUI(Vector2& t_pos);
+		void updateGameplayUI(float& t_dt, Vector2& t_pos);
 		void drawGameplayUI();
 		void unloadGameplayUI();
 
-		void loadPauseUI();
+		void loadPauseUI(Vector2& t_pos);
 		void updatePauseUI();
 		void drawPauseUI();
 		void unloadPauseUI();

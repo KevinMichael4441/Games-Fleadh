@@ -6,7 +6,6 @@ SecurityCamera::SecurityCamera()
 { 
 }
 
-
 void SecurityCamera::initialize(float t_x, float t_y, float t_distance, CamType t_type, CamMount t_mount, LaserDir t_dir)
 {
     m_position = {t_x, t_y};

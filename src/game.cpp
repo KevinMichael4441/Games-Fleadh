@@ -163,6 +163,7 @@ void Game::InitGame()
 	{
     	TraceLog(LOG_ERROR, "chunkCacheInit failed");
 	}
+
 	//------------- OOZEY WHIZY------------------//
 	Vector2 centrePoint = {SCREEN_WIDTH/2,SCREEN_HEIGHT/2};
 	ooze.Initialize(SPRING_CONSTANT, DAMP, centrePoint, OOZE_SPEED, JUMP_AMOUNT);
@@ -202,7 +203,7 @@ void Game::InitGame()
 		InitTelemetry(&r36s_telemetry);
 	#endif // Init Telemetry R36S and Linux only
 
-	gamestate = GAME_MENU;
+	gamestate = GAME_PLAY;
 }
 
 void Game::Update(float t_dt)
@@ -230,7 +231,7 @@ void Game::Update(float t_dt)
 				m_laseDoor_manager.Update(ooze, t_dt);
 				m_teleporter_manager.Update(ooze, t_dt);
 				chunkCacheUpdate(&m_level, center);
-				SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
+				//SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
 				checkMechOozeCollision();
 				m_collectibles_manager.Update(ooze, score, t_dt);
 				m_jumpPadd_manager.Update(ooze);

@@ -14,9 +14,32 @@ void UI_Manager::initialize(){
 	newSelection = BUTTON_START;
 }
 
+void UI_Manager::recenter(Vector2& t_pos){
+	if(t_pos.x > SCREEN_WIDTH / 2)
+	{
+		center.x = t_pos.x;
+		corner.x = center.x - SCREEN_WIDTH / 2;
+	}
+	else
+	{
+		center.x = SCREEN_WIDTH / 2;
+		corner.x = 0.0f;
+	}
+	if(t_pos.y > SCREEN_HEIGHT / 2)
+	{
+		center.y = t_pos.y;
+		corner.y = center.y - SCREEN_HEIGHT / 2;
+	}
+	else
+	{
+		center.y = SCREEN_HEIGHT / 2;
+		corner.y = 0.0f;
+	}
+}
+
 void UI_Manager::changeUI(GameState t_newScreen, Vector2 t_pos){
+	recenter(t_pos);
 	if(t_newScreen != screen){
-		center = {t_pos.x - SCREEN_WIDTH / 2, t_pos.y - SCREEN_HEIGHT /2};
 		unloadUI();
 		screen = t_newScreen;
 		loadUI(t_pos);
@@ -24,23 +47,6 @@ void UI_Manager::changeUI(GameState t_newScreen, Vector2 t_pos){
 }
 GameState UI_Manager::updateUI(float& t_dt, Vector2 t_pos, Command& t_activeCommand){
 
-	if(t_pos.x >= SCREEN_WIDTH / 2)
-	{
-		center.x = t_pos.x - SCREEN_WIDTH / 2;
-	}
-	else
-	{
-		center.x = SCREEN_WIDTH / 2;
-	}
-	if(t_pos.y >= SCREEN_HEIGHT / 2)
-	{
-		center.y = t_pos.y - SCREEN_HEIGHT / 2;
-	}
-	else
-	{
-		center.y = SCREEN_HEIGHT / 2;
-	}
-	
 	switch (screen){
 		case GAME_START:
 			updateStartUI();
@@ -49,7 +55,7 @@ GameState UI_Manager::updateUI(float& t_dt, Vector2 t_pos, Command& t_activeComm
 			updateMenuUI(t_dt, t_activeCommand);
 		break;
 		case GAME_PLAY:
-			updateGameplayUI(t_dt);
+			updateGameplayUI(t_dt, t_pos);
 		break;
 		case GAME_PAUSE:
 			updatePauseUI();
@@ -63,6 +69,7 @@ GameState UI_Manager::updateUI(float& t_dt, Vector2 t_pos, Command& t_activeComm
 		case GAME_EXIT:
 		break;
 	}
+	recenter(t_pos);
 	return screen;
 }
 
@@ -100,10 +107,10 @@ void UI_Manager::loadUI(Vector2& t_pos){
 			loadMenuUI();
 		break;
 		case GAME_PLAY:
-			loadGameplayUI();
+			loadGameplayUI(t_pos);
 		break;
 		case GAME_PAUSE:
-			loadPauseUI();
+			loadPauseUI(t_pos);
 		break;
 		case GAME_INSTRUCTION:
 			loadInstructionUI();
@@ -157,10 +164,10 @@ void UI_Manager::unloadStartUI(){
 void UI_Manager::loadMenuUI(){
 	std::cout << "Loading MENU Screen UI\n";
 
-	button1Pos = {center.x + 200, center.y + 240}; // BigRed
-	button2Pos = {center.x + 400, center.y + 100};
-	button3Pos = {center.x + 400, center.y + 210};
-	button4Pos = {center.x + 400, center.y + 320};
+	button1Pos = {corner.x + 200, corner.y + 240}; // BigRed
+	button2Pos = {corner.x + 400, corner.y + 100};
+	button3Pos = {corner.x + 400, corner.y + 210};
+	button4Pos = {corner.x + 400, corner.y + 320};
 
 	newSelection = BUTTON_START;
 	activeSelection = BUTTON_START;
@@ -242,7 +249,7 @@ void UI_Manager::updateMenuUI(float& t_dt, Command& t_newCommand){
 }
 void UI_Manager::drawMenuUI(){
 
-	DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT, DARKGRAY);
+	DrawRectangle(corner.x,corner.y,SCREEN_WIDTH,SCREEN_HEIGHT, DARKGRAY);
 
 	DrawCircle(button1Pos.x, button1Pos.y + 15,  125.0f, DARKPURPLE);
 	DrawCircle(button1Pos.x, button1Pos.y,  125.0f, RED);
@@ -264,28 +271,44 @@ void UI_Manager::unloadMenuUI(){
 	std::cout << "Unloading MENU Screen UI\n";
 }
 
-void UI_Manager::loadGameplayUI(){
+void UI_Manager::loadGameplayUI(Vector2& t_pos){
 	std::cout << "Loading GAMEPLAY Screen UI\n";
 	if(stingAnim.playingAnim()){stingAnim.play();}
 }
-void UI_Manager::updateGameplayUI(float& t_dt){
+void UI_Manager::updateGameplayUI(float& t_dt, Vector2& t_pos){
+	if(paused == true){
+		if(alpha > 0.0f){ alpha -= FADE_SPEED;fader = Fade(fader, alpha);}
+		else{alpha = 0.0f; paused = false;}}
 	if(stingAnim.playingAnim()){ stingAnim.update(t_dt);}
 }
 void UI_Manager::drawGameplayUI(){
+	if(paused == true){DrawRectangle(corner.x, corner.y, SCREEN_WIDTH, SCREEN_HEIGHT, fader);}
 }
 void UI_Manager::unloadGameplayUI(){
 	std::cout << "Unloading GAMEPLAY Screen UI\n";
 }
 
-void UI_Manager::loadPauseUI(){
+void UI_Manager::loadPauseUI(Vector2& t_pos){
 	std::cout << "Loading PAUSE Screen UI\n";
 	if(stingAnim.playingAnim()){stingAnim.pause();}
+	if(!paused){paused = true;}
+
+	button2Pos = {corner.x + 80.0f, corner.y + 430.0f};
+	button3Pos = {corner.x + 400.0f, corner.y + 430.0f};
 }
 void UI_Manager::updatePauseUI(){
-
+	if(alpha < MAX_ALPHA){alpha += FADE_SPEED;fader = Fade(fader, alpha);}
 }
 void UI_Manager::drawPauseUI(){
 	if(stingAnim.playingAnim()){stingAnim.draw();}
+	DrawRectangle(corner.x, corner.y, SCREEN_WIDTH, SCREEN_HEIGHT, fader);
+
+	DrawText(TextFormat("PAUSED"), center.x - 150, center.y - 135, 80, BLUE);
+
+	DrawRectangle(button2Pos.x, button2Pos.y - (HEIGHT + 40) + 10,WIDTH,HEIGHT, DARKGREEN);
+	DrawRectangle(button2Pos.x, button2Pos.y - (HEIGHT + 40),WIDTH,HEIGHT, GREEN);
+	DrawRectangle(button3Pos.x, button3Pos.y - (HEIGHT + 40) + 10,WIDTH,HEIGHT, DARKGREEN);
+	DrawRectangle(button3Pos.x, button3Pos.y - (HEIGHT + 40),WIDTH,HEIGHT, GREEN);
 }
 void UI_Manager::unloadPauseUI(){
 	std::cout << "Unloading PAUSE Screen UI\n";
