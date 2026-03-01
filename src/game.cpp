@@ -147,7 +147,6 @@ void Game::InitGame()
 {
 	// Initial GameState
 	gamestate = GAME_START;
-
 	//-------------Level Loading-----------------//
 
 	if (!Level_Load(&m_level, "./assets/maps/MyFirstMap.json", "./assets/maps/", "./assets/images/LabTilesTest.png"))
@@ -160,7 +159,6 @@ void Game::InitGame()
 	{
     	TraceLog(LOG_ERROR, "chunkCacheInit failed");
 	}
-
 	//------------- OOZEY WHIZY------------------//
 	Vector2 centrePoint = {SCREEN_WIDTH/2,SCREEN_HEIGHT/2};
 	ooze.Initialize(SPRING_CONSTANT, DAMP, centrePoint, OOZE_SPEED, JUMP_AMOUNT);
@@ -196,7 +194,7 @@ void Game::InitGame()
 		InitTelemetry(&r36s_telemetry);
 	#endif // Init Telemetry R36S and Linux only
 
-	gamestate = GAME_PLAY;
+	gamestate = GAME_MENU;
 }
 
 void Game::Update(float t_dt)
@@ -207,7 +205,7 @@ void Game::Update(float t_dt)
 	NonGameInputs();
 	
 	ui_manager.changeUI(gamestate, camera.screen.target);
-	ui_manager.updateUI(t_dt, camera.screen.target);
+	gamestate = ui_manager.updateUI(t_dt, camera.screen.target, m_activeCommand);
 
 	switch (gamestate)
 	{

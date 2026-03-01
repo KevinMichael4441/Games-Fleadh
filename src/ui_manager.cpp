@@ -11,6 +11,8 @@ UI_Manager::~UI_Manager(){
 void UI_Manager::initialize(){
 	screen = GAME_PLAY;
 	center = {0.0f,0.0f};
+	activeSelection = BUTTON_START;
+	newSelection = BUTTON_START;
 }
 
 void UI_Manager::changeUI(GameState t_newScreen, Vector2 t_pos){
@@ -21,7 +23,7 @@ void UI_Manager::changeUI(GameState t_newScreen, Vector2 t_pos){
 		loadUI(t_pos);
 	}
 }
-void UI_Manager::updateUI(float& t_dt, Vector2 t_pos){
+GameState UI_Manager::updateUI(float& t_dt, Vector2 t_pos, Command& t_activeCommand){
 
 	if(t_pos.x >= SCREEN_WIDTH / 2)
 	{
@@ -45,7 +47,7 @@ void UI_Manager::updateUI(float& t_dt, Vector2 t_pos){
 			updateStartUI();
 		break;
 		case GAME_MENU:
-			updateMenuUI();
+			updateMenuUI(t_dt, t_activeCommand);
 		break;
 		case GAME_PLAY:
 			updateGameplayUI(t_dt);
@@ -60,6 +62,7 @@ void UI_Manager::updateUI(float& t_dt, Vector2 t_pos){
 			updateEndUI(t_dt);
 		break;
 	}
+	return screen;
 }
 void UI_Manager::drawUI(){
 	switch (screen){
@@ -150,18 +153,91 @@ void UI_Manager::loadMenuUI(){
 	button2Pos = {center.x + 400, center.y + 100};
 	button3Pos = {center.x + 400, center.y + 210};
 	button4Pos = {center.x + 400, center.y + 320};
-}
-void UI_Manager::updateMenuUI(){
 
+	newSelection = BUTTON_START;
+	activeSelection = BUTTON_START;
+	selectPos = {button1Pos.x - selectWidth / 2, button1Pos.y + 35};
+}
+void UI_Manager::updateMenuUI(float& t_dt, Command& t_newCommand){
+	if(getNewCommand)
+	{
+		switch (activeSelection)
+		{
+			case BUTTON_START:
+				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME){screen = GAME_PLAY;}
+				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_INSTRUCTION;}
+				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_EXIT;}
+				else if(t_newCommand == MOVE_RIGHT){newSelection = BUTTON_ACHIEVMENT;}
+			break;
+			case BUTTON_PAUSE:
+			break;
+			case BUTTON_INSTRUCTION:
+				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME){screen = GAME_INSTRUCTION;}
+				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_EXIT;}
+				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_ACHIEVMENT;}
+				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_START;}
+			break;
+			case BUTTON_ACHIEVMENT:
+				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME){}
+				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_INSTRUCTION;}
+				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_EXIT;}
+				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_START;}
+			break;
+			case BUTTON_EXIT:
+				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME){}
+				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_ACHIEVMENT;}
+				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_INSTRUCTION;}
+				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_START;}
+			break;
+		}
+	
+
+		if(newSelection != activeSelection)
+		{
+			activeSelection = newSelection;
+			getNewCommand = false;
+
+			switch (activeSelection)
+			{
+				case BUTTON_START:
+					selectWidth = 160;
+					selectHeight = 10;
+					selectPos = {button1Pos.x - (selectWidth / 2), button1Pos.y + 35};
+				break;
+				case BUTTON_INSTRUCTION:
+					selectWidth = 80;
+					selectHeight = 5;
+					selectPos = {button2Pos.x + (WIDTH / 2) - (selectWidth / 2), button2Pos.y + HEIGHT - 15};
+				break;
+				case BUTTON_ACHIEVMENT:
+					selectWidth = 80;
+					selectHeight = 5;
+					selectPos = {button3Pos.x + (WIDTH / 2) - (selectWidth / 2), button3Pos.y + HEIGHT - 15};
+				break;
+				case BUTTON_EXIT:
+					selectWidth = 80;
+					selectHeight = 5;
+					selectPos = {button4Pos.x + (WIDTH / 2) - (selectWidth / 2), button4Pos.y + HEIGHT - 15};
+				break;
+			}
+		}
+	}
+	else {commandTimer += t_dt;}
+
+	if(commandTimer >= MAX_DELAY)
+	{
+		getNewCommand = true;
+		commandTimer = 0.0f;
+	}
 }
 void UI_Manager::drawMenuUI(){
-	//DrawRectangle(center.x,center.y,SCREEN_WIDTH,SCREEN_HEIGHT, PURPLE);
-
 	DrawCircle(button1Pos.x, button1Pos.y + 15,  125.0f, DARKPURPLE);
 	DrawCircle(button1Pos.x, button1Pos.y,  125.0f, RED);
 	DrawRectangle(button2Pos.x, button2Pos.y,WIDTH,HEIGHT, GREEN);
 	DrawRectangle(button3Pos.x, button3Pos.y,WIDTH,HEIGHT, GREEN);
 	DrawRectangle(button4Pos.x, button4Pos.y,WIDTH,HEIGHT, GREEN);
+
+	DrawRectangle(selectPos.x, selectPos.y, selectWidth, selectHeight, WHITE);
 
 	DrawText(TextFormat("START"), button1Pos.x - 67.5, button1Pos.y - 7.5, 40, WHITE);
 	DrawText(TextFormat("HOW TO PLAY"), button2Pos.x + 25, button2Pos.y + 30 - 7.5f, 15, WHITE);
