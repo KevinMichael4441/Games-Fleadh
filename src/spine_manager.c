@@ -81,7 +81,7 @@ static bool debug_mode = false;
 static SpineManagerStats manager_stats = {0};
 
 // Assets (need to provide _spUtil_readFile path)
-static char spine_assets_path[256] = "assets/animation/";
+static char spine_assets_path[256] = "assets/exports/";
 
 //=================================================================
 // Camera 3D for rendering Mesh

@@ -418,8 +418,12 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos, LevelData* level)
 	{
 		TraceLog(LOG_ERROR, "GAME: Failed to create player Spine entity");
         ExitSpineManager();
-		return;
+        return;
 	}
+    else
+    {
+        TraceLog(LOG_INFO, "GAME: SUCESS IN create player Spine entity");
+    }
 
     PlaySpineAnimation(mech->spineBody, 1, "supermech_idle_1", SPINE_ANIM_LOOP);
 	SetSpineFlip(mech->spineBody, true, false);
