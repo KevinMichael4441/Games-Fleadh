@@ -187,6 +187,9 @@ void Game::InitGame()
 	//--------Input Manager---------------------//
 	InitInputManager();
 
+	//--------Sound Manager---------------------//
+	InitSoundManager();
+
 	//----------------Telemetry------------------//
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 		// Telemetry Init
@@ -208,6 +211,8 @@ void Game::Update(float t_dt)
 	
 	ui_manager.changeUI(gamestate, camera.screen.target);
 	ui_manager.updateUI(t_dt, camera.screen.target);
+
+	UpdateSoundManager();
 
 	switch (gamestate)
 	{
