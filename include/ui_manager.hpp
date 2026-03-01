@@ -6,6 +6,7 @@
 
 #include "gamestates.hpp"
 #include "sting_anim.hpp"
+#include "command.h"
 
 class UI_Manager
 {
@@ -13,8 +14,13 @@ class UI_Manager
 		UI_Manager();
 		~UI_Manager();
 
+		void initialize();
 		void changeUI(GameState t_newScreen, Vector2 t_pos);
 		void updateUI(float& t_dt, Vector2 t_pos);
+
+		std::pair<GameState,bool> handleInput(Command t_activeCommand);
+		std::pair<GameState,bool> handleInputMenuUI(Command t_activeCommand);
+		std::pair<GameState,bool> handleInputPauseUI(Command t_activeCommand);
 		void drawUI();
 
 		StingAnim stingAnim;
@@ -23,6 +29,10 @@ class UI_Manager
 		
 		GameState screen;
 		Vector2 center;
+
+		GameState beforeInstructions;
+		float m_buttonSelectionDirection;
+		GameState highlightedbutton;
 
 		int const WIDTH = 160;
 		int const HEIGHT = 60;
@@ -33,7 +43,6 @@ class UI_Manager
 		Vector2 button4Pos{0.0f,0.0f};
 		Vector2 button5Pos{0.0f,0.0f};
 
-		void initialize();
 		void loadUI(Vector2& t_pos);
 		void unloadUI();
 

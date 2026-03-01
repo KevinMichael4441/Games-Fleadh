@@ -1,7 +1,6 @@
 #include "ui_manager.hpp"
 
 UI_Manager::UI_Manager(){
-	initialize();
 	std::cout << "UI_Manager Object Created\n";
 }
 UI_Manager::~UI_Manager(){
@@ -9,14 +8,25 @@ UI_Manager::~UI_Manager(){
 }
 
 void UI_Manager::initialize(){
+	beforeInstructions = GAME_MENU;
 	screen = GAME_PLAY;
 	center = {0.0f,0.0f};
+	highlightedbutton = GAME_PLAY;
 }
 
 void UI_Manager::changeUI(GameState t_newScreen, Vector2 t_pos){
 	if(t_newScreen != screen){
 		center = {t_pos.x - SCREEN_WIDTH / 2, t_pos.y - SCREEN_HEIGHT /2};
 		unloadUI();
+
+		if (t_newScreen == GAME_INSTRUCTION)
+			beforeInstructions = screen;
+
+		if (t_newScreen == GAME_MENU)
+		{
+			highlightedbutton = GAME_PLAY;
+		}
+
 		screen = t_newScreen;
 		loadUI(t_pos);
 	}
@@ -61,6 +71,114 @@ void UI_Manager::updateUI(float& t_dt, Vector2 t_pos){
 		break;
 	}
 }
+
+
+std::pair<GameState,bool> UI_Manager::handleInput(Command t_activeCommand)
+{
+	switch (screen){
+	case GAME_START:
+		if (IsCommandActive(t_activeCommand, ACTION_JUMP))
+		{
+			return {GAME_MENU, true};
+		}
+	break;
+	case GAME_MENU:
+		return handleInputMenuUI(t_activeCommand);
+	break;
+	case GAME_PAUSE:
+		return handleInputPauseUI(t_activeCommand);
+	break;
+	case GAME_INSTRUCTION:
+		if (IsCommandActive(t_activeCommand, ACTION_JUMP))
+		{
+			return {beforeInstructions, true};
+		}
+	break;
+	case GAME_END:
+		if (IsCommandActive(t_activeCommand, ACTION_JUMP))
+		{
+			return {GAME_MENU, true};
+		}
+	break;
+	}
+	
+	
+	return {screen, false};
+}
+	
+
+std::pair<GameState,bool> UI_Manager::handleInputMenuUI(Command t_activeCommand)
+{
+	float Xaxis = 0.0f;
+	float Yaxis = 0.0f;
+
+	if (IsCommandActive(t_activeCommand, MOVE_LEFT))
+		Xaxis += -1.0f;
+
+	if (IsCommandActive(t_activeCommand, MOVE_RIGHT))
+		Xaxis += 1.0f;
+
+	if (IsCommandActive(t_activeCommand, MOVE_DOWN))
+		Yaxis += -1.0f;
+
+	if (IsCommandActive(t_activeCommand, MOVE_UP))
+		Yaxis += 1.0f;
+
+
+	bool buttonPressed = IsCommandActive(t_activeCommand, ACTION_JUMP);
+
+
+	if (Xaxis > 0.1 && highlightedbutton == GAME_PLAY)
+	{
+		highlightedbutton = GAME_INSTRUCTION;
+	}
+	else if (Xaxis < -0.1 && highlightedbutton == GAME_INSTRUCTION)
+	{
+		highlightedbutton = GAME_PLAY;
+	}
+	else if (Xaxis < -0.1 && highlightedbutton == GAME_EXIT)
+	{
+		highlightedbutton = GAME_PLAY;
+	}
+	else if (Yaxis < -0.1 && highlightedbutton == GAME_INSTRUCTION)
+	{
+		highlightedbutton = GAME_EXIT;
+	}
+	else if (Yaxis > 0.1 && highlightedbutton == GAME_EXIT)
+	{
+		highlightedbutton = GAME_INSTRUCTION;
+	}
+
+
+	if (buttonPressed)
+	{
+		return {highlightedbutton, true};
+	}
+	else
+	{
+		return {screen, false};
+	}
+}	
+
+std::pair<GameState,bool> UI_Manager::handleInputPauseUI(Command t_activeCommand)
+{
+	
+	float axis = 0.0f;
+
+	if (IsCommandActive(t_activeCommand, MOVE_LEFT))
+		axis += -1.0f;
+
+	if (IsCommandActive(t_activeCommand, MOVE_RIGHT))
+		axis += 1.0f;
+
+	// Check if we are moving
+	bool moving = abs(axis) > 0.0f;
+	bool buttonPressed = IsCommandActive(t_activeCommand, ACTION_JUMP);
+
+}	
+
+
+
 void UI_Manager::drawUI(){
 	switch (screen){
 		case GAME_START:
@@ -157,16 +275,49 @@ void UI_Manager::updateMenuUI(){
 void UI_Manager::drawMenuUI(){
 	//DrawRectangle(center.x,center.y,SCREEN_WIDTH,SCREEN_HEIGHT, PURPLE);
 
-	DrawCircle(button1Pos.x, button1Pos.y + 15,  125.0f, DARKPURPLE);
-	DrawCircle(button1Pos.x, button1Pos.y,  125.0f, RED);
-	DrawRectangle(button2Pos.x, button2Pos.y,WIDTH,HEIGHT, GREEN);
-	DrawRectangle(button3Pos.x, button3Pos.y,WIDTH,HEIGHT, GREEN);
-	DrawRectangle(button4Pos.x, button4Pos.y,WIDTH,HEIGHT, GREEN);
 
-	DrawText(TextFormat("START"), button1Pos.x - 67.5, button1Pos.y - 7.5, 40, WHITE);
-	DrawText(TextFormat("HOW TO PLAY"), button2Pos.x + 25, button2Pos.y + 30 - 7.5f, 15, WHITE);
-	DrawText(TextFormat("ACHIEVMENTS"), button3Pos.x + 25, button3Pos.y + 30 - 7.5f, 15, WHITE);
-	DrawText(TextFormat("EXIT"), button4Pos.x + 25, button4Pos.y + 30 - 7.5f, 15, WHITE);
+	if (highlightedbutton == GAME_PLAY)
+	{
+		DrawCircle(button1Pos.x, button1Pos.y + 15,  125.0f, DARKPURPLE);
+		DrawCircle(button1Pos.x, button1Pos.y,  125.0f, RED);
+		DrawText(TextFormat("START"), button1Pos.x - 67.5, button1Pos.y - 7.5, 40, WHITE);
+
+		DrawRectangle(button2Pos.x, button2Pos.y + 10,WIDTH,HEIGHT, DARKGRAY);
+		DrawRectangle(button2Pos.x, button2Pos.y,WIDTH,HEIGHT, GRAY);
+		DrawText(TextFormat("HOW TO PLAY"), button2Pos.x + 25, button2Pos.y + 30 - 7.5f, 15, WHITE);
+
+		DrawRectangle(button4Pos.x, button4Pos.y + 10,WIDTH,HEIGHT, DARKGRAY);
+		DrawRectangle(button4Pos.x, button4Pos.y,WIDTH,HEIGHT, GRAY);
+		DrawText(TextFormat("EXIT"), button4Pos.x + 25, button4Pos.y + 30 - 7.5f, 15, WHITE);
+	}
+	else if (highlightedbutton == GAME_INSTRUCTION)
+	{
+		DrawCircle(button1Pos.x, button1Pos.y + 15,  125.0f, DARKGRAY);
+		DrawCircle(button1Pos.x, button1Pos.y,  125.0f, GRAY);
+		DrawText(TextFormat("START"), button1Pos.x - 67.5, button1Pos.y - 7.5, 40, WHITE);
+
+		DrawRectangle(button2Pos.x, button2Pos.y + 10,WIDTH,HEIGHT, DARKPURPLE);
+		DrawRectangle(button2Pos.x, button2Pos.y,WIDTH,HEIGHT, GREEN);
+		DrawText(TextFormat("HOW TO PLAY"), button2Pos.x + 25, button2Pos.y + 30 - 7.5f, 15, WHITE);
+
+		DrawRectangle(button4Pos.x, button4Pos.y + 10,WIDTH,HEIGHT, DARKGRAY);
+		DrawRectangle(button4Pos.x, button4Pos.y,WIDTH,HEIGHT, GRAY);
+		DrawText(TextFormat("EXIT"), button4Pos.x + 25, button4Pos.y + 30 - 7.5f, 15, WHITE);
+	}
+	else if (highlightedbutton == GAME_EXIT)
+	{
+		DrawCircle(button1Pos.x, button1Pos.y + 15,  125.0f, DARKGRAY);
+		DrawCircle(button1Pos.x, button1Pos.y,  125.0f, GRAY);
+		DrawText(TextFormat("START"), button1Pos.x - 67.5, button1Pos.y - 7.5, 40, WHITE);
+
+		DrawRectangle(button2Pos.x, button2Pos.y + 10,WIDTH,HEIGHT, DARKGRAY);
+		DrawRectangle(button2Pos.x, button2Pos.y,WIDTH,HEIGHT, GRAY);
+		DrawText(TextFormat("HOW TO PLAY"), button2Pos.x + 25, button2Pos.y + 30 - 7.5f, 15, WHITE);
+
+		DrawRectangle(button4Pos.x, button4Pos.y + 10,WIDTH,HEIGHT, DARKPURPLE);
+		DrawRectangle(button4Pos.x, button4Pos.y,WIDTH,HEIGHT, GREEN);
+		DrawText(TextFormat("EXIT"), button4Pos.x + 25, button4Pos.y + 30 - 7.5f, 15, WHITE);
+	}
 }
 void UI_Manager::unloadMenuUI(){
 	std::cout << "Unloading MENU Screen UI\n";
