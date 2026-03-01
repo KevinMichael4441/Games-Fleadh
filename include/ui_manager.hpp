@@ -48,7 +48,7 @@ class UI_Manager
 		void unloadMenuUI();
 
 		void loadGameplayUI();
-		void updateGameplayUI();
+		void updateGameplayUI(float& t_dt);
 		void drawGameplayUI();
 		void unloadGameplayUI();
 

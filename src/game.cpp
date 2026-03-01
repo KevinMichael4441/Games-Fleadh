@@ -217,16 +217,26 @@ void Game::Update(float t_dt)
 		break;
 		case GAME_PLAY:
 		{
-			Vector2 center = ooze.CalculateCenter();
-			camera.update(center);
-			m_laseDoor_manager.Update(ooze, t_dt);
-			m_teleporter_manager.Update(ooze, t_dt);
-			chunkCacheUpdate(&m_level, center);
-			SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
-			checkMechOozeCollision();
-			m_collectibles_manager.Update(ooze, score);
-			m_jumpPadd_manager.Update(ooze);
-			ooze.Update(t_dt, m_activeCommand);
+			if(!ui_manager.stingAnim.playingAnim())
+			{
+				Vector2 center = ooze.CalculateCenter();
+				camera.update(center);
+				m_laseDoor_manager.Update(ooze, t_dt);
+				m_teleporter_manager.Update(ooze, t_dt);
+				chunkCacheUpdate(&m_level, center);
+				SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
+				checkMechOozeCollision();
+				m_collectibles_manager.Update(ooze, score);
+				m_jumpPadd_manager.Update(ooze);
+				ooze.Update(t_dt, m_activeCommand);
+			}
+			else
+			{
+				if(ui_manager.stingAnim.timeToSpawn()){
+				Respawn();
+				camera.update(ooze.CalculateCenter());
+				ui_manager.stingAnim.setStingPos(camera.screen.target);}
+			}
 
 			// ----------- NEW: Respawn mech if off-screen ------------
     		mechRespawnCooldown += t_dt;
@@ -245,12 +255,10 @@ void Game::Update(float t_dt)
 		case GAME_INSTRUCTION:
 		break;
 		case GAME_END:
-			if(ui_manager.stingAnim.timeToSpawn())
-			{
+			if(ui_manager.stingAnim.timeToSpawn()){
 				Respawn();
 				camera.update(ooze.CalculateCenter());
-				ui_manager.stingAnim.setStingPos(camera.screen.target);
-			}
+				ui_manager.stingAnim.setStingPos(camera.screen.target);}
 			if(!ui_manager.stingAnim.playingAnim())
 			{
 				gamestate = GAME_PLAY;
@@ -351,8 +359,8 @@ void Game::Draw()
 
 			SuperMech_Draw(&mech);
 			ooze.Draw();
-
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
+			if(ui_manager.stingAnim.playingAnim()){ui_manager.stingAnim.draw();}
 		break;
 		case GAME_PAUSE:
 			chunkCacheDraw(&m_level);
@@ -365,13 +373,13 @@ void Game::Draw()
 
 			SuperMech_Draw(&mech);
 			ooze.Draw();
-
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
 		break;
 		case GAME_INSTRUCTION:
 		break;
 		case GAME_END:
 			chunkCacheDraw(&m_level);
+			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
 		break;
 	}
 

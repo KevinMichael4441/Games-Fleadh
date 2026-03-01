@@ -3,6 +3,7 @@
 StingAnim::StingAnim(){
 	isPlaying = false;
 	spawn = false;
+	paused = false;
 	barHeight = 100.0f;
 	fader = (Color){0,0,0,0};
 	alpha = 0.0f;
@@ -30,7 +31,6 @@ void StingAnim::setup(Vector2& t_pos){
 	barHeight = 100.0f;
 	fader = (Color){0,0,0,0};
 	alpha = 0.0f;
-	timer = 0.0f;
 	spawn = false;
 
 	if(t_pos.x > SCREEN_WIDTH / 2){
@@ -83,8 +83,8 @@ void StingAnim::setStingPos(Vector2& t_pos)
 	lowBar.y = background.y + (SCREEN_HEIGHT / 2);
 }
 
-void StingAnim::play(float& t_dt){
-	if(isPlaying == true){
+void StingAnim::update(float& t_dt){
+	if(isPlaying == true && paused == false){
 		timer += t_dt;
 		if(timer < MAX_DURATION / 2)
 		{
@@ -121,10 +121,25 @@ void StingAnim::play(float& t_dt){
 			if(alpha <= 0.0f)
 			{
 				isPlaying = false;
+				timer = 0.0f;
 			}
 		}
 	}
 }
+
+void StingAnim::play(){
+	if(paused)
+	{
+		paused = false;
+	}
+}
+void StingAnim::pause(){
+	if(!paused)
+	{
+		paused = true;
+	}
+}
+
 bool StingAnim::playingAnim()
 {
 	return isPlaying;

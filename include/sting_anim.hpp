@@ -12,7 +12,9 @@ class StingAnim
 		~StingAnim();
 
 		void setup(Vector2& t_pos);
-		void play(float& t_dt);
+		void update(float& t_dt);
+		void play();
+		void pause();
 		void draw();
 
 		bool playingAnim();
@@ -22,6 +24,7 @@ class StingAnim
 
 		bool isPlaying;
 		bool spawn;
+		bool paused;
 
 	private:
 

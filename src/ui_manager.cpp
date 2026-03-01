@@ -48,7 +48,7 @@ void UI_Manager::updateUI(float& t_dt, Vector2 t_pos){
 			updateMenuUI();
 		break;
 		case GAME_PLAY:
-			updateGameplayUI();
+			updateGameplayUI(t_dt);
 		break;
 		case GAME_PAUSE:
 			updatePauseUI();
@@ -174,12 +174,12 @@ void UI_Manager::unloadMenuUI(){
 
 void UI_Manager::loadGameplayUI(){
 	std::cout << "Loading GAMEPLAY Screen UI\n";
+	if(stingAnim.playingAnim()){stingAnim.play();}
 }
-void UI_Manager::updateGameplayUI(){
-
+void UI_Manager::updateGameplayUI(float& t_dt){
+	if(stingAnim.playingAnim()){ stingAnim.update(t_dt);}
 }
 void UI_Manager::drawGameplayUI(){
-	// DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT, BLUE);
 }
 void UI_Manager::unloadGameplayUI(){
 	std::cout << "Unloading GAMEPLAY Screen UI\n";
@@ -187,12 +187,13 @@ void UI_Manager::unloadGameplayUI(){
 
 void UI_Manager::loadPauseUI(){
 	std::cout << "Loading PAUSE Screen UI\n";
+	if(stingAnim.playingAnim()){stingAnim.pause();}
 }
 void UI_Manager::updatePauseUI(){
 
 }
 void UI_Manager::drawPauseUI(){
-	//DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT, BLUE);
+	if(stingAnim.playingAnim()){stingAnim.draw();}
 }
 void UI_Manager::unloadPauseUI(){
 	std::cout << "Unloading PAUSE Screen UI\n";
@@ -214,13 +215,11 @@ void UI_Manager::unloadInstructionUI(){
 
 void UI_Manager::loadEndUI(Vector2& t_pos){
 	std::cout << "Loading END Screen UI\n";
-	stingAnim.setup(t_pos);
+	if(stingAnim.playingAnim()){stingAnim.play();}
+	else if(!stingAnim.playingAnim()){stingAnim.setup(t_pos);}
 }
 void UI_Manager::updateEndUI(float& t_dt){
-	if(stingAnim.playingAnim())
-	{
-		stingAnim.play(t_dt);
-	}
+	if(stingAnim.playingAnim()){ stingAnim.update(t_dt);}
 }
 void UI_Manager::drawEndUI(){
 	stingAnim.draw();
