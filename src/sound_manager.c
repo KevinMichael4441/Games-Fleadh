@@ -3,7 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "core/sound_manager.h"
+#include "sound_manager.h"
 
 //=================================================================
 // Sound Manager Internal State

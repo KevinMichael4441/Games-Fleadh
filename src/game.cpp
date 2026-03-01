@@ -138,6 +138,8 @@ void Game::Run()
 		camera.end();
  		EndDrawing();	
 	}
+
+	GameSoundExit();
 	UnloadTexture(temp_background);
 	chunkCacheUnload(&m_level);
 	Level_Unload(&m_level);
@@ -188,7 +190,7 @@ void Game::InitGame()
 	InitInputManager();
 
 	//--------Sound Manager---------------------//
-	InitSoundManager();
+	GameSoundInit();
 
 	//----------------Telemetry------------------//
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
@@ -208,11 +210,10 @@ void Game::Update(float t_dt)
 
 	m_activeCommand = PollInput();
 	NonGameInputs();
+	GameSoundUpdate();
 	
 	ui_manager.changeUI(gamestate, camera.screen.target);
 	ui_manager.updateUI(t_dt, camera.screen.target);
-
-	UpdateSoundManager();
 
 	switch (gamestate)
 	{

@@ -20,7 +20,7 @@
 
 #include "command.h"
 #include "input_manager.h"
-#include "sound_manager.h"
+#include "game_sound.h"
 
 #include "camera_manager.hpp"
 #include "ooze.hpp"

@@ -72,6 +72,46 @@
 #define IP_ADDRESS_MAX_LEN 16
 
 //=================================================================
+// Sound Manager
+//=================================================================
+//-----------------------------------------------------------------
+// SFX: Test limits as SFX file sizes may vary
+//-----------------------------------------------------------------
+#define MAX_SFX 						16
+//-----------------------------------------------------------------
+
+//-----------------------------------------------------------------
+// Audio Tracks: Test limits as track file sizes may vary
+//-----------------------------------------------------------------
+#define MAX_MUSIC_TRACKS				2
+
+//-----------------------------------------------------------------
+// Sound Asset Paths
+//-----------------------------------------------------------------
+#define SOUND_SETTINGS_PATH 			"assets/sound_settings.ini"
+#define SFX_CONFIG_PATH 				"assets/audio_sfx.ini"
+#define MUSIC_CONFIG_PATH				"assets/audio_tracks.ini"
+
+//-----------------------------------------------------------------
+// R36S-specific limits for resource management
+//-----------------------------------------------------------------
+#if defined(PLATFORM_R36S)
+// Max SFX playing at once
+#define MAX_CONCURRENT_SFX 				4
+// Lazy load by default on R36S
+#define DEFAULT_PRELOAD_SFX 			false
+// Lazy load music on R36S
+#define DEFAULT_PRELOAD_MUSIC 			false
+#else
+// More on desktop
+#define MAX_CONCURRENT_SFX 				8
+// Preload on desktop
+#define DEFAULT_PRELOAD_SFX 			true
+// Lazy load music (large files)
+#define DEFAULT_PRELOAD_MUSIC 			false
+#endif
+
+//=================================================================
 // R32S Device Telemetry
 // Tested on device that returned following from ark@rg351mp:~$ cat /proc/cpuinfo
 // CPU implementer : 0x41 		=> ARM Ltd

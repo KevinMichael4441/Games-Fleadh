@@ -919,6 +919,8 @@ void Ooze::Jump()
 
 void Ooze::Move()
 {
+	PlaySFX(SFX_RUNNING);
+
 	float avgRadii;
 	for (int index = 0; index < MAX_POINTS; index++)
  	{

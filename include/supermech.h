@@ -10,6 +10,8 @@
 
 #include <math.h>
 
+#include "sound_manager.h"
+
 #include "level_loader.h"
 
 #define MAX_BOUNDARY_RECTS 16

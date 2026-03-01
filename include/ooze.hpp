@@ -7,6 +7,7 @@
 #include "constants.h"
 #include "command.h"
 #include "input_manager.h"
+#include "sound_manager.h"
 
 #include "level_loader.h"
 #include "fsm.h"
