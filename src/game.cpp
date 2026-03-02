@@ -147,7 +147,6 @@ void Game::InitGame()
 {
 	// Initial GameState
 	gamestate = GAME_START;
-
 	//-------------Level Loading-----------------//
 
 	if (!Level_Load(&m_level, "./assets/maps/MyFirstMap.json", "./assets/maps/", "./assets/images/LabTilesTest.png"))
@@ -166,7 +165,7 @@ void Game::InitGame()
 	}
 
 	//------------- OOZEY WHIZY------------------//
-	Vector2 centrePoint = {SCREEN_WIDTH/2,SCREEN_HEIGHT/2};
+	Vector2 centrePoint = {800,2080};
 	ooze.Initialize(SPRING_CONSTANT, DAMP, centrePoint, OOZE_SPEED, JUMP_AMOUNT);
 	ooze.SetLevel(&m_level);
 
@@ -176,8 +175,8 @@ void Game::InitGame()
 	//---------------Security System------------//
 	m_securitySystem.initialize(&m_level);
 	m_laseDoor_manager.Initialize({576, 300}, {520, 350}, 8);
-	m_securitySystem.m_lasers[0].initialize(800.0f, 200.0f);
-    m_securitySystem.m_laserCount = 1;
+	//m_securitySystem.m_lasers[0].initialize(800.0f, 200.0f);
+    //m_securitySystem.m_laserCount = 1;
 	
 	//-------Collectibles-------//
 	score = 0;
@@ -204,7 +203,7 @@ void Game::InitGame()
 		InitTelemetry(&r36s_telemetry);
 	#endif // Init Telemetry R36S and Linux only
 
-	gamestate = GAME_START;
+	gamestate = GAME_MENU;
 }
 
 void Game::Update(float t_dt)
@@ -215,23 +214,13 @@ void Game::Update(float t_dt)
 	NonGameInputs();
 	
 	ui_manager.changeUI(gamestate, camera.screen.target);
-	ui_manager.updateUI(t_dt, camera.screen.target);
-	std::pair<GameState,bool> stateSwitching;
-
+	gamestate = ui_manager.updateUI(t_dt, camera.screen.target, m_activeCommand);
 
 	switch (gamestate)
 	{
 		case GAME_START:
-			stateSwitching = ui_manager.handleInput(m_activeCommand);
-			if (stateSwitching.second)
-				gamestate = GAME_MENU;
 		break;
 		case GAME_MENU:
-			stateSwitching = ui_manager.handleInput(m_activeCommand);
-			if (stateSwitching.second)
-			{
-				gamestate = stateSwitching.first;
-			}
 		break;
 		case GAME_PLAY:
 		{
@@ -242,6 +231,7 @@ void Game::Update(float t_dt)
 				m_laseDoor_manager.Update(ooze, t_dt);
 				m_teleporter_manager.Update(ooze, t_dt);
 				chunkCacheUpdate(&m_level, center);
+				m_securitySystem.update(t_dt, ooze);
 				SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
 				checkMechOozeCollision();
 				m_collectibles_manager.Update(ooze, score, t_dt);
@@ -271,9 +261,6 @@ void Game::Update(float t_dt)
 		case GAME_PAUSE:
 		break;
 		case GAME_INSTRUCTION:
-			stateSwitching = ui_manager.handleInput(m_activeCommand);
-			if (stateSwitching.second)
-				gamestate = stateSwitching.first;
 		break;
 		case GAME_END:
 			if(ui_manager.stingAnim.timeToSpawn()){
@@ -284,6 +271,8 @@ void Game::Update(float t_dt)
 			{
 				gamestate = GAME_PLAY;
 			}
+		break;
+		case GAME_EXIT:
 		break;
 	}
 
@@ -354,10 +343,6 @@ void Game::NonGameInputs()
 		if(gamestate != GAME_INSTRUCTION){
 		gamestate = GAME_INSTRUCTION;
 	}
-	if (IsKeyPressed(KEY_SIX))
-		if(gamestate != GAME_END){
-		gamestate = GAME_END;
-	}
 	// --------------------------------
 }
 
@@ -404,6 +389,18 @@ void Game::Draw()
 
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
 		case GAME_INSTRUCTION:
+			chunkCacheDrawBackground(&m_level);
+
+			m_securitySystem.draw();
+			m_laseDoor_manager.Draw();
+			m_jumpPadd_manager.Draw();
+			m_teleporter_manager.Draw();
+			m_collectibles_manager.Draw();
+
+			SuperMech_Draw(&mech);
+			ooze.Draw();
+
+			chunkCacheDraw(&m_level);
 		break;
 		case GAME_END:
 			DrawTexture(temp_background, 0, 0, WHITE);
@@ -420,6 +417,8 @@ void Game::Draw()
 
 			chunkCacheDraw(&m_level);
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
+		break;
+		case GAME_EXIT:
 		break;
 	}
 

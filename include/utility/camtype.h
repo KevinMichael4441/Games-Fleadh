@@ -4,7 +4,6 @@
 
 enum CamType
 {
-	CAM_NONE,
 	CAM_SPOT,
 	CAM_SWEEP
 };

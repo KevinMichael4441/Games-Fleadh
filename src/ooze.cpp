@@ -94,11 +94,22 @@ void Ooze::HandleInput(Command t_activeCommand)
 	if (IsCommandActive(t_activeCommand, MOVE_RIGHT))
 		axis += 1.0f;
 
-	if (IsCommandActive(t_activeCommand, AIM_LEFT))
-		axis += -4.0f;
 
-	if (IsCommandActive(t_activeCommand, AIM_RIGHT))
-		axis += 4.0f;
+	if (m_dashTimer > m_dashDelay)
+	{
+		if (IsCommandActive(t_activeCommand, AIM_LEFT))
+		{
+			m_dashTimer = 0.0f;
+			axis += -15.0f;
+		}
+		if (IsCommandActive(t_activeCommand, AIM_RIGHT))
+		{
+			m_dashTimer = 0.0f;
+			axis += 15.0f;
+		}
+	}
+
+
 
 	// Check if we are moving
 	bool moving = abs(axis) > 0.0f;
@@ -143,6 +154,8 @@ bool Ooze::HandleEvent(Event t_event)
 
 void Ooze::Update(float t_dt, Command t_activeCommand)
 {
+	m_dashTimer += t_dt;
+
 	HandleInput(t_activeCommand);
 	UpdateState(t_dt);
 }
