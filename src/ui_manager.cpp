@@ -58,7 +58,7 @@ GameState UI_Manager::updateUI(float& t_dt, Vector2 t_pos, Command& t_activeComm
 			updateGameplayUI(t_dt, t_pos);
 		break;
 		case GAME_PAUSE:
-			updatePauseUI();
+			updatePauseUI(t_dt, t_activeCommand);
 		break;
 		case GAME_INSTRUCTION:
 			updateInstructionUI();
@@ -194,7 +194,7 @@ void UI_Manager::updateMenuUI(float& t_dt, Command& t_newCommand){
 				else if(t_newCommand == MOVE_RIGHT){newSelection = BUTTON_EXIT;}
 			break;
 			case BUTTON_EXIT:
-				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){}
+				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){screen = GAME_EXIT;}
 				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_START;}
 				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_START;}
 				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_INSTRUCTION;}
@@ -281,22 +281,103 @@ void UI_Manager::loadPauseUI(Vector2& t_pos){
 	if(stingAnim.playingAnim()){stingAnim.pause();}
 	if(!paused){paused = true;}
 
-	button2Pos = {corner.x + 80.0f, corner.y + 430.0f};
-	button3Pos = {corner.x + 400.0f, corner.y + 430.0f};
+	selectWidth = 120;
+	selectHeight = 5;
+
+	button1Pos = {corner.x + 240, corner.y + 400};
+	button2Pos = {center.x + 150, corner.y + 20};
+	button3Pos = {center.x - WIDTH - 150, corner.y + 20};
+
+	newSelection = BUTTON_START;
+	activeSelection = BUTTON_START;
+	selectPos = {button1Pos.x + (WIDTH / 2) - (selectWidth / 2), button1Pos.y + HEIGHT - 15};
 }
-void UI_Manager::updatePauseUI(){
+void UI_Manager::updatePauseUI(float& t_dt, Command& t_newCommand){
 	if(alpha < MAX_ALPHA){alpha += FADE_SPEED;fader = Fade(fader, alpha);}
+
+	if(getNewCommand)
+	{
+		switch (activeSelection)
+		{
+			case BUTTON_START:
+				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){screen = GAME_PLAY;}
+				else if(t_newCommand == MOVE_RIGHT){newSelection = BUTTON_INSTRUCTION;}
+				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_EXIT;}
+				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_INSTRUCTION;}
+				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_INSTRUCTION;}
+			break;
+			case BUTTON_PAUSE:
+			break;
+			case BUTTON_INSTRUCTION:
+				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){screen = GAME_INSTRUCTION;}
+				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_START;}
+				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_START;}
+				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_EXIT;}
+				else if(t_newCommand == MOVE_RIGHT){newSelection = BUTTON_EXIT;}
+			break;
+			case BUTTON_EXIT:
+				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){screen = GAME_EXIT;}
+				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_START;}
+				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_START;}
+				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_INSTRUCTION;}
+				else if(t_newCommand == MOVE_RIGHT){newSelection = BUTTON_INSTRUCTION;}
+			break;
+		}
+	
+
+		if(newSelection != activeSelection)
+		{
+			activeSelection = newSelection;
+			getNewCommand = false;
+
+			switch (activeSelection)
+			{
+				case BUTTON_START:
+					selectWidth = 120;
+					selectHeight = 5;
+					selectPos = {button1Pos.x + (WIDTH / 2) - (selectWidth / 2), button1Pos.y + HEIGHT - 15};
+				break;
+				case BUTTON_INSTRUCTION:
+					selectWidth = 120;
+					selectHeight = 5;
+					selectPos = {button2Pos.x + (WIDTH / 2) - (selectWidth / 2), button2Pos.y + HEIGHT - 15};
+				break;
+				case BUTTON_EXIT:
+					selectWidth = 120;
+					selectHeight = 5;
+					selectPos = {button3Pos.x + (WIDTH / 2) - (selectWidth / 2), button3Pos.y + HEIGHT - 15};
+				break;
+				case BUTTON_PAUSE:
+				break;
+			}
+		}
+	}
+	else {commandTimer += t_dt;}
+
+	if(commandTimer >= MAX_DELAY)
+	{
+		getNewCommand = true;
+		commandTimer = 0.0f;
+	}
 }
 void UI_Manager::drawPauseUI(){
 	if(stingAnim.playingAnim()){stingAnim.draw();}
 	DrawRectangle(corner.x, corner.y, SCREEN_WIDTH, SCREEN_HEIGHT, fader);
 
-	DrawText(TextFormat("PAUSED"), center.x - 150, center.y - 135, 80, BLUE);
+	DrawText(TextFormat("PAUSED"), center.x - 160, center.y - 40, 80, BLUE);
 
-	DrawRectangle(button2Pos.x, button2Pos.y - (HEIGHT + 40) + 10,WIDTH,HEIGHT, DARKGREEN);
-	DrawRectangle(button2Pos.x, button2Pos.y - (HEIGHT + 40),WIDTH,HEIGHT, GREEN);
-	DrawRectangle(button3Pos.x, button3Pos.y - (HEIGHT + 40) + 10,WIDTH,HEIGHT, DARKGREEN);
-	DrawRectangle(button3Pos.x, button3Pos.y - (HEIGHT + 40),WIDTH,HEIGHT, GREEN);
+	DrawRectangle(button1Pos.x, button1Pos.y + 10,WIDTH,HEIGHT, DARKGREEN);
+	DrawRectangle(button1Pos.x, button1Pos.y, WIDTH,HEIGHT, GREEN);
+	DrawRectangle(button2Pos.x, button2Pos.y + 10,WIDTH,HEIGHT, DARKGREEN);
+	DrawRectangle(button2Pos.x, button2Pos.y, WIDTH,HEIGHT, GREEN);
+	DrawRectangle(button3Pos.x, button3Pos.y + 10,WIDTH,HEIGHT, DARKGREEN);
+	DrawRectangle(button3Pos.x, button3Pos.y, WIDTH,HEIGHT, GREEN);
+
+	DrawText(TextFormat("RESUME"), button1Pos.x + 50, button1Pos.y + 30 - 7.5, 15, WHITE);
+	DrawText(TextFormat("INSTRUCTIONS"), button2Pos.x + 25, button2Pos.y + 30 - 7.5f, 15, WHITE);
+	DrawText(TextFormat("EXIT"), button3Pos.x + 65, button3Pos.y + 30 - 7.5f, 15, WHITE);
+
+	DrawRectangle(selectPos.x, selectPos.y, selectWidth, selectHeight, WHITE);
 }
 void UI_Manager::unloadPauseUI(){
 	std::cout << "Unloading PAUSE Screen UI\n";

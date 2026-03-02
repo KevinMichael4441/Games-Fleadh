@@ -79,7 +79,7 @@ class UI_Manager
 		void unloadGameplayUI();
 
 		void loadPauseUI(Vector2& t_pos);
-		void updatePauseUI();
+		void updatePauseUI(float& t_dt, Command& t_newCommand);
 		void drawPauseUI();
 		void unloadPauseUI();
 
