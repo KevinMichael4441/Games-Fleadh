@@ -137,6 +137,11 @@ void Game::Run()
  		// Raylib End drawing to Frame Buffer
 		camera.end();
  		EndDrawing();	
+		
+		if(gameOver == true)
+		{
+			break;
+		}
 	}
 	UnloadTexture(temp_background);
 	chunkCacheUnload(&m_level);
@@ -208,13 +213,11 @@ void Game::InitGame()
 
 void Game::Update(float t_dt)
 {
+
 	if (t_dt > 0.04f) return;
 
 	m_activeCommand = PollInput();
 	NonGameInputs();
-	
-	ui_manager.changeUI(gamestate, camera.screen.target);
-	gamestate = ui_manager.updateUI(t_dt, camera.screen.target, m_activeCommand);
 
 	switch (gamestate)
 	{
@@ -273,6 +276,7 @@ void Game::Update(float t_dt)
 			}
 		break;
 		case GAME_EXIT:
+			gameOver = true;
 		break;
 	}
 
@@ -285,6 +289,9 @@ void Game::Update(float t_dt)
 	#endif // TELEMETRY Update R36S and Linux only
 
 //-------------------TELEMETRY UPDATES------------------------------------------//
+
+	ui_manager.changeUI(gamestate, camera.screen.target);
+	gamestate = ui_manager.updateUI(t_dt, camera.screen.target, m_activeCommand);
 
 }
 
@@ -352,6 +359,7 @@ void Game::Draw()
 		case GAME_START:
 		break;
 		case GAME_MENU:
+			chunkCacheDrawBackground(&m_level);
 			chunkCacheDraw(&m_level);
 		break;
 		case GAME_PLAY:
@@ -390,15 +398,6 @@ void Game::Draw()
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
 		case GAME_INSTRUCTION:
 			chunkCacheDrawBackground(&m_level);
-
-			m_securitySystem.draw();
-			m_laseDoor_manager.Draw();
-			m_jumpPadd_manager.Draw();
-			m_teleporter_manager.Draw();
-			m_collectibles_manager.Draw();
-
-			SuperMech_Draw(&mech);
-			ooze.Draw();
 
 			chunkCacheDraw(&m_level);
 		break;
