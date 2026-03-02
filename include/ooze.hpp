@@ -84,6 +84,9 @@ private:
 	float m_dashTimer = 0.0f;
 	const float m_dashDelay = 1.0f;
 
+	Sound sfx_dash;
+	Sound sfx_collide;
+
 public:
 	Ooze();
 	void Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount);
@@ -120,7 +123,6 @@ public:
 
 	void Move();
 	void Jump();
-	void Spread();
 
 	void LowHorizontalCollisionAnimation();
 	void MediumHorizontalCollisionAnimation();
@@ -142,6 +144,8 @@ public:
 	Vector2 getPosition();
 	Point* GetPoints();
 	int GetPointCount() const;
+
+	void UnloadAudio();
 	
 	FSM fsm;
 };

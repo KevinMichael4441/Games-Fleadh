@@ -138,6 +138,12 @@ void Game::Run()
 		camera.end();
  		EndDrawing();	
 	}
+	
+	UnloadMusicStream(m_music);
+	UnloadSound(sfx_death);     // Unload sound data
+	ooze.UnloadAudio();
+    CloseAudioDevice();     // Close audio device
+	
 	UnloadTexture(temp_background);
 	chunkCacheUnload(&m_level);
 	Level_Unload(&m_level);
@@ -145,6 +151,8 @@ void Game::Run()
 
 void Game::InitGame()
 {
+	InitAudioDevice();      // Initialize audio device
+
 	// Initial GameState
 	gamestate = GAME_START;
 	//-------------Level Loading-----------------//
@@ -194,6 +202,13 @@ void Game::InitGame()
 	//------------UI Manager-------------------//
 	ui_manager.initialize();
 
+	//--------------Music and Sound--------------//
+	m_music = LoadMusicStream("assets/music/Squash__Stretch.ogg");
+	m_music.looping = true;
+	PlayMusicStream(m_music);
+
+	sfx_death = LoadSound("assets/sfx/slimecaughtsting.wav");
+
 	//----------------Telemetry------------------//
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 		// Telemetry Init
@@ -208,6 +223,8 @@ void Game::InitGame()
 
 void Game::Update(float t_dt)
 {
+	UpdateMusicStream(m_music);
+
 	if (t_dt > 0.04f) return;
 
 	m_activeCommand = PollInput();
@@ -290,15 +307,19 @@ void Game::Update(float t_dt)
 
 void Game::NonGameInputs()
 {
-	// if(IsCommandActive(VOLUME_UP, m_activeCommand))
-	// {
-	// 	// Increase Volume
-	// }
+	if(IsCommandActive(VOLUME_UP, m_activeCommand))
+	{
+		volume += 0.05f;
+        if (volume > 1.0f) volume = 1.0f;
+		SetMasterVolume(volume);
+	}
 
-	// if (IsCommandActive(VOLUME_DOWN, m_activeCommand))
-	// {
-	// 	// Decrease Volume
-	// }
+	if (IsCommandActive(VOLUME_DOWN, m_activeCommand))
+	{
+		volume -= 0.05f;
+        if (volume < 0.0f) volume = 0.0f;
+		SetMasterVolume(volume);
+	}
 
 	if (IsCommandActive(MENU_TOGGLE, m_activeCommand))
 	{
@@ -449,6 +470,7 @@ void Game::checkMechOozeCollision()
     for (int i = 0; i < count; i++){
 		if (SuperMech_CheckCollision_Player( &mech, points[i].m_position, points[i].m_radiusX))
 		{
+			PlaySound(sfx_death);
 			gamestate = GAME_END;
 			break;
 		}

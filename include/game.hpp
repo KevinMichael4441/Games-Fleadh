@@ -89,6 +89,10 @@ private:
 
 	LevelData m_level{};
 	Texture2D temp_background;
+
+	Music m_music;
+	Sound sfx_death;
+	float volume = 0.8f;
 };
 
 #endif //game.h

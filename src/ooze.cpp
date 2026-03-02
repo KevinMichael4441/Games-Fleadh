@@ -6,6 +6,9 @@ Ooze::Ooze()
 
 void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount)
 {
+	sfx_dash = LoadSound("assets/sfx/pickupsound.wav");
+	sfx_collide = LoadSound("assets/sfx/slimelanding.wav");
+
 	m_springConstant = t_k;
 	m_damp = t_damp;
 	m_centrePoint = t_center;
@@ -99,11 +102,13 @@ void Ooze::HandleInput(Command t_activeCommand)
 	{
 		if (IsCommandActive(t_activeCommand, AIM_LEFT))
 		{
+			PlaySound(sfx_dash);
 			m_dashTimer = 0.0f;
 			axis += -15.0f;
 		}
 		if (IsCommandActive(t_activeCommand, AIM_RIGHT))
 		{
+			PlaySound(sfx_dash);
 			m_dashTimer = 0.0f;
 			axis += 15.0f;
 		}
@@ -158,6 +163,8 @@ void Ooze::Update(float t_dt, Command t_activeCommand)
 
 	HandleInput(t_activeCommand);
 	UpdateState(t_dt);
+
+	
 }
 
 void Ooze::UpdateState(float t_dt)
@@ -744,10 +751,12 @@ void Ooze::EnterCollideHorizontalState()
 	}
 	else if (avgVelocity < 12)
 	{
+		PlaySound(sfx_collide);
 		m_squishiness = SQUISH_AMOUNT::LOW;
 	}
 	else 
 	{
+		PlaySound(sfx_collide);
 		m_squishiness = SQUISH_AMOUNT::HIGH;
 	}
 }
@@ -778,14 +787,17 @@ void Ooze::EnterCollideVerticalState()
 	}
 	else if (avgVelocity < 12)
 	{
+		PlaySound(sfx_collide);
 		m_squishiness = SQUISH_AMOUNT::LOW;
 	}
 	else if (avgVelocity < 18)
 	{
+		PlaySound(sfx_collide);
 		m_squishiness = SQUISH_AMOUNT::MEDIUM;
 	}
 	else 
 	{
+		PlaySound(sfx_collide);
 		m_squishiness = SQUISH_AMOUNT::HIGH;
 	}
 }
@@ -1150,9 +1162,8 @@ int Ooze::GetPointCount() const
     return MAX_POINTS;
 }
 
-
-//----------------KNOWN ISSUES-------------------//
-/*
-1 - Jitter (Could be potentially solved by slightly adjusting camera logic)	(Isn't fully solved; need new ideas)
-*/
-//----------------KNOWN ISSUES-------------------//
+void Ooze::UnloadAudio()
+{
+	UnloadSound(sfx_collide);
+	UnloadSound(sfx_dash);
+}
