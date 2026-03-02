@@ -28,9 +28,10 @@ class UI_Manager
 		void drawUI();
 
 		StingAnim stingAnim;
-
-	private:
 		
+	private:
+		bool gameBeginning = true;	
+
 		GameState screen;
 		Vector2 center;
 		Vector2 corner;
@@ -69,22 +70,22 @@ class UI_Manager
 		void unloadStartUI();
 
 		void loadMenuUI();
-		void updateMenuUI(float& t_dt, Command& t_activeCommand);
+		void updateMenuUI(float& t_dt, Command& t_activeCommand, Vector2& t_pos);
 		void drawMenuUI();
 		void unloadMenuUI();
 
 		void loadGameplayUI(Vector2& t_pos);
-		void updateGameplayUI(float& t_dt, Vector2& t_pos);
+		void updateGameplayUI(float& t_dt, Command& t_newCommand, Vector2& t_pos);
 		void drawGameplayUI();
 		void unloadGameplayUI();
 
 		void loadPauseUI(Vector2& t_pos);
-		void updatePauseUI(float& t_dt, Command& t_newCommand);
+		void updatePauseUI(float& t_dt, Command& t_newCommand, Vector2& t_pos);
 		void drawPauseUI();
 		void unloadPauseUI();
 
 		void loadInstructionUI();
-		void updateInstructionUI(float& t_dt, Command& t_newCommand);
+		void updateInstructionUI(float& t_dt, Command& t_newCommand, Vector2& t_pos);
 		void drawInstructionUI();
 		void unloadInstructionUI();
 
