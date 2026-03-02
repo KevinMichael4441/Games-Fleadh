@@ -148,7 +148,7 @@ void Game::InitGame()
 	// Initial GameState
 	gamestate = GAME_START;
 	//-------------Level Loading-----------------//
-/*
+
 	if (!Level_Load(&m_level, "./assets/maps/MyFirstMap.json", "./assets/maps/", "./assets/images/LabTilesTest.png"))
     {
         TraceLog(LOG_ERROR, "Failed to load level");
@@ -163,7 +163,7 @@ void Game::InitGame()
 	{
     	TraceLog(LOG_ERROR, "chunkCacheInit failed");
 	}
-*/
+
 	//------------- OOZEY WHIZY------------------//
 	Vector2 centrePoint = {SCREEN_WIDTH/2,SCREEN_HEIGHT/2};
 	ooze.Initialize(SPRING_CONSTANT, DAMP, centrePoint, OOZE_SPEED, JUMP_AMOUNT);
@@ -203,7 +203,7 @@ void Game::InitGame()
 		InitTelemetry(&r36s_telemetry);
 	#endif // Init Telemetry R36S and Linux only
 
-	gamestate = GAME_PLAY;
+	gamestate = GAME_MENU;
 }
 
 void Game::Update(float t_dt)
@@ -342,10 +342,6 @@ void Game::NonGameInputs()
 		if(gamestate != GAME_INSTRUCTION){
 		gamestate = GAME_INSTRUCTION;
 	}
-	if (IsKeyPressed(KEY_SIX))
-		if(gamestate != GAME_END){
-		gamestate = GAME_END;
-	}
 	// --------------------------------
 }
 
@@ -392,6 +388,18 @@ void Game::Draw()
 
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
 		case GAME_INSTRUCTION:
+			chunkCacheDrawBackground(&m_level);
+
+			m_securitySystem.draw();
+			m_laseDoor_manager.Draw();
+			m_jumpPadd_manager.Draw();
+			m_teleporter_manager.Draw();
+			m_collectibles_manager.Draw();
+
+			SuperMech_Draw(&mech);
+			ooze.Draw();
+
+			chunkCacheDraw(&m_level);
 		break;
 		case GAME_END:
 			DrawTexture(temp_background, 0, 0, WHITE);

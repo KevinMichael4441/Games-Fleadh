@@ -61,7 +61,7 @@ GameState UI_Manager::updateUI(float& t_dt, Vector2 t_pos, Command& t_activeComm
 			updatePauseUI(t_dt, t_activeCommand);
 		break;
 		case GAME_INSTRUCTION:
-			updateInstructionUI();
+			updateInstructionUI(t_dt, t_activeCommand);
 		break;
 		case GAME_END:
 			updateEndUI(t_dt);
@@ -324,7 +324,6 @@ void UI_Manager::updatePauseUI(float& t_dt, Command& t_newCommand){
 			break;
 		}
 	
-
 		if(newSelection != activeSelection)
 		{
 			activeSelection = newSelection;
@@ -385,13 +384,32 @@ void UI_Manager::unloadPauseUI(){
 
 void UI_Manager::loadInstructionUI(){
 	std::cout << "Loading INSTRUCTION Screen UI\n";
-}
-void UI_Manager::updateInstructionUI(){
 
+	selectWidth = 120;
+	selectHeight = 5;
+
+	button1Pos = {center.x - (WIDTH / 2), corner.y + 400};
+
+	newSelection = BUTTON_START;
+	activeSelection = BUTTON_START;
+
+	selectPos = {button1Pos.x + (WIDTH / 2) - (selectWidth / 2), button1Pos.y + HEIGHT - 15};
+}
+void UI_Manager::updateInstructionUI(float& t_dt, Command& t_newCommand){
+	if (activeSelection == BUTTON_START)
+	{
+		if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){screen = GAME_PAUSE;}
+	}
 }
 void UI_Manager::drawInstructionUI(){
-	DrawRectangle(center.x,center.y,SCREEN_WIDTH,SCREEN_HEIGHT, BLUE);
-	DrawText(TextFormat("Instructions"), center.x, center.y, 30, WHITE);
+	DrawRectangle(corner.x, corner.y, SCREEN_WIDTH, SCREEN_HEIGHT, fader);
+
+	DrawRectangle(button1Pos.x, button1Pos.y + 10,WIDTH, HEIGHT, DARKGREEN);
+	DrawRectangle(button1Pos.x, button1Pos.y, WIDTH, HEIGHT, GREEN);
+
+	DrawText(TextFormat("RETURN"), button1Pos.x + 50, button1Pos.y + 30 - 7.5, 15, WHITE);
+
+	DrawRectangle(selectPos.x, selectPos.y, selectWidth, selectHeight, WHITE);
 }
 void UI_Manager::unloadInstructionUI(){
 	std::cout << "Unloading INSTRUCTION Screen UI\n";

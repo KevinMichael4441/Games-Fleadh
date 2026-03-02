@@ -84,7 +84,7 @@ class UI_Manager
 		void unloadPauseUI();
 
 		void loadInstructionUI();
-		void updateInstructionUI();
+		void updateInstructionUI(float& t_dt, Command& t_newCommand);
 		void drawInstructionUI();
 		void unloadInstructionUI();
 
