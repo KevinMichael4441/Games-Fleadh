@@ -91,6 +91,9 @@ private:
 	
 	// Texture2D menu_background;
 
+	Music m_music;
+	Sound sfx_death;
+	float volume = 0.8f;
 	bool gameOver{false};
 };
 

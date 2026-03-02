@@ -143,13 +143,20 @@ void Game::Run()
 			break;
 		}
 	}
-	// UnloadTexture(menu_background);
+	
+	UnloadMusicStream(m_music);
+	UnloadSound(sfx_death);     // Unload sound data
+	ooze.UnloadAudio();
+    CloseAudioDevice();     // Close audio device
+	
 	chunkCacheUnload(&m_level);
 	Level_Unload(&m_level);
 }
 
 void Game::InitGame()
 {
+	InitAudioDevice();      // Initialize audio device
+
 	// Initial GameState
 	gamestate = GAME_START;
 	//-------------Level Loading-----------------//
@@ -172,7 +179,7 @@ void Game::InitGame()
 	//menu_background = LoadTexture("./assets/images/BACKGROUND/BACKGROUND_3.png");
 
 	//------------- OOZEY WHIZY------------------//
-	Vector2 centrePoint = {800,2080};
+	Vector2 centrePoint = {4237.33,1221.33};
 	ooze.Initialize(SPRING_CONSTANT, DAMP, centrePoint, OOZE_SPEED, JUMP_AMOUNT);
 	ooze.SetLevel(&m_level);
 
@@ -187,19 +194,26 @@ void Game::InitGame()
 	
 	//-------Collectibles-------//
 	score = 0;
-	m_collectibles_manager.Initialize({640, 350}, 8);
+	m_collectibles_manager.Initialize(&m_level, 8);
 
 	//-----------Teleporter------------------------//
 	m_teleporter_manager.Initialize({960, 384}, {1120, 384});
 
 	//-----------JumpPad------------------------//
-	m_jumpPadd_manager.Initialize({672, 384});
+	m_jumpPadd_manager.Initialize(& m_level);
 
 	//--------Input Manager---------------------//
 	InitInputManager();
 
 	//------------UI Manager-------------------//
 	ui_manager.initialize();
+
+	//--------------Music and Sound--------------//
+	m_music = LoadMusicStream("assets/music/Squash__Stretch.ogg");
+	m_music.looping = true;
+	PlayMusicStream(m_music);
+
+	sfx_death = LoadSound("assets/sfx/slimecaughtsting.wav");
 
 	//----------------Telemetry------------------//
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
@@ -215,6 +229,7 @@ void Game::InitGame()
 
 void Game::Update(float t_dt)
 {
+	UpdateMusicStream(m_music);
 
 	if (t_dt > 0.04f) return;
 
@@ -299,15 +314,19 @@ void Game::Update(float t_dt)
 
 void Game::NonGameInputs()
 {
-	// if(IsCommandActive(VOLUME_UP, m_activeCommand))
-	// {
-	// 	// Increase Volume
-	// }
+	if(IsCommandActive(VOLUME_UP, m_activeCommand))
+	{
+		volume += 0.05f;
+        if (volume > 1.0f) volume = 1.0f;
+		SetMasterVolume(volume);
+	}
 
-	// if (IsCommandActive(VOLUME_DOWN, m_activeCommand))
-	// {
-	// 	// Decrease Volume
-	// }
+	if (IsCommandActive(VOLUME_DOWN, m_activeCommand))
+	{
+		volume -= 0.05f;
+        if (volume < 0.0f) volume = 0.0f;
+		SetMasterVolume(volume);
+	}
 
 	if (IsCommandActive(MENU_TOGGLE, m_activeCommand))
 	{
@@ -428,9 +447,9 @@ void Game::Draw()
 
 void Game::Respawn()
 {
-	Vector2 oozeSpawn = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2};
-	chunkCacheUpdate(&m_level, oozeSpawn);
-    ooze.Reset(oozeSpawn);
+	Vector2 centrePoint = {4237.33,1221.33};
+	chunkCacheUpdate(&m_level, centrePoint);
+    ooze.Reset(centrePoint);
     SuperMech_Reset(&mech, ooze.getPosition(), {100, 200});
 }
 
@@ -442,6 +461,7 @@ void Game::checkMechOozeCollision()
     for (int i = 0; i < count; i++){
 		if (SuperMech_CheckCollision_Player( &mech, points[i].m_position, points[i].m_radiusX))
 		{
+			PlaySound(sfx_death);
 			gamestate = GAME_END;
 			break;
 		}
