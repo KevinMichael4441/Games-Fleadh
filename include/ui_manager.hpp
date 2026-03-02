@@ -27,6 +27,7 @@ class UI_Manager
 		GameState updateUI(float& t_dt, Vector2 t_pos, Command& t_activeCommand);
 		void drawUI();
 
+		Texture2D menu_background;
 		StingAnim stingAnim;
 		
 	private:
@@ -42,10 +43,20 @@ class UI_Manager
 		float commandTimer{0.0f};
 		float const MAX_DELAY{0.2f};
 
+		Vector2 selectPos{0.0f,0.0f};
+
+
+		float selectLength{0.0f};
+		float MAX_SELECT_SIZE{160.0f};
+		float speed{15.0f};
+		float const DOT_SIZE = 5.0f;
+
+
 		int const WIDTH = 160;
 		int const HEIGHT = 60;
 
-		Vector2 selectPos{0.0f,0.0f};
+		Vector2 dot{selectPos.x, selectPos.y + (HEIGHT / 2)};
+
 		int selectWidth = 160;
 		int selectHeight = 10;
 

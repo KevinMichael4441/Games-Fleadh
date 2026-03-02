@@ -143,13 +143,20 @@ void Game::Run()
 			break;
 		}
 	}
-	UnloadTexture(temp_background);
+	
+	UnloadMusicStream(m_music);
+	UnloadSound(sfx_death);     // Unload sound data
+	ooze.UnloadAudio();
+    CloseAudioDevice();     // Close audio device
+	
 	chunkCacheUnload(&m_level);
 	Level_Unload(&m_level);
 }
 
 void Game::InitGame()
 {
+	InitAudioDevice();      // Initialize audio device
+
 	// Initial GameState
 	gamestate = GAME_START;
 	//-------------Level Loading-----------------//
@@ -169,9 +176,10 @@ void Game::InitGame()
     	TraceLog(LOG_ERROR, "chunkCacheInit failed");
 	}
 
+	//menu_background = LoadTexture("./assets/images/BACKGROUND/BACKGROUND_3.png");
+
 	//------------- OOZEY WHIZY------------------//
-	Vector2 centrePoint = {4237.33,1221.33};
-	ooze.Initialize(SPRING_CONSTANT, DAMP, centrePoint, OOZE_SPEED, JUMP_AMOUNT);
+	ooze.Initialize(SPRING_CONSTANT, DAMP, OOZE_SPEED, JUMP_AMOUNT);
 	ooze.SetLevel(&m_level);
 
 	//--------Mech--------------//
@@ -179,7 +187,7 @@ void Game::InitGame()
 
 	//---------------Security System------------//
 	m_securitySystem.initialize(&m_level);
-	m_laseDoor_manager.Initialize({576, 300}, {520, 350}, 8);
+	m_laseDoor_manager.Initialize({2528, 2240}, {1984, 1024}, 8);
 	//m_securitySystem.m_lasers[0].initialize(800.0f, 200.0f);
     //m_securitySystem.m_laserCount = 1;
 	
@@ -188,7 +196,7 @@ void Game::InitGame()
 	m_collectibles_manager.Initialize(&m_level, 8);
 
 	//-----------Teleporter------------------------//
-	m_teleporter_manager.Initialize({960, 384}, {1120, 384});
+	//m_teleporter_manager.Initialize({960, 384}, {1120, 384});
 
 	//-----------JumpPad------------------------//
 	m_jumpPadd_manager.Initialize(& m_level);
@@ -198,6 +206,13 @@ void Game::InitGame()
 
 	//------------UI Manager-------------------//
 	ui_manager.initialize();
+
+	//--------------Music and Sound--------------//
+	m_music = LoadMusicStream("assets/music/Squash__Stretch.ogg");
+	m_music.looping = true;
+	PlayMusicStream(m_music);
+
+	sfx_death = LoadSound("assets/sfx/slimecaughtsting.wav");
 
 	//----------------Telemetry------------------//
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
@@ -213,6 +228,7 @@ void Game::InitGame()
 
 void Game::Update(float t_dt)
 {
+	UpdateMusicStream(m_music);
 
 	if (t_dt > 0.04f) return;
 
@@ -232,7 +248,7 @@ void Game::Update(float t_dt)
 				Vector2 center = ooze.CalculateCenter();
 				camera.update(center);
 				m_laseDoor_manager.Update(ooze, t_dt);
-				m_teleporter_manager.Update(ooze, t_dt);
+				//m_teleporter_manager.Update(ooze, t_dt);
 				chunkCacheUpdate(&m_level, center);
 				m_securitySystem.update(t_dt, ooze);
 				SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
@@ -297,15 +313,19 @@ void Game::Update(float t_dt)
 
 void Game::NonGameInputs()
 {
-	// if(IsCommandActive(VOLUME_UP, m_activeCommand))
-	// {
-	// 	// Increase Volume
-	// }
+	if(IsCommandActive(VOLUME_UP, m_activeCommand))
+	{
+		volume += 0.05f;
+        if (volume > 1.0f) volume = 1.0f;
+		SetMasterVolume(volume);
+	}
 
-	// if (IsCommandActive(VOLUME_DOWN, m_activeCommand))
-	// {
-	// 	// Decrease Volume
-	// }
+	if (IsCommandActive(VOLUME_DOWN, m_activeCommand))
+	{
+		volume -= 0.05f;
+        if (volume < 0.0f) volume = 0.0f;
+		SetMasterVolume(volume);
+	}
 
 	if (IsCommandActive(MENU_TOGGLE, m_activeCommand))
 	{
@@ -359,17 +379,14 @@ void Game::Draw()
 		case GAME_START:
 		break;
 		case GAME_MENU:
-			chunkCacheDrawBackground(&m_level);
-			chunkCacheDraw(&m_level);
 		break;
 		case GAME_PLAY:
-			DrawTexture(temp_background, 0, 0, WHITE);
 			chunkCacheDrawBackground(&m_level);
 
 			m_securitySystem.draw();
 			m_laseDoor_manager.Draw();
 			m_jumpPadd_manager.Draw();
-			m_teleporter_manager.Draw();
+			//m_teleporter_manager.Draw();
 			m_collectibles_manager.Draw();
 
 			SuperMech_Draw(&mech);
@@ -381,13 +398,12 @@ void Game::Draw()
 			if(ui_manager.stingAnim.playingAnim()){ui_manager.stingAnim.draw();}
 		break;
 		case GAME_PAUSE:
-			DrawTexture(temp_background, 0, 0, WHITE);
 			chunkCacheDrawBackground(&m_level);
 
 			m_securitySystem.draw();
 			m_laseDoor_manager.Draw();
 			m_jumpPadd_manager.Draw();
-			m_teleporter_manager.Draw();
+			//m_teleporter_manager.Draw();
 			m_collectibles_manager.Draw();
 
 			SuperMech_Draw(&mech);
@@ -397,18 +413,14 @@ void Game::Draw()
 
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
 		case GAME_INSTRUCTION:
-			chunkCacheDrawBackground(&m_level);
-
-			chunkCacheDraw(&m_level);
 		break;
 		case GAME_END:
-			DrawTexture(temp_background, 0, 0, WHITE);
 			chunkCacheDrawBackground(&m_level);
 
 			m_securitySystem.draw();
 			m_laseDoor_manager.Draw();
 			m_jumpPadd_manager.Draw();
-			m_teleporter_manager.Draw();
+			//m_teleporter_manager.Draw();
 			m_collectibles_manager.Draw();
 
 			SuperMech_Draw(&mech);
@@ -434,9 +446,9 @@ void Game::Draw()
 
 void Game::Respawn()
 {
-	Vector2 oozeSpawn = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2};
-	chunkCacheUpdate(&m_level, oozeSpawn);
-    ooze.Reset(oozeSpawn);
+	Vector2 centrePoint = {4237.33,1221.33};
+	chunkCacheUpdate(&m_level, centrePoint);
+    ooze.Reset();
     SuperMech_Reset(&mech, ooze.getPosition(), {100, 200});
 }
 
@@ -448,6 +460,7 @@ void Game::checkMechOozeCollision()
     for (int i = 0; i < count; i++){
 		if (SuperMech_CheckCollision_Player( &mech, points[i].m_position, points[i].m_radiusX))
 		{
+			PlaySound(sfx_death);
 			gamestate = GAME_END;
 			break;
 		}

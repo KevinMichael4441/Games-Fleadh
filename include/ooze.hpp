@@ -84,9 +84,15 @@ private:
 	float m_dashTimer = 0.0f;
 	const float m_dashDelay = 1.0f;
 
+	Sound sfx_dash;
+	Sound sfx_collide;
+
+	Vector2 m_spawnPoints[3];
+	int currentSpawn = 0;
+
 public:
 	Ooze();
-	void Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount);
+	void Initialize(float t_k, float t_damp, float t_speed, float t_jumpAmount);
 	
 	void HandleInput(Command t_activeCommand);
 	bool HandleEvent(Event t_event);
@@ -120,7 +126,6 @@ public:
 
 	void Move();
 	void Jump();
-	void Spread();
 
 	void LowHorizontalCollisionAnimation();
 	void MediumHorizontalCollisionAnimation();
@@ -137,11 +142,13 @@ public:
 	void SetLevel(LevelData* level);
 	int FindBoundaryAABBs(Vector2 centerPos, c2AABB outRects[MAX_BOUNDARY_RECTS]) const;
 	void ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str, float friction);
-	void Reset(Vector2 startPos);
+	void Reset();
 
 	Vector2 getPosition();
 	Point* GetPoints();
 	int GetPointCount() const;
+
+	void UnloadAudio();
 	
 	FSM fsm;
 };

@@ -16,9 +16,9 @@
 # If a value contains a literal double-quote character, escape it:
 #   GAME_DESCRIPTION = "The game\'s story begins"
 #=================================================================
-GAME_NAME     		= "Game Name"
-GAME_DESCRIPTION	= "Brief game description"
-GAME_VERSION  		= "1.0.0"
+GAME_NAME     		= "OOZ3"
+GAME_DESCRIPTION	= "Save Sentient Slime"
+GAME_VERSION  		= "6.7.0"
 
 #-----------------------------------------------------------------
 # Game Binary Target Name
@@ -26,7 +26,7 @@ GAME_VERSION  		= "1.0.0"
 # Value used for build output filenames, including 
 # R36S | Linux | Windows | Web builds
 #
-# Autostarting on R36S requires a symbolic link named "GameBinaryName" (case-sensitive).
+# Autostarting on R36S reuires a symbolic link named "GameBinaryName" (case-sensitive).
 # This value MUST match the symbolic link name on R36S for autostarting to work.
 #
 # It MUST NOT contain spaces or special characters.
@@ -52,7 +52,7 @@ GAME_TARGET			= GameBinaryName
 R36S_USER 			?= ark
 
 # R36S IP address
-R36S_HOST 			?= 192.168.0.0
+R36S_HOST 			?= 192.168.68.138
 
 # R36S Game directory path on R36S SD card 
 # Device path, verify `lsblk` or `df -h` on R36S

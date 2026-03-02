@@ -83,13 +83,17 @@ private:
 
 	Collectibles_Manager m_collectibles_manager;
 	JumpPad_Manager m_jumpPadd_manager;
-	Teleporter_Manager m_teleporter_manager;
+	//Teleporter_Manager m_teleporter_manager;
 	LaserDoor_Manager m_laseDoor_manager;
 	SecuritySystem m_securitySystem;
 
 	LevelData m_level{};
-	Texture2D temp_background;
+	
+	// Texture2D menu_background;
 
+	Music m_music;
+	Sound sfx_death;
+	float volume = 0.8f;
 	bool gameOver{false};
 };
 

@@ -35,9 +35,8 @@
 #define MAX_WORKER			1
 #define MAX_JUMPPADS		10
 
-#define JUMP_PUSHBACK		50
+#define JUMP_PUSHBACK		80
 #define WALL_PUSHBACK		50
-#define BOT_PUSHBACK		20
 
 //=================================================================
 // Firing Trigger Treshold
