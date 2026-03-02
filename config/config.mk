@@ -16,8 +16,8 @@
 # If a value contains a literal double-quote character, escape it:
 #   GAME_DESCRIPTION = "The game\'s story begins"
 #=================================================================
-GAME_NAME     		= "OOZ3"
-GAME_DESCRIPTION	= "A game made with love"
+GAME_NAME     		= "Game Name"
+GAME_DESCRIPTION	= "Brief game description"
 GAME_VERSION  		= "1.0.0"
 
 #-----------------------------------------------------------------
@@ -52,7 +52,7 @@ GAME_TARGET			= GameBinaryName
 R36S_USER 			?= ark
 
 # R36S IP address
-R36S_HOST 			?= 10.11.64.162
+R36S_HOST 			?= 192.168.0.0
 
 # R36S Game directory path on R36S SD card 
 # Device path, verify `lsblk` or `df -h` on R36S

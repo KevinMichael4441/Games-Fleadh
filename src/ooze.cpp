@@ -94,11 +94,22 @@ void Ooze::HandleInput(Command t_activeCommand)
 	if (IsCommandActive(t_activeCommand, MOVE_RIGHT))
 		axis += 1.0f;
 
-	if (IsCommandActive(t_activeCommand, AIM_LEFT))
-		axis += -4.0f;
 
-	if (IsCommandActive(t_activeCommand, AIM_RIGHT))
-		axis += 4.0f;
+	if (m_dashTimer > m_dashDelay)
+	{
+		if (IsCommandActive(t_activeCommand, AIM_LEFT))
+		{
+			m_dashTimer = 0.0f;
+			axis += -15.0f;
+		}
+		if (IsCommandActive(t_activeCommand, AIM_RIGHT))
+		{
+			m_dashTimer = 0.0f;
+			axis += 15.0f;
+		}
+	}
+
+
 
 	// Check if we are moving
 	bool moving = abs(axis) > 0.0f;
@@ -115,8 +126,7 @@ void Ooze::HandleInput(Command t_activeCommand)
 		HandleEvent(EVENT_NONE);
 	}
 
-	if (jumping && 
-		(fsm.m_currentState == STATE_MOVING || fsm.m_currentState == STATE_IDLE))
+	if (jumping)
 	{
 		if (HandleEvent(EVENT_JUMP))
 		{
@@ -131,14 +141,6 @@ void Ooze::HandleInput(Command t_activeCommand)
 
 bool Ooze::HandleEvent(Event t_event)
 {
-	if ((fsm.m_currentState == STATE_JUMPING	||
-		fsm.m_currentState == STATE_MOVING) &&
-		m_toCollideTimer < m_toCollideDelay)
-	{
-		return false;
-	}
-
-
 	fsm.m_previousState = fsm.m_currentState;
 	if (fsm.CheckValidTransition(fsm.m_currentState, t_event))
 	{
@@ -152,15 +154,10 @@ bool Ooze::HandleEvent(Event t_event)
 
 void Ooze::Update(float t_dt, Command t_activeCommand)
 {
+	m_dashTimer += t_dt;
+
 	HandleInput(t_activeCommand);
 	UpdateState(t_dt);
-
-	//--------------TEMP----------//
-	if (IsKeyPressed(KEY_X))
-	{
-		Spread();
-	}
-	//--------------TEMP----------//
 }
 
 void Ooze::UpdateState(float t_dt)
@@ -420,8 +417,6 @@ void Ooze::LowVerticalCollisionAnimation()
 	}
 	else if (m_collisionTimer > 0.2f && !collisionParts[1])
 	{
-		//X is reducing and Y is increasing
-		//calculateExtremePos();
 		for (int index = 0; index < MAX_POINTS; index++)
 		{
 			m_points[index].m_newRadiusX = rand() % 6 + 18;
@@ -471,8 +466,6 @@ void Ooze::MediumVerticalCollisionAnimation()
 	}
 	else if (m_collisionTimer > 0.2f && !collisionParts[1])
 	{
-		//X is reducing and Y is increasing
-		//calculateExtremePos();
 		for (int index = 0; index < MAX_POINTS; index++)
 		{
 			m_points[index].m_newRadiusX = rand() % 6 + 24;
@@ -539,7 +532,6 @@ void Ooze::HighVerticalCollisionAnimation()
 	else if (m_collisionTimer > 0.2f && !collisionParts[1])
 	{
 		//X is reducing and Y is increasing
-		//calculateExtremePos();
 		for (int index = 0; index < MAX_POINTS; index++)
 		{
 			m_points[index].m_newRadiusX = rand() % 6 + 30;
@@ -591,7 +583,6 @@ void Ooze::DefaultUpdate(float t_dt)
 {
 	UpdateSprings();
 	UpdatePoints(t_dt);
-	//ResolveBoundaryCollision_C2();
 	if (fsm.m_currentState != STATE_COLLIDE_HORIZONTAL)
 	{
 		Move();
@@ -615,9 +606,6 @@ void Ooze::DefaultUpdate(float t_dt)
 			}
 	}
 	}
-	
-	
-	//ResolveBoundaryCollision_C2();
 }
 
 void Ooze::ExitState()
@@ -927,29 +915,6 @@ void Ooze::Move()
 	}
 }
 
-void Ooze::Spread()
-{
-	float avgRadii;
-
-	for (int index = 0; index < MAX_POINTS / 2; index++)
-	{
-		avgRadii = (m_points[index].m_radiusX + m_points[index].m_radiusY) / 2;
-		m_points[index].m_velocity.x -= (m_jumpAmount *2 * avgRadii / 5);
-	}
-	
-	for (int index = MAX_POINTS / 2; index < MAX_POINTS; index++)
-	{
-		float avgRadii;
-		m_points[index].m_velocity.x += (m_jumpAmount *2 * avgRadii / 5);
-	}
-
-	for (int index = 0; index < MAX_POINTS; index++)
-	{
-		m_points[index].m_newRadiusY = 15;
-		m_points[index].m_newRadiusX = 55;
-	}
-}
-
 Vector2 Ooze::CalculateCenter()
 {
 	float sumX = 0.0f;
@@ -989,6 +954,7 @@ void Ooze::SetLevel(LevelData* level)
 {
     m_level = level;
 }
+
 // used to find boundary tiles in a 3x3 grid around oozes circles
 int Ooze::FindBoundaryAABBs(Vector2 centrePos, c2AABB liveAABBs[MAX_BOUNDARY_RECTS]) const
 {
@@ -1107,8 +1073,7 @@ void Ooze::ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str
 	if (mY.n.x > 0.1)
 	{
 		p.m_position.x -= pushX;
-		if (//abs(mY.depths[0]) > 3 &&
-			fsm.m_currentState != STATE_COLLIDE_HORIZONTAL)
+		if (fsm.m_currentState != STATE_COLLIDE_HORIZONTAL)
 		{
 			HandleEvent(EVENT_COLLIDE_HORIZONTAL);
 		}
@@ -1117,8 +1082,7 @@ void Ooze::ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str
 	else if(mY.n.x < -0.1)
 	{
 		p.m_position.x += pushX;
-		if (//abs(mY.depths[0]) > 3 &&
-			fsm.m_currentState != STATE_COLLIDE_HORIZONTAL)
+		if (fsm.m_currentState != STATE_COLLIDE_HORIZONTAL)
 		{
 			HandleEvent(EVENT_COLLIDE_HORIZONTAL);
 		}
@@ -1128,20 +1092,16 @@ void Ooze::ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str
 	else if (mY.n.y > 0.1)
 	{
 		p.m_position.y -= pushY;
-			if (//abs(mX.depths[0]) > 3 &&
-			fsm.m_currentState != STATE_COLLIDE_DOWN ||
-			fsm.m_currentState != STATE_IDLE ||
-			fsm.m_currentState != STATE_MOVING)
+		if (fsm.m_currentState != STATE_COLLIDE_DOWN)
 		{
 			HandleEvent(EVENT_COLLIDE_DOWN);
 		}	
-			p.m_velocity.y = 0;
+		p.m_velocity.y = 0;
 	}
 	else if (mY.n.y < -0.1)
 	{
 		p.m_position.y += pushY;
-		if (//abs(mX.depths[0]) > 3 &&
-			fsm.m_currentState != STATE_COLLIDE_UP)
+		if (fsm.m_currentState != STATE_COLLIDE_UP)
 		{
 			HandleEvent(EVENT_COLLIDE_UP);
 		}
