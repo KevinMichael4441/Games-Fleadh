@@ -2,6 +2,8 @@
 
 #include "supermech.h"
 
+static void UpdateAnimationState(SuperMech* mech);
+
 static bool HasLineOfSight(const SuperMech* mech, Vector2 target);
 static int SuperMech_FindBoundaryAABBs(const SuperMech* mech, c2AABB outRects[MAX_BOUNDARY_RECTS]);
 static bool WallAhead(SuperMech* mech);
@@ -115,17 +117,6 @@ static bool HasLineOfSight(const SuperMech* mech, Vector2 target)
 
 static void MoveTowards(SuperMech *mech, Vector2 target, float speed, float dt)
 {
-    if (mech->animationState != ANIM_WALK)
-    {
-        mech->currentFrame = 0;
-        mech->frameTime = 0;
-    }
-
-    if (mech->isGrounded)
-    {
-        mech->animationState = ANIM_WALK;
-    }
-
     float dx = target.x - mech->position.x;
     //TraceLog(LOG_INFO, "target: %d", target.x);
 
@@ -151,14 +142,6 @@ static void MoveTowards(SuperMech *mech, Vector2 target, float speed, float dt)
 static void TryJump(SuperMech *mech, Vector2 target)
 {
     if (!mech->isGrounded || mech->jumpCooldown > 0) return;
-
-    if (mech->animationState != ANIM_JUMP)
-    {
-        mech->currentFrame = 0;
-        mech->frameTime = 0;
-    }
-
-    mech->animationState = ANIM_JUMP;
 
     if (WallAhead(mech))
     {
@@ -519,73 +502,88 @@ void SuperMech_Uppdate(SuperMech *mech, Vector2 playerPos, bool cameraTriggered,
 
     SuperMech_ResolveBoundaryCollision(mech);
 
+    UpdateAnimationState(mech);
+
     UpdateState(mech, dt);
+
     SuperMech_Frame_Update(mech);
+}
+
+static void UpdateAnimationState(SuperMech* mech)
+{
+    AnimationStates newAnim;
+
+    if (!mech->isGrounded)
+    {
+        newAnim = ANIM_JUMP;
+    }
+    else if (fabsf(mech->velocity.x) > 1.0f)
+    {
+        newAnim = ANIM_WALK;
+    }
+    else
+    {
+        switch (mech->currentState)
+        {
+            case MECH_SEARCH:
+                newAnim = ANIM_SEARCH;
+                break;
+
+            case MECH_IDLE:
+            case MECH_DORMANT:
+                newAnim = ANIM_IDLE;
+                break;
+
+            default:
+                newAnim = ANIM_IDLE;
+                break;
+        }
+    }
+    if (newAnim != mech->animationState)
+    {
+        mech->animationState = newAnim;
+        mech->currentFrame = 0;
+        mech->animationTimer = 0;
+    }
 }
 
 void SuperMech_Frame_Update(SuperMech *mech)
 {
     mech->animationTimer += GetFrameTime();
 
+    int maxFrames = 1;
+
     switch(mech->animationState)
     {
-    case ANIM_IDLE:
-        mech->currentTexture = &mech->textureIdle;
-        if (mech->animationTimer >= mech->frameTime)
-        {
-            mech->animationTimer -= mech->frameTime;
-            mech->currentFrame++;
+        case ANIM_IDLE:
+            mech->currentTexture = &mech->textureIdle;
+            maxFrames = 24;
+            break;
 
-            if (mech->currentFrame >= 24)
-            {
-                mech->currentFrame = 0;
-            }
-        }
-        break;
         case ANIM_JUMP:
             mech->currentTexture = &mech->textureJump;
-            if (mech->animationTimer >= mech->frameTime)
-            {
-                mech->animationTimer -= mech->frameTime;
-                mech->currentFrame++;
-
-                if (mech->currentFrame >= 30)
-                {
-                    mech->currentFrame = 0;
-                    mech->animationState = ANIM_IDLE;
-                }
-            }
+            maxFrames = 30;
             break;
+
         case ANIM_SEARCH:
             mech->currentTexture = &mech->textureSearch;
-            if (mech->animationTimer >= mech->frameTime)
-            {
-                mech->animationTimer -= mech->frameTime;
-                mech->currentFrame++;
-
-                if (mech->currentFrame >= 16)
-                {
-                    mech->currentFrame = 0;
-                }
-            }
+            maxFrames = 16;
             break;
+
         case ANIM_WALK:
             mech->currentTexture = &mech->textureWalk;
-            if (mech->animationTimer >= mech->frameTime)
-            {
-                mech->animationTimer -= mech->frameTime;
-                mech->currentFrame++;
-
-                if (mech->currentFrame >= 12)
-                {
-                    mech->currentFrame = 0;
-                }
-            }
+            maxFrames = 12;
             break;
     }
 
+    if (mech->animationTimer >= mech->frameTime)
+    {
+        mech->animationTimer -= mech->frameTime;
+        mech->currentFrame++;
 
-    
+        if (mech->currentFrame >= maxFrames)
+            mech->currentFrame = 0;
+    }
 }
 
 void SuperMech_Draw(SuperMech *mech) 
@@ -624,10 +622,6 @@ const char *SuperMech_GetStateName(SupermechState state)
 static void Dormant_Entry(SuperMech *mech, float dt)
 {
     mech->velocity = (Vector2){0, 0};
-
-    mech->frameTime = 0;
-    mech->frameCount = 0;
-    mech->animationState = ANIM_IDLE;
 }
 
 static void Dormant_Update(SuperMech *mech, float dt)
@@ -644,10 +638,6 @@ static void Idle_Entry(SuperMech *mech, float dt)
 {
     mech->stateTimer = 0.0f;
     mech->velocity = (Vector2){0,0};
-
-    mech->frameTime = 0;
-    mech->frameCount = 0;
-    mech->animationState = ANIM_IDLE;
 }
 
 static void Idle_Update(SuperMech *mech, float dt)
@@ -698,10 +688,6 @@ static void Search_Entry(SuperMech *mech, float dt)
 {
     mech->stateTimer = 0.0f;
     mech->velocity = (Vector2){0,0};
-    
-    mech->frameTime = 0;
-    mech->frameCount = 0;
-    mech->animationState = ANIM_SEARCH;
 }
 
 static void Search_Update(SuperMech *mech, float dt)
