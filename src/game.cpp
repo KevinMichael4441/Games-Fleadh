@@ -176,7 +176,8 @@ void Game::InitGame()
 	//---------------Security System------------//
 	m_securitySystem.initialize(&m_level);
 	m_laseDoor_manager.Initialize({576, 300}, {520, 350}, 8);
-
+	//m_securitySystem.m_lasers[0].initialize(800.0f, 200.0f);
+    //m_securitySystem.m_laserCount = 1;
 	
 	//-------Collectibles-------//
 	score = 0;
@@ -191,6 +192,9 @@ void Game::InitGame()
 	//--------Input Manager---------------------//
 	InitInputManager();
 
+	//------------UI Manager-------------------//
+	ui_manager.initialize();
+
 	//----------------Telemetry------------------//
 	#if defined(PLATFORM_R36S) || defined(PLATFORM_LINUX)
 		// Telemetry Init
@@ -200,7 +204,7 @@ void Game::InitGame()
 		InitTelemetry(&r36s_telemetry);
 	#endif // Init Telemetry R36S and Linux only
 
-	gamestate = GAME_PLAY;
+	gamestate = GAME_START;
 }
 
 void Game::Update(float t_dt)
@@ -212,12 +216,22 @@ void Game::Update(float t_dt)
 	
 	ui_manager.changeUI(gamestate, camera.screen.target);
 	ui_manager.updateUI(t_dt, camera.screen.target);
+	std::pair<GameState,bool> stateSwitching;
+
 
 	switch (gamestate)
 	{
 		case GAME_START:
+			stateSwitching = ui_manager.handleInput(m_activeCommand);
+			if (stateSwitching.second)
+				gamestate = GAME_MENU;
 		break;
 		case GAME_MENU:
+			stateSwitching = ui_manager.handleInput(m_activeCommand);
+			if (stateSwitching.second)
+			{
+				gamestate = stateSwitching.first;
+			}
 		break;
 		case GAME_PLAY:
 		{
@@ -228,9 +242,10 @@ void Game::Update(float t_dt)
 				m_laseDoor_manager.Update(ooze, t_dt);
 				m_teleporter_manager.Update(ooze, t_dt);
 				chunkCacheUpdate(&m_level, center);
+				m_securitySystem.update(t_dt, ooze);
 				SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
 				checkMechOozeCollision();
-				m_collectibles_manager.Update(ooze, score);
+				m_collectibles_manager.Update(ooze, score, t_dt);
 				m_jumpPadd_manager.Update(ooze);
 				ooze.Update(t_dt, m_activeCommand);
 			}
@@ -257,6 +272,9 @@ void Game::Update(float t_dt)
 		case GAME_PAUSE:
 		break;
 		case GAME_INSTRUCTION:
+			stateSwitching = ui_manager.handleInput(m_activeCommand);
+			if (stateSwitching.second)
+				gamestate = stateSwitching.first;
 		break;
 		case GAME_END:
 			if(ui_manager.stingAnim.timeToSpawn()){
@@ -284,15 +302,15 @@ void Game::Update(float t_dt)
 
 void Game::NonGameInputs()
 {
-	if(IsCommandActive(VOLUME_UP, m_activeCommand))
-	{
-		// Increase Volume
-	}
+	// if(IsCommandActive(VOLUME_UP, m_activeCommand))
+	// {
+	// 	// Increase Volume
+	// }
 
-	if (IsCommandActive(VOLUME_DOWN, m_activeCommand))
-	{
-		// Decrease Volume
-	}
+	// if (IsCommandActive(VOLUME_DOWN, m_activeCommand))
+	// {
+	// 	// Decrease Volume
+	// }
 
 	if (IsCommandActive(MENU_TOGGLE, m_activeCommand))
 	{
@@ -302,20 +320,20 @@ void Game::NonGameInputs()
 		#endif
 	}
 
-	if (IsCommandActive(START_GAME, m_activeCommand))
-	{
-		// (?)
-	}
+	// if (IsCommandActive(START_GAME, m_activeCommand))
+	// {
+	// 	// (?)
+	// }
 
-	if (IsCommandActive(EXIT_COMMAND, m_activeCommand))
-	{
-		// (?)
-	}
+	// if (IsCommandActive(EXIT_COMMAND, m_activeCommand))
+	// {
+	// 	// (?)
+	// }
 
-	if (IsCommandActive(POWER_COMMAND, m_activeCommand))
-	{
-		// (?)
-	}
+	// if (IsCommandActive(POWER_COMMAND, m_activeCommand))
+	// {
+	// 	// (?)
+	// }
 	// Temporary GameState switching --
 	if (IsKeyPressed(KEY_ONE))
 	if(gamestate != GAME_START){
@@ -389,6 +407,18 @@ void Game::Draw()
 		case GAME_INSTRUCTION:
 		break;
 		case GAME_END:
+			DrawTexture(temp_background, 0, 0, WHITE);
+			chunkCacheDrawBackground(&m_level);
+
+			m_securitySystem.draw();
+			m_laseDoor_manager.Draw();
+			m_jumpPadd_manager.Draw();
+			m_teleporter_manager.Draw();
+			m_collectibles_manager.Draw();
+
+			SuperMech_Draw(&mech);
+			ooze.Draw();
+
 			chunkCacheDraw(&m_level);
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
 		break;
@@ -408,9 +438,9 @@ void Game::Draw()
 void Game::Respawn()
 {
 	Vector2 oozeSpawn = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2};
+	chunkCacheUpdate(&m_level, oozeSpawn);
     ooze.Reset(oozeSpawn);
     SuperMech_Reset(&mech, ooze.getPosition(), {100, 200});
-	chunkCacheUpdate(&m_level, oozeSpawn);
 }
 
 void Game::checkMechOozeCollision()

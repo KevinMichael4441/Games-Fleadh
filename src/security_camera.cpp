@@ -9,6 +9,33 @@ SecurityCamera::SecurityCamera()
 
 void SecurityCamera::initialize(float t_x, float t_y, float t_distance, CamType t_type, CamMount t_mount, LaserDir t_dir)
 {
+    m_position = {t_x, t_y};
+
+    m_texture = LoadTexture("./assets/images/ENVIRONMENT/CAMS.png");
+
+    m_frameWidth = 32;
+    m_frameHeight = 32;
+    m_scale = 1;
+
+    m_frameCount = 9;
+    m_frameTime = 0.12f;
+    m_currentFrame = 0;
+    m_animationTimer = 0.0f;
+
+    m_currentFrame = 0;
+    m_targetFrame = 0;
+    m_animating = false;
+    m_previousActive = true;
+
+    if(MOUNT_BACKGROUND == t_mount)
+    {
+        m_sourceY = (float)m_frameHeight;
+    }
+    else
+    {
+        m_sourceY = 0.0f;
+    }
+
     // This now takes new data from tiled
     // t_distance is still used for m_length to set the length of the laser beam
     // CamType is used to determine the behavior (line that moves side to side on a fixed axis versys line that seeps on a radius) of the laser. 1 = CAM_SPOT, 2 = CAM_SWEEP
@@ -20,6 +47,42 @@ void SecurityCamera::initialize(float t_x, float t_y, float t_distance, CamType 
     m_type = t_type;
     //m_fix = t_direction; //not sure what you were using fix for but t_direction has been replaced with either t_dir or t_mount depending on if you used it for camera direction or laser direction
     m_origin = { t_x + WIDTH / 2.0f, t_y + HEIGHT / 2.0f };
+    float sweepAmount = 50.0f;
+
+    m_laserDir = t_dir;
+
+    switch (m_laserDir)
+    {
+    case LASER_N: //laser points upward, sweeps horizontally
+        m_fixedY = m_origin.y - t_distance;
+        m_minX = m_origin.x - sweepAmount;
+        m_maxX = m_origin.x + sweepAmount;
+
+        m_end = { m_origin.x, m_fixedY };
+    break;
+    case LASER_S: //laser points downward, sweeps horizontally
+        m_fixedY = m_origin.y + t_distance;
+        m_minX = m_origin.x - sweepAmount;
+        m_maxX = m_origin.x + sweepAmount;
+
+        m_end = { m_origin.x, m_fixedY };
+    break;
+    case LASER_E: //laser points right, sweeps vertically
+        m_fixedX = m_origin.x + t_distance;
+        m_minY = m_origin.y - sweepAmount;
+        m_maxY = m_origin.y + sweepAmount;
+
+        m_end = { m_fixedX, m_origin.y };
+    break;
+    case LASER_W: //laser points left, sweeps vertically
+        m_fixedX = m_origin.x - t_distance;
+        m_minY = m_origin.y - sweepAmount;
+        m_maxY = m_origin.y + sweepAmount;
+
+        m_end = { m_fixedX, m_origin.y };
+    break;
+    }
+
     m_length = t_distance;
 	m_activeDuration   = 5.0f;
 	m_inactiveDuration = 5.0f;
@@ -78,6 +141,8 @@ void SecurityCamera::initialize(float t_x, float t_y, float t_distance, CamType 
         case CAM_SWEEP:
             m_end = (Vector2){m_origin.x, m_origin.y + m_length};
         break;
+        default:
+        break;
     }
     
     m_direction = Vector2Normalize((Vector2){m_end.x - m_origin.x, m_end.y - m_origin.y});
@@ -109,53 +174,77 @@ void SecurityCamera::drawRaycast()
 	DrawLineEx((Vector2){m_laser.p.x, m_laser.p.y}, m_end, r, RED);
 }
 
-void SecurityCamera::update(float t_dt, Vector2 playerPos){
-	m_timer += t_dt;
+void SecurityCamera::update(float t_dt, Vector2 playerPos)
+{
+    m_timer += t_dt;
 
-	if (m_isActive)
-	{
-    	if (m_timer >= m_activeDuration)
-    	{
-        	m_isActive = false;
-        	m_timer = 0.0f;
-    	}
-	}
-	else
-	{
-    	if (m_timer >= m_inactiveDuration)
-    	{
-        	m_isActive = true;
-        	m_timer = 0.0f;
-    	}
-	}
-
-
-    if (!m_isActive) return;
-    
-    if(m_angle >= MAX_ANGLE && angleV > 0.0f){
-        angleV *= -1;
-        m_movingRight = false;
-    }
-    if(m_angle <= MIN_ANGLE && angleV <= 0.0f){
-        angleV *= -1;
-        m_movingRight = true;
-    }
-    m_angle += angleV; 
-    
-    switch(m_type){
-        case CAM_SWEEP:
-            if(m_movingRight == true){m_end.x += extendSpd;}
-            else{m_end.x -= extendSpd;}
-        break;
-        case CAM_SPOT:
-            m_end = (Vector2){sin(m_angle) * m_length + m_origin.x, cos(m_angle) * m_length + m_origin.y};
-        break;
-        default:
-        break;
+    if (!m_animating)
+    {
+        if (m_isActive && m_timer >= m_activeDuration)
+        {
+            m_isActive = false;
+            m_timer = 0.0f;
+            m_animating = true;
+            m_targetFrame = 0;
+        }
+        else if (!m_isActive && m_timer >= m_inactiveDuration)
+        {
+            m_isActive = true;
+            m_timer = 0.0f;
+            m_animating = true;
+            m_targetFrame = m_frameCount - 1;
+        }
     }
 
-    m_direction = Vector2Normalize((Vector2){m_end.x - m_origin.x, m_end.y - m_origin.y});
-    m_laser.d = c2V(m_direction.x , m_direction.y);
+    Frame_Update(t_dt);
+
+    if (!m_isLaserActive) return;
+
+    if (m_type == CAM_SPOT)
+    {
+        switch (m_laserDir)
+        {
+        case LASER_N:
+        case LASER_S:
+        {
+            if (m_movingRight)
+            {
+                m_end.x += extendSpd;
+                if (m_end.x >= m_maxX) m_movingRight = false;
+            }                
+            else
+            {
+                m_end.x -= extendSpd;
+                if (m_end.x <= m_minX) m_movingRight = true;
+            }
+
+            m_end.y = m_fixedY;
+        break;
+        }
+        case LASER_E:
+        case LASER_W:
+        {
+            if (m_movingRight)
+            {
+                m_end.y += extendSpd;
+                if (m_end.y >= m_maxY) m_movingRight = false;
+            }
+            else
+            {
+                m_end.y -= extendSpd;
+                if (m_end.y <= m_minY) m_movingRight = true;
+            }
+
+            m_end.x = m_fixedX;
+        break;
+        }
+        }
+    }
+
+    m_direction = Vector2Normalize({ m_end.x - m_origin.x, m_end.y - m_origin.y });
+    m_laser.d = c2V(m_direction.x, m_direction.y);
+    m_laser.p = c2V(m_origin.x, m_origin.y);
+
     m_playerDetected = raycastPlayerCollision(playerPos);
 }
 
@@ -171,15 +260,41 @@ bool SecurityCamera::isPlayerDetected() const
 
 void SecurityCamera::draw()
 {
-	DrawRectangleRec(m_body, m_isActive ? ORANGE : DARKGRAY);
+    Animate();
 
-	if (!m_isActive) return;
+    if (!m_isLaserActive) return;
 
     drawRaycast();
 
-	if (m_playerDetected)
-	{
+    if (m_playerDetected)
+    {
         printf("Player Detected\n");
-    	DrawCircleV(m_origin, 6, GREEN);
-	}
+        DrawCircleV(m_origin, 6, GREEN);
+    }
+}
+
+void SecurityCamera::Frame_Update(float dt)
+{
+    if (!m_animating) return;
+
+    m_animationTimer += dt;
+
+    if (m_animationTimer >= m_frameTime)
+    {
+        m_animationTimer = 0.0f;
+
+        if (m_currentFrame < m_targetFrame) m_currentFrame++;
+        else if (m_currentFrame > m_targetFrame) m_currentFrame--;
+
+        if (m_currentFrame >= 6 && m_targetFrame == m_frameCount - 1) m_isLaserActive = true;
+        else if (m_currentFrame < 6 && m_targetFrame == 0) m_isLaserActive = false;
+
+        if (m_currentFrame == m_targetFrame) m_animating = false;
+    }
+}
+
+void SecurityCamera::Animate() 
+{
+    Rectangle source = { (float)(m_currentFrame * m_frameWidth), m_sourceY, (float)m_frameWidth, (float)m_frameHeight };
+    DrawTextureRec(m_texture, source, m_position, WHITE);
 }

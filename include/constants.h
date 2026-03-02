@@ -31,7 +31,7 @@
 // For SecuritySystem
 //=================================================================
 #define MAX_LASERWALL		1
-#define MAX_CAMERA			99
+#define MAX_CAMERA			3
 #define MAX_WORKER			1
 #define MAX_JUMPPADS		1
 
