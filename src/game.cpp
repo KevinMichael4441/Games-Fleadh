@@ -265,6 +265,11 @@ void Game::Update(float t_dt)
 				ui_manager.stingAnim.setStingPos(camera.screen.target);}
 			}
 
+			if (ooze.CalculateCenter().x > 19891 && ooze.CalculateCenter().y < 200)
+			{
+				gamestate = GAME_OVER;
+			}
+
 			// ----------- NEW: Respawn mech if off-screen ------------
     		mechRespawnCooldown += t_dt;
 
@@ -293,6 +298,9 @@ void Game::Update(float t_dt)
 		break;
 		case GAME_EXIT:
 			gameOver = true;
+		break;
+		case GAME_OVER:
+			fadeToBlack();
 		break;
 	}
 
@@ -431,6 +439,10 @@ void Game::Draw()
 		break;
 		case GAME_EXIT:
 		break;
+		case GAME_OVER:
+			Vector2 pos = ooze.CalculateCenter();
+			DrawRectangle(pos.x - SCREEN_WIDTH / 2,pos.y - SCREEN_HEIGHT / 2,SCREEN_WIDTH, SCREEN_HEIGHT, fader);
+		break;
 	}
 
 	ui_manager.drawUI();
@@ -442,6 +454,19 @@ void Game::Draw()
 		DrawTelemetry(&r36s_telemetry, camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), glRendererStr, glVersionStr, glslVersionStr);
 	}
 	#endif // Draw Telemetry R36S and Linux only
+}
+
+void Game::fadeToBlack()
+{
+	if(alpha < MAX_ALPHA)
+	{
+		alpha += fadeSpeed;
+		Fade(fader, alpha);
+	}
+	else
+	{
+		gamestate = GAME_EXIT;
+	}
 }
 
 void Game::Respawn()

@@ -89,6 +89,14 @@ private:
 
 	LevelData m_level{};
 	
+	Color fader{BLACK};
+	float alpha{0.0f};
+	float const MAX_ALPHA{1.0f};
+	float fadeSpeed{0.075};
+
+	void fadeToBlack();
+
+
 	// Texture2D menu_background;
 
 	Music m_music;
