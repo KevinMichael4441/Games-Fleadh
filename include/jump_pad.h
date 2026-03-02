@@ -5,6 +5,8 @@
 #include <raymath.h>
 
 #include "constants.h"
+#include "level_loader.h"
+#include <cstring>
 
 #include "ooze.hpp"
 
@@ -31,13 +33,14 @@ class JumpPad_Manager
 {
 public:
 	JumpPad_Manager();
-	void Initialize(Vector2 pos);
+	void Initialize(LevelData* level);
 
 	void Update(Ooze &player);
 	void Draw();
 
 private:
-	JumpPad m_jumpPadds[MAX_JUMPPADS];
+	JumpPad m_jumpPads[MAX_JUMPPADS];
+	int m_jumpPadCount = 0;
 };
 
 #endif

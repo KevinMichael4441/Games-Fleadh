@@ -166,7 +166,7 @@ void Game::InitGame()
 	}
 
 	//------------- OOZEY WHIZY------------------//
-	Vector2 centrePoint = {800,2080};
+	Vector2 centrePoint = {4237.33,1221.33};
 	ooze.Initialize(SPRING_CONSTANT, DAMP, centrePoint, OOZE_SPEED, JUMP_AMOUNT);
 	ooze.SetLevel(&m_level);
 
@@ -181,13 +181,13 @@ void Game::InitGame()
 	
 	//-------Collectibles-------//
 	score = 0;
-	m_collectibles_manager.Initialize({640, 350}, 8);
+	m_collectibles_manager.Initialize(&m_level, 8);
 
 	//-----------Teleporter------------------------//
 	m_teleporter_manager.Initialize({960, 384}, {1120, 384});
 
 	//-----------JumpPad------------------------//
-	m_jumpPadd_manager.Initialize({672, 384});
+	m_jumpPadd_manager.Initialize(& m_level);
 
 	//--------Input Manager---------------------//
 	InitInputManager();
