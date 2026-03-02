@@ -137,6 +137,11 @@ void Game::Run()
  		// Raylib End drawing to Frame Buffer
 		camera.end();
  		EndDrawing();	
+		
+		if(gameOver == true)
+		{
+			break;
+		}
 	}
 	
 	UnloadMusicStream(m_music);
@@ -173,7 +178,7 @@ void Game::InitGame()
 	}
 
 	//------------- OOZEY WHIZY------------------//
-	Vector2 centrePoint = {800,2080};
+	Vector2 centrePoint = {4237.33,1221.33};
 	ooze.Initialize(SPRING_CONSTANT, DAMP, centrePoint, OOZE_SPEED, JUMP_AMOUNT);
 	ooze.SetLevel(&m_level);
 
@@ -188,13 +193,13 @@ void Game::InitGame()
 	
 	//-------Collectibles-------//
 	score = 0;
-	m_collectibles_manager.Initialize({640, 350}, 8);
+	m_collectibles_manager.Initialize(&m_level, 8);
 
 	//-----------Teleporter------------------------//
 	m_teleporter_manager.Initialize({960, 384}, {1120, 384});
 
 	//-----------JumpPad------------------------//
-	m_jumpPadd_manager.Initialize({672, 384});
+	m_jumpPadd_manager.Initialize(& m_level);
 
 	//--------Input Manager---------------------//
 	InitInputManager();
@@ -229,9 +234,6 @@ void Game::Update(float t_dt)
 
 	m_activeCommand = PollInput();
 	NonGameInputs();
-	
-	ui_manager.changeUI(gamestate, camera.screen.target);
-	gamestate = ui_manager.updateUI(t_dt, camera.screen.target, m_activeCommand);
 
 	switch (gamestate)
 	{
@@ -290,6 +292,7 @@ void Game::Update(float t_dt)
 			}
 		break;
 		case GAME_EXIT:
+			gameOver = true;
 		break;
 	}
 
@@ -302,6 +305,9 @@ void Game::Update(float t_dt)
 	#endif // TELEMETRY Update R36S and Linux only
 
 //-------------------TELEMETRY UPDATES------------------------------------------//
+
+	ui_manager.changeUI(gamestate, camera.screen.target);
+	gamestate = ui_manager.updateUI(t_dt, camera.screen.target, m_activeCommand);
 
 }
 
@@ -373,6 +379,7 @@ void Game::Draw()
 		case GAME_START:
 		break;
 		case GAME_MENU:
+			chunkCacheDrawBackground(&m_level);
 			chunkCacheDraw(&m_level);
 		break;
 		case GAME_PLAY:
@@ -412,15 +419,6 @@ void Game::Draw()
 		case GAME_INSTRUCTION:
 			chunkCacheDrawBackground(&m_level);
 
-			m_securitySystem.draw();
-			m_laseDoor_manager.Draw();
-			m_jumpPadd_manager.Draw();
-			m_teleporter_manager.Draw();
-			m_collectibles_manager.Draw();
-
-			SuperMech_Draw(&mech);
-			ooze.Draw();
-
 			chunkCacheDraw(&m_level);
 		break;
 		case GAME_END:
@@ -456,9 +454,9 @@ void Game::Draw()
 
 void Game::Respawn()
 {
-	Vector2 oozeSpawn = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2};
-	chunkCacheUpdate(&m_level, oozeSpawn);
-    ooze.Reset(oozeSpawn);
+	Vector2 centrePoint = {4237.33,1221.33};
+	chunkCacheUpdate(&m_level, centrePoint);
+    ooze.Reset(centrePoint);
     SuperMech_Reset(&mech, ooze.getPosition(), {100, 200});
 }
 

@@ -36,28 +36,52 @@ void JumpPad::Draw()
 
 JumpPad_Manager::JumpPad_Manager()
 {
+	m_jumpPadCount = 0;
 }
 
-void JumpPad_Manager::Initialize(Vector2 pos)
+void JumpPad_Manager::Initialize(LevelData* level)
 {
-	for (int index = 0; index < MAX_JUMPPADS; index++)
+    m_jumpPadCount = 0;
+
+    if (!level || !level->objects || level->objectCount <= 0)
 	{
-		m_jumpPadds[index].Initialize({672,384});
+		return;
 	}
+
+    for (int i = 0; i < level->objectCount; i++)
+    {
+        const LevelObject& obj = level->objects[i];
+
+        if (!obj.type || strcmp(obj.type, "JumpPad") != 0)
+		{
+			continue;
+		}
+
+        if (m_jumpPadCount >= MAX_JUMPPADS)
+		{
+			break;
+		}
+
+        m_jumpPads[m_jumpPadCount].Initialize({ obj.x, obj.y });
+        m_jumpPadCount++;
+    }
+
+    TraceLog(LOG_INFO, "Spawned %d jump pads", m_jumpPadCount);
 }
 
 void JumpPad_Manager::Update(Ooze &player)
 {      
-    for (int index = 0; index < MAX_JUMPPADS; index++)
+    for (int i = 0; i < m_jumpPadCount; i++)
 	{
-		m_jumpPadds[index].Update(player);
+		m_jumpPads[i].Update(player);
 	}
 }
 
 void JumpPad_Manager::Draw()
 {
-	for (int index = 0; index < MAX_JUMPPADS; index++)
+	for (int i = 0; i < m_jumpPadCount; i++)
 	{
-		m_jumpPadds[index].Draw();
+        m_jumpPads[i].Draw();
 	}
+
 }

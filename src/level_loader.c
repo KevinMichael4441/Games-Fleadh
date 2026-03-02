@@ -750,6 +750,12 @@ void chunkCacheUpdate(LevelData* level, Vector2 playerWorldPos)
     int dx = playerChunkX - level->centreChunkX;
     int dy = playerChunkY - level->centreChunkY;
 
+    if (dx > 1 || dx < -1 || dy > 1 || dy < -1)
+    {
+        rebuildAll3x3(level, playerChunkX, playerChunkY);
+        return;
+    }  
+
     // update chunks if we cross a boundary between chunks
     if (dx == 1)
     {

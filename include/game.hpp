@@ -93,6 +93,7 @@ private:
 	Music m_music;
 	Sound sfx_death;
 	float volume = 0.8f;
+	bool gameOver{false};
 };
 
 #endif //game.h

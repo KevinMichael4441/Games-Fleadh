@@ -3,15 +3,17 @@
 
 #include <raylib.h>
 #include "ooze.hpp"
+#include "level_loader.h"
 
-static const int MAX_COLLECTIBLES = 100;
+static const int MAX_COLLECTIBLES = 30;
 
 //------------------Collectible------------------//
 
 class Collectible
 {
 private:
-    Texture m_texture;
+    static Texture2D m_texture;
+    static bool m_textureLoaded;
     Vector2 m_position;
     float m_radius;
     bool m_active;
@@ -33,13 +35,14 @@ class Collectibles_Manager
 {
 public:
     Collectibles_Manager();
-    void Initialize(Vector2 pos, float radius);
+    void Initialize(LevelData* level, float radius);
 
     void Update(Ooze& player, int& score, float dt);
     void Draw() const;
 
 private:
     Collectible m_collectibles[MAX_COLLECTIBLES];
+    int m_collectibleCount = 0;
 };
 
 #endif

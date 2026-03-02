@@ -46,21 +46,22 @@ void UI_Manager::changeUI(GameState t_newScreen, Vector2 t_pos){
 }
 GameState UI_Manager::updateUI(float& t_dt, Vector2 t_pos, Command& t_activeCommand){
 
+	recenter(t_pos);
 	switch (screen){
 		case GAME_START:
 			updateStartUI();
 		break;
 		case GAME_MENU:
-			updateMenuUI(t_dt, t_activeCommand);
+			updateMenuUI(t_dt, t_activeCommand, t_pos);
 		break;
 		case GAME_PLAY:
-			updateGameplayUI(t_dt, t_pos);
+			updateGameplayUI(t_dt,t_activeCommand, t_pos);
 		break;
 		case GAME_PAUSE:
-			updatePauseUI(t_dt, t_activeCommand);
+			updatePauseUI(t_dt, t_activeCommand, t_pos);
 		break;
 		case GAME_INSTRUCTION:
-			updateInstructionUI(t_dt, t_activeCommand);
+			updateInstructionUI(t_dt, t_activeCommand, t_pos);
 		break;
 		case GAME_END:
 			updateEndUI(t_dt);
@@ -68,7 +69,6 @@ GameState UI_Manager::updateUI(float& t_dt, Vector2 t_pos, Command& t_activeComm
 		case GAME_EXIT:
 		break;
 	}
-	recenter(t_pos);
 	return screen;
 }
 
@@ -172,13 +172,14 @@ void UI_Manager::loadMenuUI(){
 	activeSelection = BUTTON_START;
 	selectPos = {button1Pos.x - selectWidth / 2, button1Pos.y + 35};
 }
-void UI_Manager::updateMenuUI(float& t_dt, Command& t_newCommand){
+void UI_Manager::updateMenuUI(float& t_dt, Command& t_newCommand, Vector2& t_pos){
 	if(getNewCommand)
 	{
 		switch (activeSelection)
 		{
 			case BUTTON_START:
-				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){screen = GAME_PLAY;}
+				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){
+					unloadUI();screen = GAME_PLAY; gameBeginning = false; loadUI(t_pos);}
 				else if(t_newCommand == MOVE_RIGHT){newSelection = BUTTON_INSTRUCTION;}
 				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_EXIT;}
 				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_INSTRUCTION;}
@@ -187,14 +188,16 @@ void UI_Manager::updateMenuUI(float& t_dt, Command& t_newCommand){
 			case BUTTON_PAUSE:
 			break;
 			case BUTTON_INSTRUCTION:
-				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){screen = GAME_INSTRUCTION;}
+				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){
+					unloadUI();screen = GAME_INSTRUCTION;loadUI(t_pos);}
 				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_START;}
 				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_START;}
 				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_EXIT;}
 				else if(t_newCommand == MOVE_RIGHT){newSelection = BUTTON_EXIT;}
 			break;
 			case BUTTON_EXIT:
-				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){screen = GAME_EXIT;}
+				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){
+					unloadUI();screen = GAME_EXIT;loadUI(t_pos);}
 				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_START;}
 				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_START;}
 				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_INSTRUCTION;}
@@ -263,11 +266,16 @@ void UI_Manager::loadGameplayUI(Vector2& t_pos){
 	std::cout << "Loading GAMEPLAY Screen UI\n";
 	if(stingAnim.playingAnim()){stingAnim.play();}
 }
-void UI_Manager::updateGameplayUI(float& t_dt, Vector2& t_pos){
+void UI_Manager::updateGameplayUI(float& t_dt, Command& t_newCommand, Vector2& t_pos){
 	if(paused == true){
 		if(alpha > 0.0f){ alpha -= FADE_SPEED;fader = Fade(fader, alpha);}
 		else{alpha = 0.0f; paused = false;}}
-	if(stingAnim.playingAnim()){ stingAnim.update(t_dt);}
+	if(stingAnim.playingAnim()){ stingAnim.update(t_dt);
+	}
+
+	if(t_newCommand == START_GAME){
+		unloadUI();screen = GAME_PAUSE;loadUI(t_pos);
+	}
 }
 void UI_Manager::drawGameplayUI(){
 	if(paused == true){DrawRectangle(corner.x, corner.y, SCREEN_WIDTH, SCREEN_HEIGHT, fader);}
@@ -292,7 +300,7 @@ void UI_Manager::loadPauseUI(Vector2& t_pos){
 	activeSelection = BUTTON_START;
 	selectPos = {button1Pos.x + (WIDTH / 2) - (selectWidth / 2), button1Pos.y + HEIGHT - 15};
 }
-void UI_Manager::updatePauseUI(float& t_dt, Command& t_newCommand){
+void UI_Manager::updatePauseUI(float& t_dt, Command& t_newCommand, Vector2& t_pos){
 	if(alpha < MAX_ALPHA){alpha += FADE_SPEED;fader = Fade(fader, alpha);}
 
 	if(getNewCommand)
@@ -300,7 +308,8 @@ void UI_Manager::updatePauseUI(float& t_dt, Command& t_newCommand){
 		switch (activeSelection)
 		{
 			case BUTTON_START:
-				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){screen = GAME_PLAY;}
+				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){
+					unloadUI();screen = GAME_PLAY;loadUI(t_pos);}
 				else if(t_newCommand == MOVE_RIGHT){newSelection = BUTTON_INSTRUCTION;}
 				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_EXIT;}
 				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_INSTRUCTION;}
@@ -309,14 +318,16 @@ void UI_Manager::updatePauseUI(float& t_dt, Command& t_newCommand){
 			case BUTTON_PAUSE:
 			break;
 			case BUTTON_INSTRUCTION:
-				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){screen = GAME_INSTRUCTION;}
+				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){
+					unloadUI();screen = GAME_INSTRUCTION;loadUI(t_pos);}
 				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_START;}
 				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_START;}
 				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_EXIT;}
 				else if(t_newCommand == MOVE_RIGHT){newSelection = BUTTON_EXIT;}
 			break;
 			case BUTTON_EXIT:
-				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){screen = GAME_EXIT;}
+				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){
+					unloadUI();screen = GAME_EXIT;loadUI(t_pos);}
 				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_START;}
 				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_START;}
 				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_INSTRUCTION;}
@@ -395,10 +406,19 @@ void UI_Manager::loadInstructionUI(){
 
 	selectPos = {button1Pos.x + (WIDTH / 2) - (selectWidth / 2), button1Pos.y + HEIGHT - 15};
 }
-void UI_Manager::updateInstructionUI(float& t_dt, Command& t_newCommand){
+void UI_Manager::updateInstructionUI(float& t_dt, Command& t_newCommand, Vector2& t_pos){
 	if (activeSelection == BUTTON_START)
 	{
-		if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){screen = GAME_PAUSE;}
+		if(gameBeginning == false)
+		{
+			if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){
+			unloadUI();screen = GAME_PAUSE;loadUI(t_pos);}
+		}
+		else
+		{
+			if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){
+			unloadUI();screen = GAME_MENU;loadUI(t_pos);}
+		}
 	}
 }
 void UI_Manager::drawInstructionUI(){
