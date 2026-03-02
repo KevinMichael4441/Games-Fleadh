@@ -115,6 +115,17 @@ static bool HasLineOfSight(const SuperMech* mech, Vector2 target)
 
 static void MoveTowards(SuperMech *mech, Vector2 target, float speed, float dt)
 {
+    if (mech->animationState != ANIM_WALK)
+    {
+        mech->currentFrame = 0;
+        mech->frameTime = 0;
+    }
+
+    if (mech->isGrounded)
+    {
+        mech->animationState = ANIM_WALK;
+    }
+
     float dx = target.x - mech->position.x;
     //TraceLog(LOG_INFO, "target: %d", target.x);
 
@@ -140,6 +151,14 @@ static void MoveTowards(SuperMech *mech, Vector2 target, float speed, float dt)
 static void TryJump(SuperMech *mech, Vector2 target)
 {
     if (!mech->isGrounded || mech->jumpCooldown > 0) return;
+
+    if (mech->animationState != ANIM_JUMP)
+    {
+        mech->currentFrame = 0;
+        mech->frameTime = 0;
+    }
+
+    mech->animationState = ANIM_JUMP;
 
     if (WallAhead(mech))
     {
@@ -371,14 +390,6 @@ static void ChangeState(SuperMech *mech, SupermechState newState, float dt)
         return;
     }
 
-    switch (newState)
-    {
-        case MECH_DORMANT: mech->currentTexture = &mech->textureDormant; break;
-        case MECH_IDLE:    mech->currentTexture = &mech->textureIdle;    break;
-        case MECH_HUNT:    mech->currentTexture = &mech->textureHunt;    break;
-        case MECH_SEARCH:  mech->currentTexture = &mech->textureSearch;  break;
-        default:           mech->currentTexture = &mech->textureIdle;    break;
-    }
 
     mech->currentFrame = 0;
     mech->animationTimer = 0.0f;
@@ -406,6 +417,7 @@ static void UpdateState(SuperMech *mech, float dt)
 void SuperMech_Init(SuperMech *mech, Vector2 startPos, LevelData* level) 
 {
     SetLevel(mech, level);
+    mech->animationState = ANIM_SEARCH;
 
     mech->position = startPos;
     mech->velocity = (Vector2){0,0};
@@ -428,10 +440,10 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos, LevelData* level)
     mech->currentState = MECH_SEARCH;
     mech->previousState = MECH_SEARCH;
 
-    mech->textureDormant = LoadTexture("./assets/supermech/supermech_sleep_64x98.png");
-    mech->textureIdle = LoadTexture("./assets/supermech/supermech_sleep_64x98.png");
-    mech->textureHunt = LoadTexture("./assets/supermech/supermech_sleep_64x98.png");
-    mech->textureSearch = LoadTexture("./assets/supermech/supermech_sleep_64x98.png");
+    mech->textureJump = LoadTexture("./assets/exports/sprite_sheets/spritesheet/jump_up.png");
+    mech->textureWalk = LoadTexture("./assets/exports/sprite_sheets/spritesheet/walk.png");
+    mech->textureIdle = LoadTexture("./assets/exports/sprite_sheets/spritesheet/idle_1_Frustration.png");
+    mech->textureSearch = LoadTexture("./assets/exports/sprite_sheets/spritesheet/idle_2_searching.png");
     mech->currentTexture = &mech->textureSearch;
     mech->frameWidth  = 64;
     mech->frameHeight = 98;
@@ -514,16 +526,66 @@ void SuperMech_Uppdate(SuperMech *mech, Vector2 playerPos, bool cameraTriggered,
 void SuperMech_Frame_Update(SuperMech *mech)
 {
     mech->animationTimer += GetFrameTime();
-    if (mech->animationTimer >= mech->frameTime)
-    {
-        mech->animationTimer -= mech->frameTime;
-        mech->currentFrame++;
 
-        if (mech->currentFrame >= mech->frameCount)
+    switch(mech->animationState)
+    {
+    case ANIM_IDLE:
+        mech->currentTexture = &mech->textureIdle;
+        if (mech->animationTimer >= mech->frameTime)
         {
-            mech->currentFrame = 0;
+            mech->animationTimer -= mech->frameTime;
+            mech->currentFrame++;
+
+            if (mech->currentFrame >= 24)
+            {
+                mech->currentFrame = 0;
+            }
         }
+        break;
+        case ANIM_JUMP:
+            mech->currentTexture = &mech->textureJump;
+            if (mech->animationTimer >= mech->frameTime)
+            {
+                mech->animationTimer -= mech->frameTime;
+                mech->currentFrame++;
+
+                if (mech->currentFrame >= 30)
+                {
+                    mech->currentFrame = 0;
+                    mech->animationState = ANIM_IDLE;
+                }
+            }
+            break;
+        case ANIM_SEARCH:
+            mech->currentTexture = &mech->textureSearch;
+            if (mech->animationTimer >= mech->frameTime)
+            {
+                mech->animationTimer -= mech->frameTime;
+                mech->currentFrame++;
+
+                if (mech->currentFrame >= 16)
+                {
+                    mech->currentFrame = 0;
+                }
+            }
+            break;
+        case ANIM_WALK:
+            mech->currentTexture = &mech->textureWalk;
+            if (mech->animationTimer >= mech->frameTime)
+            {
+                mech->animationTimer -= mech->frameTime;
+                mech->currentFrame++;
+
+                if (mech->currentFrame >= 12)
+                {
+                    mech->currentFrame = 0;
+                }
+            }
+            break;
     }
+
+
+    
 }
 
 void SuperMech_Draw(SuperMech *mech) 
@@ -541,24 +603,9 @@ void SuperMech_Draw(SuperMech *mech)
     Vector2 origin = { (mech->frameWidth * mech->scale) / 2.0f, (mech->frameHeight * mech->scale) / 2.0f };
     Rectangle dest = { mech->position.x + origin.x, mech->position.y + origin.y, mech->frameWidth * mech->scale, mech->frameHeight * mech->scale };
 
+
     DrawTexturePro( *mech->currentTexture, source, dest, origin, 0.0f, WHITE);
 
-    const char *stateName = SuperMech_GetStateName(mech->currentState);
-    DrawText( stateName, (int)mech->position.x, (int)(mech->position.y - 20), 16, RED );
-    DrawText(mech->isGrounded ? "GROUND" : "AIR", mech->position.x, mech->position.y - 40, 16, YELLOW);
-    c2AABB box = SuperMech_GetAABB(mech);
-
-    DrawRectangleLines( box.min.x, box.min.y, box.max.x - box.min.x, box.max.y - box.min.y, GREEN );
-
-    float scanRange = PI / 3.0f;
-    float baseAngle = mech->facingRight ? 0.0f : PI;
-    float sweep = sinf(mech->scanAngle) * scanRange;
-    float finalAngle = baseAngle + sweep;
-
-    Vector2 dir = { cosf(finalAngle), sinf(finalAngle) };
-    Vector2 rayOrigin = { mech->position.x + mech->frameWidth * 0.5f, mech->position.y + mech->frameHeight * 0.5f };
-    
-    DrawLine( rayOrigin.x, rayOrigin.y, rayOrigin.x + dir.x * mech->visionRange, rayOrigin.y + dir.y * mech->visionRange, RED );
 }
 
 const char *SuperMech_GetStateName(SupermechState state) 
@@ -577,6 +624,10 @@ const char *SuperMech_GetStateName(SupermechState state)
 static void Dormant_Entry(SuperMech *mech, float dt)
 {
     mech->velocity = (Vector2){0, 0};
+
+    mech->frameTime = 0;
+    mech->frameCount = 0;
+    mech->animationState = ANIM_IDLE;
 }
 
 static void Dormant_Update(SuperMech *mech, float dt)
@@ -593,6 +644,10 @@ static void Idle_Entry(SuperMech *mech, float dt)
 {
     mech->stateTimer = 0.0f;
     mech->velocity = (Vector2){0,0};
+
+    mech->frameTime = 0;
+    mech->frameCount = 0;
+    mech->animationState = ANIM_IDLE;
 }
 
 static void Idle_Update(SuperMech *mech, float dt)
@@ -643,6 +698,10 @@ static void Search_Entry(SuperMech *mech, float dt)
 {
     mech->stateTimer = 0.0f;
     mech->velocity = (Vector2){0,0};
+    
+    mech->frameTime = 0;
+    mech->frameCount = 0;
+    mech->animationState = ANIM_SEARCH;
 }
 
 static void Search_Update(SuperMech *mech, float dt)

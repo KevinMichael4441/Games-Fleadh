@@ -27,6 +27,14 @@ typedef enum {
     MECH_STATE_COUNT
 } SupermechState; //for FSM
 
+typedef enum {
+    ANIM_IDLE,
+    ANIM_SEARCH,
+    ANIM_JUMP,
+    ANIM_WALK,
+    ANIM_STATE_COUNT
+} AnimationStates; //for FSM
+
 struct SuperMech;
 typedef void (*StateFunction)(struct SuperMech *, float);
 typedef void (*EventFunction)(struct SuperMech *, float);
@@ -45,6 +53,8 @@ typedef struct {
 
 typedef struct SuperMech {
     LevelData currentLevel;
+
+    AnimationStates animationState;
 
     Vector2 position;
     Vector2 velocity;
@@ -66,10 +76,15 @@ typedef struct SuperMech {
 
     //---Sprite Properties---//
     Texture2D* currentTexture;
-    Texture2D textureDormant;
+
     Texture2D textureIdle;
-    Texture2D textureHunt;
     Texture2D textureSearch;
+    Texture2D textureJump;
+    Texture2D textureWalk;
+    
+    int currentTextureInt;
+
+
     int frameWidth;
     int frameHeight;
     float scale;
