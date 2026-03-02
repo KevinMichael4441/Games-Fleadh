@@ -195,7 +195,7 @@ void UI_Manager::updateMenuUI(float& t_dt, Command& t_newCommand, Vector2& t_pos
 				else if(t_newCommand == MOVE_RIGHT){newSelection = BUTTON_INSTRUCTION;}
 				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_EXIT;}
 				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_INSTRUCTION;}
-				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_INSTRUCTION;}
+				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_EXIT;}
 			break;
 			case BUTTON_PAUSE:
 			break;
@@ -204,7 +204,7 @@ void UI_Manager::updateMenuUI(float& t_dt, Command& t_newCommand, Vector2& t_pos
 					unloadUI();screen = GAME_INSTRUCTION;loadUI(t_pos);}
 				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_START;}
 				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_START;}
-				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_EXIT;}
+				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_START;}
 				else if(t_newCommand == MOVE_RIGHT){newSelection = BUTTON_EXIT;}
 			break;
 			case BUTTON_EXIT:
@@ -213,7 +213,7 @@ void UI_Manager::updateMenuUI(float& t_dt, Command& t_newCommand, Vector2& t_pos
 				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_START;}
 				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_START;}
 				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_INSTRUCTION;}
-				else if(t_newCommand == MOVE_RIGHT){newSelection = BUTTON_INSTRUCTION;}
+				else if(t_newCommand == MOVE_RIGHT){newSelection = BUTTON_START;}
 			break;
 		}
 	
