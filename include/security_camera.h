@@ -58,8 +58,7 @@ private:
 	bool m_animating = false;
 	bool m_previousActive = false;
 
-	//cam type
-	CamType m_type{CAM_NONE};
+	CamType m_type{CAM_SPOT};
 
 	//ray
 	LaserDir m_laserDir;

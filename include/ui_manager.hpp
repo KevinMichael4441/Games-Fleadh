@@ -4,9 +4,17 @@
 #include <raylib.h>
 #include <iostream>
 
+#include "command.h"
 #include "gamestates.hpp"
 #include "sting_anim.hpp"
 #include "command.h"
+
+typedef enum Button{
+	BUTTON_START,
+	BUTTON_PAUSE,
+	BUTTON_INSTRUCTION,
+	BUTTON_EXIT
+} Button;
 
 class UI_Manager
 {
@@ -16,11 +24,7 @@ class UI_Manager
 
 		void initialize();
 		void changeUI(GameState t_newScreen, Vector2 t_pos);
-		void updateUI(float& t_dt, Vector2 t_pos);
-
-		std::pair<GameState,bool> handleInput(Command t_activeCommand);
-		std::pair<GameState,bool> handleInputMenuUI(Command t_activeCommand);
-		std::pair<GameState,bool> handleInputPauseUI(Command t_activeCommand);
+		GameState updateUI(float& t_dt, Vector2 t_pos, Command& t_activeCommand);
 		void drawUI();
 
 		StingAnim stingAnim;
@@ -29,19 +33,32 @@ class UI_Manager
 		
 		GameState screen;
 		Vector2 center;
+		Vector2 corner;
 
-		GameState beforeInstructions;
-		float m_buttonSelectionDirection;
-		GameState highlightedbutton;
+		Button activeSelection;
+		Button newSelection;
+		bool getNewCommand = true;
+		float commandTimer{0.0f};
+		float const MAX_DELAY{0.2f};
 
 		int const WIDTH = 160;
 		int const HEIGHT = 60;
 
+		Vector2 selectPos{0.0f,0.0f};
+		int selectWidth = 160;
+		int selectHeight = 10;
+
 		Vector2 button1Pos{0.0f,0.0f};
 		Vector2 button2Pos{0.0f,0.0f};
 		Vector2 button3Pos{0.0f,0.0f};
-		Vector2 button4Pos{0.0f,0.0f};
-		Vector2 button5Pos{0.0f,0.0f};
+
+		bool paused{false};
+		Color fader;
+		float alpha{0.0f};
+		float const MAX_ALPHA = 0.5f;
+		float const FADE_SPEED = 0.075f;
+
+		void recenter(Vector2& t_pos);
 
 		void loadUI(Vector2& t_pos);
 		void unloadUI();
@@ -52,22 +69,22 @@ class UI_Manager
 		void unloadStartUI();
 
 		void loadMenuUI();
-		void updateMenuUI();
+		void updateMenuUI(float& t_dt, Command& t_activeCommand);
 		void drawMenuUI();
 		void unloadMenuUI();
 
-		void loadGameplayUI();
-		void updateGameplayUI(float& t_dt);
+		void loadGameplayUI(Vector2& t_pos);
+		void updateGameplayUI(float& t_dt, Vector2& t_pos);
 		void drawGameplayUI();
 		void unloadGameplayUI();
 
-		void loadPauseUI();
-		void updatePauseUI();
+		void loadPauseUI(Vector2& t_pos);
+		void updatePauseUI(float& t_dt, Command& t_newCommand);
 		void drawPauseUI();
 		void unloadPauseUI();
 
 		void loadInstructionUI();
-		void updateInstructionUI();
+		void updateInstructionUI(float& t_dt, Command& t_newCommand);
 		void drawInstructionUI();
 		void unloadInstructionUI();
 
