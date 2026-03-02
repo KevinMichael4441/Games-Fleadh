@@ -39,7 +39,7 @@ class UI_Manager
 		Button newSelection;
 		bool getNewCommand = true;
 		float commandTimer{0.0f};
-		float const MAX_DELAY{0.1f};
+		float const MAX_DELAY{0.2f};
 
 		int const WIDTH = 160;
 		int const HEIGHT = 60;

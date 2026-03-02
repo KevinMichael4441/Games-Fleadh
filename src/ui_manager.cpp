@@ -38,7 +38,6 @@ void UI_Manager::recenter(Vector2& t_pos){
 }
 
 void UI_Manager::changeUI(GameState t_newScreen, Vector2 t_pos){
-	recenter(t_pos);
 	if(t_newScreen != screen){
 		unloadUI();
 		screen = t_newScreen;
@@ -99,6 +98,7 @@ void UI_Manager::drawUI(){
 }
 
 void UI_Manager::loadUI(Vector2& t_pos){
+	recenter(t_pos);
 	switch (screen){
 		case GAME_START:
 			loadStartUI();

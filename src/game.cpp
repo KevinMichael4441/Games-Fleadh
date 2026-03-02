@@ -165,7 +165,7 @@ void Game::InitGame()
 	}
 
 	//------------- OOZEY WHIZY------------------//
-	Vector2 centrePoint = {SCREEN_WIDTH/2,SCREEN_HEIGHT/2};
+	Vector2 centrePoint = {800,2080};
 	ooze.Initialize(SPRING_CONSTANT, DAMP, centrePoint, OOZE_SPEED, JUMP_AMOUNT);
 	ooze.SetLevel(&m_level);
 
@@ -175,8 +175,8 @@ void Game::InitGame()
 	//---------------Security System------------//
 	m_securitySystem.initialize(&m_level);
 	m_laseDoor_manager.Initialize({576, 300}, {520, 350}, 8);
-	m_securitySystem.m_lasers[0].initialize(800.0f, 200.0f);
-    m_securitySystem.m_laserCount = 1;
+	//m_securitySystem.m_lasers[0].initialize(800.0f, 200.0f);
+    //m_securitySystem.m_laserCount = 1;
 	
 	//-------Collectibles-------//
 	score = 0;
@@ -231,7 +231,8 @@ void Game::Update(float t_dt)
 				m_laseDoor_manager.Update(ooze, t_dt);
 				m_teleporter_manager.Update(ooze, t_dt);
 				chunkCacheUpdate(&m_level, center);
-				//SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
+				m_securitySystem.update(t_dt, ooze);
+				SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
 				checkMechOozeCollision();
 				m_collectibles_manager.Update(ooze, score, t_dt);
 				m_jumpPadd_manager.Update(ooze);
