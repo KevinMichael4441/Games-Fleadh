@@ -143,7 +143,7 @@ void Game::Run()
 			break;
 		}
 	}
-	UnloadTexture(temp_background);
+	// UnloadTexture(menu_background);
 	chunkCacheUnload(&m_level);
 	Level_Unload(&m_level);
 }
@@ -168,6 +168,8 @@ void Game::InitGame()
 	{
     	TraceLog(LOG_ERROR, "chunkCacheInit failed");
 	}
+
+	//menu_background = LoadTexture("./assets/images/BACKGROUND/BACKGROUND_3.png");
 
 	//------------- OOZEY WHIZY------------------//
 	Vector2 centrePoint = {800,2080};
@@ -359,11 +361,8 @@ void Game::Draw()
 		case GAME_START:
 		break;
 		case GAME_MENU:
-			chunkCacheDrawBackground(&m_level);
-			chunkCacheDraw(&m_level);
 		break;
 		case GAME_PLAY:
-			DrawTexture(temp_background, 0, 0, WHITE);
 			chunkCacheDrawBackground(&m_level);
 
 			m_securitySystem.draw();
@@ -381,7 +380,6 @@ void Game::Draw()
 			if(ui_manager.stingAnim.playingAnim()){ui_manager.stingAnim.draw();}
 		break;
 		case GAME_PAUSE:
-			DrawTexture(temp_background, 0, 0, WHITE);
 			chunkCacheDrawBackground(&m_level);
 
 			m_securitySystem.draw();
@@ -397,12 +395,8 @@ void Game::Draw()
 
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
 		case GAME_INSTRUCTION:
-			chunkCacheDrawBackground(&m_level);
-
-			chunkCacheDraw(&m_level);
 		break;
 		case GAME_END:
-			DrawTexture(temp_background, 0, 0, WHITE);
 			chunkCacheDrawBackground(&m_level);
 
 			m_securitySystem.draw();

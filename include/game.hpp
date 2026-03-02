@@ -88,7 +88,8 @@ private:
 	SecuritySystem m_securitySystem;
 
 	LevelData m_level{};
-	Texture2D temp_background;
+	
+	// Texture2D menu_background;
 
 	bool gameOver{false};
 };
