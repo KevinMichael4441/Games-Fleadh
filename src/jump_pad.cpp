@@ -10,6 +10,7 @@ JumpPad::JumpPad()
 void JumpPad::Initialize(Vector2 pos)
 {
 	m_boundingBox = {pos.x, pos.y, m_WIDTH, m_HEIGHT};
+	m_body = LoadTexture("assets/images/Pad.png");
 }
 
 void JumpPad::Update(Ooze &player)
@@ -29,7 +30,9 @@ void JumpPad::Update(Ooze &player)
 
 void JumpPad::Draw()
 {
-	DrawRectangle(m_boundingBox.x, m_boundingBox.y, m_WIDTH, m_HEIGHT, VIOLET );
+	//DrawRectangle(m_boundingBox.x, m_boundingBox.y, m_WIDTH, m_HEIGHT, VIOLET );
+
+	DrawTexture(m_body, m_boundingBox.x, m_boundingBox.y, WHITE);
 }
 
 //------------------Manager------------------//

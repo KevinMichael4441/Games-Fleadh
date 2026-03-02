@@ -23,6 +23,7 @@ public:
 
 private:
 	Rectangle m_boundingBox;
+	Texture2D m_body;
 	static const int m_WIDTH = 32;
 	static const int m_HEIGHT = 32;
 };
