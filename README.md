@@ -20,11 +20,11 @@
 
 
 
-> *“SliLab is a 2D side scrolling platformer, in which something has gone terribly wrong and you, an organic form-shifting slime, experiment OOZ3, have gained sentience and escaped from your containment unit in an outer-space research facility. 
+> SliLab is a 2D side scrolling platformer, in which something has gone terribly wrong and you, an organic form-shifting slime, experiment OOZ3, have gained sentience and escaped from your containment unit in an outer-space research facility. 
 
 You must now find a way out of the station without being caught by the labs mech security system, headlined by the SUPERMECH, an all-powerful metal force which ensures containment. 
 
-Get squished, stretched and splat to escape through traps and lasers and break free!!! Replay to find different ways to escape and find new ways collect as much slime along the way as possible. ”*
+Get squished, stretched and splat to escape through traps and lasers and break free!!! Replay to find different ways to escape and find new ways collect as much slime along the way as possible.
 
 ## 🎮 Gameplay Overview  
 
