@@ -22,6 +22,8 @@ StingAnim::StingAnim(){
 	lowBar.y = SCREEN_HEIGHT / 2;
 	lowBar.width = SCREEN_WIDTH;
 	lowBar.height = barHeight;
+
+	frameRec = {0.0f,0.0f, FRAME_WIDTH, FRAME_HEIGHT};
 }
 StingAnim::~StingAnim(){
 
@@ -71,9 +73,23 @@ void StingAnim::setStingPos(Vector2& t_pos)
 	lowBar.y = background.y + (SCREEN_HEIGHT / 2);
 }
 
+void StingAnim::animateMech(){
+	frameCounter++;
+
+	if(frameCounter >= (60/frameSpeed))
+	{
+		frameCounter = 0;
+		currentFrame++;
+		if(currentFrame > NUM_OF_FRAMES)
+		{ currentFrame = 0;}
+		frameRec.x = currentFrame * sting.width;
+	}
+}
+
 void StingAnim::update(float& t_dt){
 	if(isPlaying == true && paused == false){
 		timer += t_dt;
+		animateMech();
 		if(timer < MAX_DURATION / 2)
 		{
 			if(highBar.x < background.x)

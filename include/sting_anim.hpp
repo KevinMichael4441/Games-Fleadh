@@ -22,6 +22,8 @@ class StingAnim
 
 		void setStingPos(Vector2& t_pos);
 
+		void animateMech();
+
 		bool isPlaying;
 		bool spawn;
 		bool paused;
@@ -44,14 +46,17 @@ class StingAnim
 		float const FADE_SPEED = 0.075f;
 
 		float const UPPER_LIMIT = 5760.0f;
-		int const FRAME_WIDTH = 46;
-		int const FRAME_HEIGHT = 46;
+		float const FRAME_WIDTH = 46;
+		float const FRAME_HEIGHT = 46;
 
+		Texture2D sting;
 		Vector2 position{0.0f,0.0f};
-		Rectangle frame{0.0f,0.0f, FRAME_WIDTH, FRAME_HEIGHT};
+		Rectangle frameRec;
 
-		int frameCounter;
-		int frameSpeed; // Spritesheet per second
+		int const NUM_OF_FRAMES{10};
+		int currentFrame{0};
+		int frameCounter{0};
+		int frameSpeed{8}; // Spritesheet per second
 
 };
 
