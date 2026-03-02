@@ -179,8 +179,7 @@ void Game::InitGame()
 	//menu_background = LoadTexture("./assets/images/BACKGROUND/BACKGROUND_3.png");
 
 	//------------- OOZEY WHIZY------------------//
-	Vector2 centrePoint = {4237.33,1221.33};
-	ooze.Initialize(SPRING_CONSTANT, DAMP, centrePoint, OOZE_SPEED, JUMP_AMOUNT);
+	ooze.Initialize(SPRING_CONSTANT, DAMP, OOZE_SPEED, JUMP_AMOUNT);
 	ooze.SetLevel(&m_level);
 
 	//--------Mech--------------//
@@ -188,7 +187,7 @@ void Game::InitGame()
 
 	//---------------Security System------------//
 	m_securitySystem.initialize(&m_level);
-	m_laseDoor_manager.Initialize({576, 300}, {520, 350}, 8);
+	m_laseDoor_manager.Initialize({2528, 2240}, {1984, 1024}, 8);
 	//m_securitySystem.m_lasers[0].initialize(800.0f, 200.0f);
     //m_securitySystem.m_laserCount = 1;
 	
@@ -197,7 +196,7 @@ void Game::InitGame()
 	m_collectibles_manager.Initialize(&m_level, 8);
 
 	//-----------Teleporter------------------------//
-	m_teleporter_manager.Initialize({960, 384}, {1120, 384});
+	//m_teleporter_manager.Initialize({960, 384}, {1120, 384});
 
 	//-----------JumpPad------------------------//
 	m_jumpPadd_manager.Initialize(& m_level);
@@ -249,7 +248,7 @@ void Game::Update(float t_dt)
 				Vector2 center = ooze.CalculateCenter();
 				camera.update(center);
 				m_laseDoor_manager.Update(ooze, t_dt);
-				m_teleporter_manager.Update(ooze, t_dt);
+				//m_teleporter_manager.Update(ooze, t_dt);
 				chunkCacheUpdate(&m_level, center);
 				m_securitySystem.update(t_dt, ooze);
 				SuperMech_Uppdate(&mech, ooze.getPosition(), (m_securitySystem.update(t_dt, ooze)), t_dt);
@@ -387,7 +386,7 @@ void Game::Draw()
 			m_securitySystem.draw();
 			m_laseDoor_manager.Draw();
 			m_jumpPadd_manager.Draw();
-			m_teleporter_manager.Draw();
+			//m_teleporter_manager.Draw();
 			m_collectibles_manager.Draw();
 
 			SuperMech_Draw(&mech);
@@ -404,7 +403,7 @@ void Game::Draw()
 			m_securitySystem.draw();
 			m_laseDoor_manager.Draw();
 			m_jumpPadd_manager.Draw();
-			m_teleporter_manager.Draw();
+			//m_teleporter_manager.Draw();
 			m_collectibles_manager.Draw();
 
 			SuperMech_Draw(&mech);
@@ -421,7 +420,7 @@ void Game::Draw()
 			m_securitySystem.draw();
 			m_laseDoor_manager.Draw();
 			m_jumpPadd_manager.Draw();
-			m_teleporter_manager.Draw();
+			//m_teleporter_manager.Draw();
 			m_collectibles_manager.Draw();
 
 			SuperMech_Draw(&mech);
@@ -449,7 +448,7 @@ void Game::Respawn()
 {
 	Vector2 centrePoint = {4237.33,1221.33};
 	chunkCacheUpdate(&m_level, centrePoint);
-    ooze.Reset(centrePoint);
+    ooze.Reset();
     SuperMech_Reset(&mech, ooze.getPosition(), {100, 200});
 }
 

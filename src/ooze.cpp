@@ -4,14 +4,18 @@ Ooze::Ooze()
 {
 }
 
-void Ooze::Initialize(float t_k, float t_damp, Vector2 t_center, float t_speed, float t_jumpAmount)
+void Ooze::Initialize(float t_k, float t_damp, float t_speed, float t_jumpAmount)
 {
 	sfx_dash = LoadSound("assets/sfx/pickupsound.wav");
 	sfx_collide = LoadSound("assets/sfx/slimelanding.wav");
 
+	m_spawnPoints[0] = {800, 2112};
+	m_spawnPoints[1] = {2656, 1024};
+	m_spawnPoints[2] = {5344, 160};
+
 	m_springConstant = t_k;
 	m_damp = t_damp;
-	m_centrePoint = t_center;
+	m_centrePoint = m_spawnPoints[currentSpawn];
 	m_speed = t_speed;
 	m_jumpAmount = t_jumpAmount;
 	m_squishiness = SQUISH_AMOUNT::NOP;
@@ -164,7 +168,16 @@ void Ooze::Update(float t_dt, Command t_activeCommand)
 	HandleInput(t_activeCommand);
 	UpdateState(t_dt);
 
-	
+
+	Vector2 center = CalculateCenter();
+	if (center.x > 2656 && currentSpawn != 2)
+	{
+		currentSpawn = 1;
+	}	
+	else if (center.y < 200)
+	{
+		currentSpawn = 2;
+	}
 }
 
 void Ooze::UpdateState(float t_dt)
@@ -1121,9 +1134,9 @@ void Ooze::ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str
 	}
 }
 
-void Ooze::Reset(Vector2 startPos)
+void Ooze::Reset()
 {
-    m_centrePoint = startPos;
+    m_centrePoint = m_spawnPoints[currentSpawn];
 	ExitState();
 	EnterState(STATE_IDLE, EVENT_NONE);
 
@@ -1140,7 +1153,7 @@ void Ooze::Reset(Vector2 startPos)
             sinf(angle) * radius
         };
 
-        m_points[i].m_position = Vector2Add(startPos, offset);
+        m_points[i].m_position = Vector2Add(m_centrePoint, offset);
 
         m_points[i].m_velocity = (Vector2){0,0};
         m_points[i].m_acceleration = (Vector2){0,0};

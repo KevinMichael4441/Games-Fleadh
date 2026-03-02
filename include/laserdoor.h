@@ -12,8 +12,6 @@ extern "C" {
 #include "cute_c2.h"
 }
 
-static const int MAX_PAIRS = 10;
-
 //------------------Key------------------//
 
 class Key
@@ -75,7 +73,7 @@ class LaserDoor_Manager
 	void Draw() const;
 
 	private:
-	std::pair<Key, LaserDoor> m_laserdoor_pairs[MAX_PAIRS];
+	std::pair<Key, LaserDoor> m_laserdoor_pairs;
 };
 
 #endif //laserdoor.h

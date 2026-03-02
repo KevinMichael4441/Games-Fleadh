@@ -83,7 +83,7 @@ private:
 
 	Collectibles_Manager m_collectibles_manager;
 	JumpPad_Manager m_jumpPadd_manager;
-	Teleporter_Manager m_teleporter_manager;
+	//Teleporter_Manager m_teleporter_manager;
 	LaserDoor_Manager m_laseDoor_manager;
 	SecuritySystem m_securitySystem;
 

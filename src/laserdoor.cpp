@@ -8,36 +8,28 @@ LaserDoor_Manager::LaserDoor_Manager()
 
 void LaserDoor_Manager::Initialize(Vector2 lazer_pos, Vector2 key_pos, float key_radius)
 {
-	for(int i = 0; i < MAX_PAIRS; i++)
-	{
-		//m_laserdoor_pairs[i].first.Initialize({key_pos.x + 160 * i, key_pos.y}, key_radius);
-		//m_laserdoor_pairs[i].second.Initialize({lazer_pos.x + 160 * i, lazer_pos.y});
+	//m_laserdoor_pairs[i].first.Initialize({key_pos.x + 160 * i, key_pos.y}, key_radius);
+	//m_laserdoor_pairs[i].second.Initialize({lazer_pos.x + 160 * i, lazer_pos.y});
 
-		m_laserdoor_pairs[i].first.Initialize({key_pos.x, key_pos.y}, key_radius);
-		m_laserdoor_pairs[i].second.Initialize({lazer_pos.x, lazer_pos.y});
-	}
+	m_laserdoor_pairs.first.Initialize({key_pos.x, key_pos.y}, key_radius);
+	m_laserdoor_pairs.second.Initialize({lazer_pos.x, lazer_pos.y});
 }
 
 void LaserDoor_Manager::Update(Ooze& player, float dt)
 {
-	for(int i = 0; i < MAX_PAIRS; i++)
+	if(m_laserdoor_pairs.first.Update(player, dt))
 	{
-		if(m_laserdoor_pairs[i].first.Update(player, dt))
-		{
-			m_laserdoor_pairs[i].second.Disactivate();
-		}
-
-		m_laserdoor_pairs[i].second.Update(player, dt);
+		m_laserdoor_pairs.second.Disactivate();
 	}
+
+	m_laserdoor_pairs.second.Update(player, dt);
+	
 }
 
 void LaserDoor_Manager::Draw() const
 {
-	for(int i = 0; i < MAX_PAIRS; i++)
-	{
-		m_laserdoor_pairs[i].first.Draw();
-		m_laserdoor_pairs[i].second.Draw();
-	}
+	m_laserdoor_pairs.first.Draw();
+	m_laserdoor_pairs.second.Draw();
 }
 
 //------------------Key------------------//
