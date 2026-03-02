@@ -13,7 +13,6 @@ typedef enum Button{
 	BUTTON_START,
 	BUTTON_PAUSE,
 	BUTTON_INSTRUCTION,
-	BUTTON_ACHIEVMENT,
 	BUTTON_EXIT
 } Button;
 
@@ -52,8 +51,6 @@ class UI_Manager
 		Vector2 button1Pos{0.0f,0.0f};
 		Vector2 button2Pos{0.0f,0.0f};
 		Vector2 button3Pos{0.0f,0.0f};
-		Vector2 button4Pos{0.0f,0.0f};
-		Vector2 button5Pos{0.0f,0.0f};
 
 		bool paused{false};
 		Color fader;

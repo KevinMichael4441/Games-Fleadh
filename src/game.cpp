@@ -148,7 +148,7 @@ void Game::InitGame()
 	// Initial GameState
 	gamestate = GAME_START;
 	//-------------Level Loading-----------------//
-
+/*
 	if (!Level_Load(&m_level, "./assets/maps/MyFirstMap.json", "./assets/maps/", "./assets/images/LabTilesTest.png"))
     {
         TraceLog(LOG_ERROR, "Failed to load level");
@@ -163,7 +163,7 @@ void Game::InitGame()
 	{
     	TraceLog(LOG_ERROR, "chunkCacheInit failed");
 	}
-
+*/
 	//------------- OOZEY WHIZY------------------//
 	Vector2 centrePoint = {SCREEN_WIDTH/2,SCREEN_HEIGHT/2};
 	ooze.Initialize(SPRING_CONSTANT, DAMP, centrePoint, OOZE_SPEED, JUMP_AMOUNT);

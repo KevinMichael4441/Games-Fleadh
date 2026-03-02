@@ -164,10 +164,9 @@ void UI_Manager::unloadStartUI(){
 void UI_Manager::loadMenuUI(){
 	std::cout << "Loading MENU Screen UI\n";
 
-	button1Pos = {corner.x + 200, corner.y + 240}; // BigRed
-	button2Pos = {corner.x + 400, corner.y + 100};
-	button3Pos = {corner.x + 400, corner.y + 210};
-	button4Pos = {corner.x + 400, corner.y + 320};
+	button1Pos = {corner.x + 320, corner.y + 240}; // BigRed
+	button2Pos = {center.x + 150, corner.y + 400};
+	button3Pos = {center.x - WIDTH - 150, corner.y + 400};
 
 	newSelection = BUTTON_START;
 	activeSelection = BUTTON_START;
@@ -180,29 +179,26 @@ void UI_Manager::updateMenuUI(float& t_dt, Command& t_newCommand){
 		{
 			case BUTTON_START:
 				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){screen = GAME_PLAY;}
+				else if(t_newCommand == MOVE_RIGHT){newSelection = BUTTON_INSTRUCTION;}
+				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_EXIT;}
 				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_INSTRUCTION;}
-				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_EXIT;}
-				else if(t_newCommand == MOVE_RIGHT){newSelection = BUTTON_ACHIEVMENT;}
+				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_INSTRUCTION;}
 			break;
 			case BUTTON_PAUSE:
 			break;
 			case BUTTON_INSTRUCTION:
 				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){screen = GAME_INSTRUCTION;}
-				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_EXIT;}
-				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_ACHIEVMENT;}
-				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_START;}
-			break;
-			case BUTTON_ACHIEVMENT:
-				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){}
-				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_INSTRUCTION;}
-				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_EXIT;}
-				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_START;}
+				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_START;}
+				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_START;}
+				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_EXIT;}
+				else if(t_newCommand == MOVE_RIGHT){newSelection = BUTTON_EXIT;}
 			break;
 			case BUTTON_EXIT:
 				if(t_newCommand == ATTACK_PRIMARY || t_newCommand == START_GAME || t_newCommand == ACTION_JUMP){}
-				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_ACHIEVMENT;}
-				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_INSTRUCTION;}
-				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_START;}
+				else if(t_newCommand == MOVE_UP){newSelection = BUTTON_START;}
+				else if(t_newCommand == MOVE_DOWN){newSelection = BUTTON_START;}
+				else if(t_newCommand == MOVE_LEFT){newSelection = BUTTON_INSTRUCTION;}
+				else if(t_newCommand == MOVE_RIGHT){newSelection = BUTTON_INSTRUCTION;}
 			break;
 		}
 	
@@ -224,15 +220,10 @@ void UI_Manager::updateMenuUI(float& t_dt, Command& t_newCommand){
 					selectHeight = 5;
 					selectPos = {button2Pos.x + (WIDTH / 2) - (selectWidth / 2), button2Pos.y + HEIGHT - 15};
 				break;
-				case BUTTON_ACHIEVMENT:
-					selectWidth = 120;
-					selectHeight = 5;
-					selectPos = {button3Pos.x + (WIDTH / 2) - (selectWidth / 2), button3Pos.y + HEIGHT - 15};
-				break;
 				case BUTTON_EXIT:
 					selectWidth = 120;
 					selectHeight = 5;
-					selectPos = {button4Pos.x + (WIDTH / 2) - (selectWidth / 2), button4Pos.y + HEIGHT - 15};
+					selectPos = {button3Pos.x + (WIDTH / 2) - (selectWidth / 2), button3Pos.y + HEIGHT - 15};
 				break;
 				case BUTTON_PAUSE:
 				break;
@@ -257,15 +248,12 @@ void UI_Manager::drawMenuUI(){
 	DrawRectangle(button2Pos.x, button2Pos.y,WIDTH,HEIGHT, GREEN);
 	DrawRectangle(button3Pos.x, button3Pos.y + 10,WIDTH,HEIGHT, DARKGREEN);
 	DrawRectangle(button3Pos.x, button3Pos.y,WIDTH,HEIGHT, GREEN);
-	DrawRectangle(button4Pos.x, button4Pos.y + 10,WIDTH,HEIGHT, DARKGREEN);
-	DrawRectangle(button4Pos.x, button4Pos.y,WIDTH,HEIGHT, GREEN);
 
 	DrawRectangle(selectPos.x, selectPos.y, selectWidth, selectHeight, WHITE);
 
 	DrawText(TextFormat("START"), button1Pos.x - 67.5, button1Pos.y - 15, 40, WHITE);
 	DrawText(TextFormat("INSTRUCTIONS"), button2Pos.x + 25, button2Pos.y + 30 - 7.5f, 15, WHITE);
-	DrawText(TextFormat("ACHIEVMENTS"), button3Pos.x + 25, button3Pos.y + 30 - 7.5f, 15, WHITE);
-	DrawText(TextFormat("EXIT"), button4Pos.x + 25, button4Pos.y + 30 - 7.5f, 15, WHITE);
+	DrawText(TextFormat("EXIT"), button3Pos.x + 65, button3Pos.y + 30 - 7.5f, 15, WHITE);
 }
 void UI_Manager::unloadMenuUI(){
 	std::cout << "Unloading MENU Screen UI\n";
