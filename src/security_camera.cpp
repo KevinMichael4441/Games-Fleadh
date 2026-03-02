@@ -126,7 +126,7 @@ void SecurityCamera::initialize(float t_x, float t_y, float t_distance, CamType 
             MAX_ANGLE = 1.5f;
 	        MIN_ANGLE = 0.0f;
         break;
-        case SW: // Good
+        case SW:
             m_angle = -0.75f;
             MAX_ANGLE = 0.0f;
 	        MIN_ANGLE = -1.575f;

@@ -33,17 +33,11 @@ void StingAnim::setup(Vector2& t_pos){
 	alpha = 0.0f;
 	spawn = false;
 
-	if(t_pos.x > SCREEN_WIDTH / 2){
+	if(t_pos.x > SCREEN_WIDTH / 2 && t_pos.x < UPPER_LIMIT - SCREEN_WIDTH / 2){
 		background.x = t_pos.x - (SCREEN_WIDTH / 2);
 	}
-	else{
-		background.x = 0.0f;
-	}
-	if(t_pos.y > SCREEN_HEIGHT / 2){
+	if(t_pos.y > SCREEN_HEIGHT / 2 && t_pos.y < UPPER_LIMIT - SCREEN_HEIGHT / 2){
 		background.y = t_pos.y - (SCREEN_HEIGHT / 2);
-	}
-	else{
-		background.y = 0.0f;
 	}
 	
 	background.width = SCREEN_WIDTH;
@@ -66,17 +60,11 @@ void StingAnim::setup(Vector2& t_pos){
 
 void StingAnim::setStingPos(Vector2& t_pos)
 {
-	if(t_pos.x > SCREEN_WIDTH / 2){
+	if(t_pos.x > SCREEN_WIDTH / 2 && t_pos.x < UPPER_LIMIT - SCREEN_WIDTH / 2){
 		background.x = t_pos.x - (SCREEN_WIDTH / 2);
 	}
-	else{
-		background.x = 0.0f;
-	}
-	if(t_pos.y > SCREEN_HEIGHT / 2){
+	if(t_pos.y > SCREEN_HEIGHT / 2 && t_pos.y < UPPER_LIMIT - SCREEN_HEIGHT / 2){
 		background.y = t_pos.y - (SCREEN_HEIGHT / 2);
-	}
-	else{
-		background.y = 0.0f;
 	}
 
 	highBar.y = background.y + (SCREEN_HEIGHT / 2) - barHeight;

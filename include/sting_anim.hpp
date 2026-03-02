@@ -42,6 +42,17 @@ class StingAnim
 		float alpha;
 		float const MAX_ALPHA = 1.0f;
 		float const FADE_SPEED = 0.075f;
+
+		float const UPPER_LIMIT = 5760.0f;
+		int const FRAME_WIDTH = 46;
+		int const FRAME_HEIGHT = 46;
+
+		Vector2 position{0.0f,0.0f};
+		Rectangle frame{0.0f,0.0f, FRAME_WIDTH, FRAME_HEIGHT};
+
+		int frameCounter;
+		int frameSpeed; // Spritesheet per second
+
 };
 
 #endif
