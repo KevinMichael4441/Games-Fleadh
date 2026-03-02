@@ -89,6 +89,8 @@ private:
 
 	LevelData m_level{};
 	Texture2D temp_background;
+
+	bool gameOver{false};
 };
 
 #endif //game.h
