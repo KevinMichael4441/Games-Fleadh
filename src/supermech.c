@@ -542,23 +542,6 @@ void SuperMech_Draw(SuperMech *mech)
     Rectangle dest = { mech->position.x + origin.x, mech->position.y + origin.y, mech->frameWidth * mech->scale, mech->frameHeight * mech->scale };
 
     DrawTexturePro( *mech->currentTexture, source, dest, origin, 0.0f, WHITE);
-
-    const char *stateName = SuperMech_GetStateName(mech->currentState);
-    DrawText( stateName, (int)mech->position.x, (int)(mech->position.y - 20), 16, RED );
-    DrawText(mech->isGrounded ? "GROUND" : "AIR", mech->position.x, mech->position.y - 40, 16, YELLOW);
-    c2AABB box = SuperMech_GetAABB(mech);
-
-    DrawRectangleLines( box.min.x, box.min.y, box.max.x - box.min.x, box.max.y - box.min.y, GREEN );
-
-    float scanRange = PI / 3.0f;
-    float baseAngle = mech->facingRight ? 0.0f : PI;
-    float sweep = sinf(mech->scanAngle) * scanRange;
-    float finalAngle = baseAngle + sweep;
-
-    Vector2 dir = { cosf(finalAngle), sinf(finalAngle) };
-    Vector2 rayOrigin = { mech->position.x + mech->frameWidth * 0.5f, mech->position.y + mech->frameHeight * 0.5f };
-    
-    DrawLine( rayOrigin.x, rayOrigin.y, rayOrigin.x + dir.x * mech->visionRange, rayOrigin.y + dir.y * mech->visionRange, RED );
 }
 
 const char *SuperMech_GetStateName(SupermechState state) 

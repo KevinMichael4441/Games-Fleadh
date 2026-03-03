@@ -84,7 +84,7 @@ static Vector2 FindValidRespawnPosition(const LevelData* level, const CameraMana
     for (auto& pos : priorityCandidates)
     {
         if (!Level_IsSolidTile(level, pos) &&
-            FindGroundBelow(level, pos, groundPos))
+            FindGroundBelow(level, pos, groundPos) && !(pos.x < 1550  && pos.x > 600))
         {
             return groundPos;
         }
@@ -93,7 +93,7 @@ static Vector2 FindValidRespawnPosition(const LevelData* level, const CameraMana
     for (auto& pos : fallbackCandidates)
     {
         if (!Level_IsSolidTile(level, pos) &&
-            FindGroundBelow(level, pos, groundPos))
+            FindGroundBelow(level, pos, groundPos) && !(pos.x < 1550  && pos.x > 600))
         {
             return groundPos;
         }
@@ -256,6 +256,8 @@ void Game::Update(float t_dt)
 				m_collectibles_manager.Update(ooze, score, t_dt);
 				m_jumpPadd_manager.Update(ooze);
 				ooze.Update(t_dt, m_activeCommand);
+
+				//printf("x: %f", ooze.CalculateCenter().x);
 			}
 			else
 			{
@@ -293,6 +295,7 @@ void Game::Update(float t_dt)
 				ui_manager.stingAnim.setStingPos(camera.screen.target);}
 			if(!ui_manager.stingAnim.playingAnim())
 			{
+				m_hideOoze = false;
 				gamestate = GAME_PLAY;
 			}
 		break;
@@ -398,7 +401,10 @@ void Game::Draw()
 			m_collectibles_manager.Draw();
 
 			SuperMech_Draw(&mech);
-			ooze.Draw();
+			if (!m_hideOoze)
+			{
+				ooze.Draw();
+			}
 
 			chunkCacheDraw(&m_level);
 
@@ -415,7 +421,10 @@ void Game::Draw()
 			m_collectibles_manager.Draw();
 
 			SuperMech_Draw(&mech);
-			ooze.Draw();
+			if (!m_hideOoze)
+			{
+				ooze.Draw();
+			}
 
 			chunkCacheDraw(&m_level);
 
@@ -432,7 +441,10 @@ void Game::Draw()
 			m_collectibles_manager.Draw();
 
 			SuperMech_Draw(&mech);
-			ooze.Draw();
+			if (!m_hideOoze)
+			{
+				ooze.Draw();
+			}
 
 			chunkCacheDraw(&m_level);
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
@@ -486,6 +498,7 @@ void Game::checkMechOozeCollision()
 		if (SuperMech_CheckCollision_Player( &mech, points[i].m_position, points[i].m_radiusX))
 		{
 			PlaySound(sfx_death);
+			m_hideOoze = true;
 			gamestate = GAME_END;
 			break;
 		}

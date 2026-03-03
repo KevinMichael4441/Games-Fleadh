@@ -20,6 +20,9 @@ void UI_Manager::initialize(){
 	activeSelection = BUTTON_START;
 	newSelection = BUTTON_START;
 	menu_background = LoadTexture("./assets/images/BACKGROUND/BACKGROUND_3.png");
+	stingAnim.loadSpriteSheetA("./assets/images/sting.png");
+	stingAnim.loadSpriteSheetB("./assets/images/sting2.png");
+	stingAnim.loadSpriteSheetC("./assets/images/sting3.png");
 }
 
 void UI_Manager::recenter(Vector2& t_pos){

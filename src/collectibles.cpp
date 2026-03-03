@@ -46,10 +46,7 @@ void Collectible::Update(Ooze& player, int& score, float dt)
         float dy = points[i].m_position.y - m_position.y;
 
         float distSq = dx*dx + dy*dy;
-
-        float playerRadius =
-            (points[i].m_radiusX + points[i].m_radiusY) * 0.5f;
-
+        float playerRadius = (points[i].m_radiusX + points[i].m_radiusY) * 0.5f;
         float combined = playerRadius + m_radius;
 
         if (distSq <= combined * combined)

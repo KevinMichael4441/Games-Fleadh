@@ -103,6 +103,7 @@ private:
 	Sound sfx_death;
 	float volume = 0.8f;
 	bool gameOver{false};
+	bool m_hideOoze = false;
 };
 
 #endif //game.h

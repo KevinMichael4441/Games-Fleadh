@@ -43,6 +43,7 @@ Key::Key()
 
 void Key::Initialize(Vector2 pos, float radius)
 {
+	m_texture = LoadTexture("./assets/images/key.png");
     m_position = pos;
     m_radius = radius;
     m_active = true;
@@ -81,7 +82,10 @@ void Key::Draw() const
     if (!m_active) return;
 
     float bobOffset = 4.0f * sinf(m_bobTimer * 3.0f);
-    DrawCircleV({m_position.x, m_position.y + bobOffset}, m_radius, PINK);
+    //DrawCircleV({m_position.x, m_position.y + bobOffset}, m_radius, PINK);
+	Vector2 drawPos = { m_position.x - m_texture.width * 0.5f, m_position.y - m_texture.height * 0.5f + bobOffset };
+
+    DrawTextureV(m_texture, drawPos, WHITE);
 }
 
 //------------------LaserDoor------------------//

@@ -24,6 +24,7 @@ public:
     void Draw() const;
 
 private:
+	Texture2D m_texture;
 	bool m_active;
 	float m_bobTimer;
     Vector2 m_position;
