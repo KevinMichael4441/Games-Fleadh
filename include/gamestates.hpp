@@ -10,6 +10,7 @@ typedef enum GameState
 	GAME_INSTRUCTION,
 	GAME_END,
 	GAME_OVER,
+	GAME_WIN,
 	GAME_EXIT
 } GameState;
 

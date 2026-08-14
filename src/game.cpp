@@ -171,6 +171,20 @@ void Game::InitGame()
 		TraceLog(LOG_ERROR, "Failed to load objects");
 	}
 
+
+	for (int i = 0; i < m_level.objectCount; i++)
+	{
+		const LevelObject& obj = m_level.objects[i];
+
+    	if (obj.type && strcmp(obj.type, "TriggerPoint") == 0)
+    	{
+        	m_levelEndTrigger = {obj.x, obj.y, 64.0f, 64.0f};
+			m_hasLevelEndTrigger = true;
+        	break;
+    	}
+	}
+
+
 	if (!chunkCacheInit(&m_level, SCREEN_WIDTH, SCREEN_HEIGHT))
 	{
     	TraceLog(LOG_ERROR, "chunkCacheInit failed");
@@ -257,6 +271,11 @@ void Game::Update(float t_dt)
 				m_jumpPadd_manager.Update(ooze);
 				ooze.Update(t_dt, m_activeCommand);
 
+				if (m_hasLevelEndTrigger && CheckCollisionPointRec(ooze.CalculateCenter(), m_levelEndTrigger))
+				{
+					gamestate = GAME_WIN;
+				}
+
 				//printf("x: %f", ooze.CalculateCenter().x);
 			}
 			else
@@ -297,6 +316,14 @@ void Game::Update(float t_dt)
 			{
 				m_hideOoze = false;
 				gamestate = GAME_PLAY;
+			}
+		break;
+		case GAME_WIN:
+			if (m_activeCommand == ATTACK_PRIMARY || m_activeCommand == START_GAME || m_activeCommand == ACTION_JUMP)
+			{
+				ResetLevelState();
+				gamestate = GAME_MENU;
+				return;
 			}
 		break;
 		case GAME_EXIT:
@@ -449,6 +476,10 @@ void Game::Draw()
 			chunkCacheDraw(&m_level);
 			DrawText(TextFormat("Score: %d", score), camera.screen.target.x - (SCREEN_WIDTH/2), camera.screen.target.y - (SCREEN_HEIGHT/2), 30, WHITE);
 		break;
+		case GAME_WIN:
+			/*DrawRectangle(camera.screen.target.x - (SCREEN_WIDTH / 2), camera.screen.target.y - (SCREEN_HEIGHT / 2), SCREEN_WIDTH, SCREEN_HEIGHT, BLACK);
+			DrawText("YOU WIN!", camera.screen.target.x - 100, camera.screen.target.y - 20, 40, WHITE);*/
+		break;
 		case GAME_EXIT:
 		break;
 		case GAME_OVER:
@@ -487,6 +518,15 @@ void Game::Respawn()
 	chunkCacheUpdate(&m_level, centrePoint);
     ooze.Reset();
     SuperMech_Reset(&mech, ooze.getPosition(), {100, 200});
+}
+
+void Game::ResetLevelState()
+{
+	m_laseDoor_manager.Initialize({2528, 2240}, {1984, 1024}, 8);
+	ooze.ResetCheckpoint();
+	Respawn();
+	camera.update(ooze.CalculateCenter());
+	m_hideOoze = false;
 }
 
 void Game::checkMechOozeCollision()

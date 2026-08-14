@@ -1160,6 +1160,11 @@ void Ooze::Reset()
     }
 }
 
+void Ooze::ResetCheckpoint()
+{
+	currentSpawn = 0;
+}
+
 Vector2 Ooze::getPosition()
 {
     return CalculateCenter();

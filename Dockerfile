@@ -151,6 +151,7 @@ ARG EMSDK_VERSION=4.0.21
 ENV EMSDK=/opt/emsdk
 RUN git clone https://github.com/emscripten-core/emsdk.git ${EMSDK} \
 	&& cd ${EMSDK} \
+	&& git checkout 4.0.21 \
 	&& ./emsdk install ${EMSDK_VERSION} \
 	&& ./emsdk activate ${EMSDK_VERSION}
 
