@@ -66,10 +66,8 @@ typedef struct SuperMech {
 
     //---Sprite Properties---//
     Texture2D* currentTexture;
-    Texture2D textureDormant;
-    Texture2D textureIdle;
-    Texture2D textureHunt;
-    Texture2D textureSearch;
+    Texture2D textureJump;
+    Texture2D textureWalk;
     int frameWidth;
     int frameHeight;
     float scale;

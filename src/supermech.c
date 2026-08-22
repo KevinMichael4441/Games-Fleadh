@@ -145,7 +145,13 @@ static void TryJump(SuperMech *mech, Vector2 target)
     {
         mech->velocity.y = -mech->jumpForce;
         mech->isGrounded = false;
-        mech->jumpCooldown = 0.35f;
+        mech->jumpCooldown = 2.0f;
+        
+        mech->currentTexture = &mech->textureJump;
+        mech->animationTimer = 0.0f;
+        mech->frameCount = 30;
+        mech->frameTime = 0.03;
+        mech->currentFrame = 0;
     }
 }
 
@@ -338,7 +344,7 @@ void SuperMech_Reset(SuperMech *mech, Vector2 playerPos, Vector2 startPos)
     mech->currentState  = MECH_HUNT;
     mech->stateTimer    = 0.0f;
 
-    mech->currentTexture = &mech->textureSearch;
+    mech->currentTexture = &mech->textureWalk;
     mech->currentFrame = 0;
     mech->animationTimer = 0.0f;
 
@@ -371,17 +377,17 @@ static void ChangeState(SuperMech *mech, SupermechState newState, float dt)
         return;
     }
 
-    switch (newState)
-    {
-        case MECH_DORMANT: mech->currentTexture = &mech->textureDormant; break;
-        case MECH_IDLE:    mech->currentTexture = &mech->textureIdle;    break;
-        case MECH_HUNT:    mech->currentTexture = &mech->textureHunt;    break;
-        case MECH_SEARCH:  mech->currentTexture = &mech->textureSearch;  break;
-        default:           mech->currentTexture = &mech->textureIdle;    break;
-    }
+    // switch (newState)
+    // {
+    //     case MECH_DORMANT: mech->currentTexture = &mech->textureDormant; break;
+    //     case MECH_IDLE:    mech->currentTexture = &mech->textureIdle;    break;
+    //     case MECH_HUNT:    mech->currentTexture = &mech->textureHunt;    break;
+    //     case MECH_SEARCH:  mech->currentTexture = &mech->textureSearch;  break;
+    //     default:           mech->currentTexture = &mech->textureIdle;    break;
+    // }
 
-    mech->currentFrame = 0;
-    mech->animationTimer = 0.0f;
+    // mech->currentFrame = 0;
+    // mech->animationTimer = 0.0f;
 
     StateConfig *current = &mech->stateConfigs[mech->currentState];
     StateConfig *next = &mech->stateConfigs[newState];
@@ -428,19 +434,23 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos, LevelData* level)
     mech->currentState = MECH_SEARCH;
     mech->previousState = MECH_SEARCH;
 
-    mech->textureDormant = LoadTexture("./assets/supermech/supermech_sleep_64x98.png");
-    mech->textureIdle = LoadTexture("./assets/exports/sprite_sheets/spritesheet/idle_1_Frustration.png");
-    mech->textureHunt = LoadTexture("./assets/exports/sprite_sheets/spritesheet/walk.png");
-    mech->textureSearch = LoadTexture("./assets/exports/sprite_sheets/spritesheet/idle_2_searching.png");
-    mech->currentTexture = &mech->textureDormant;
+    //mech->textureDormant = LoadTexture("./assets/supermech/supermech_sleep_64x98.png");
+    mech->textureWalk = LoadTexture("./assets/exports/sprite_sheets/spritesheet/walkFIXED.png");
+    mech->textureJump = LoadTexture("./assets/exports/sprite_sheets/spritesheet/jump_up.png");
+    //mech->textureIdle = LoadTexture("./assets/exports/sprite_sheets/spritesheet/idle_1_Frustration.png");
+    //mech->textureHunt = LoadTexture("./assets/exports/sprite_sheets/spritesheet/walk.png");
+    //mech->textureSearch = LoadTexture("./assets/exports/sprite_sheets/spritesheet/walk.png");
+    
     mech->frameWidth  = 64;
-    mech->frameHeight = 98;
+    mech->frameHeight = 94;
     mech->scale = 1.0f;
 
-    mech->frameCount = 8;     //frames per row
+    mech->currentTexture = &mech->textureWalk;
+    mech->frameCount = 4;     //frames per row
     mech->frameTime  = 0.12f; //seconds per frame
     mech->currentFrame = 0;
     mech->animationTimer = 0.0f;
+    
     mech->facingRight = true;
 
     //-------Configure States-------//
@@ -493,7 +503,16 @@ void SuperMech_Init(SuperMech *mech, Vector2 startPos, LevelData* level)
 void SuperMech_Uppdate(SuperMech *mech, Vector2 playerPos, bool cameraTriggered, float dt) 
 {
     if (mech->jumpCooldown > 0) mech->jumpCooldown -= dt;
-    else if (mech->jumpCooldown < 0) mech->jumpCooldown = 0;
+    else if (mech->jumpCooldown < 0) 
+    {
+        mech->jumpCooldown = 0;
+        
+        mech->currentFrame = 0;
+        mech->animationTimer = 0.0f;
+        mech->currentTexture = &mech->textureWalk;
+        mech->frameCount = 4;     //frames per row
+        mech->frameTime  = 0.1f; //seconds per frame
+    }
 
     mech->playerVisible = CanSeePlayer(mech, playerPos);
     if (mech->playerVisible) mech->lastKnownPlayerPos = playerPos;
