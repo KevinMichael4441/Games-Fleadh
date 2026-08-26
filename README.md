@@ -36,32 +36,9 @@ Get squished, stretched and splat to escape through traps and lasers and break f
 
 
 ## 🔗 Project Links  
-
-- 💻 **Source Code:**  
-  https://github.com/KevinMichael4441/Games-Fleadh
-  
-- 💻 **Executable Code:**  
-  [Slilab GitHub Repository Link](https://github.com/KevinMichael4441/Games-Fleadh/tree/main)
   
 - 📄 **Design Document:**  
   [Slilab Design Document](https://setuo365-my.sharepoint.com/:w:/g/personal/c00308560_setu_ie/IQCNs7ptLLb9RYt29irGo6j2Aei-TAQUMUOE07XRxs2Y-z8?e=guNw01)
 
 - 🎬 **Trailer Video:**  
   [Slilab Trailer Video](https://setuo365-my.sharepoint.com/:v:/g/personal/c00313555_setu_ie/IQDAMUPCE88yS5zipX4RbRgHARfntN7xtS419oC6dUNqCbQ?e=TlINIF&nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D)
-
-## 🛠️ Installation & Running the Game  
-
-### Option 1 – Run Build
-1. Download the latest release from the Releases section.
-2. Extract the zip file.
-3. Run the executable file.
-
-### Option 2 – Run from Source
-1. Clone the repository:
-   ```bash
-   git clone [repository link]
-
-### Option 3 – Run on Hardware Run
-1. Clone the repository:
-   ```bash
-   git clone [repository link]
