@@ -104,6 +104,11 @@ class UI_Manager
 		void updateEndUI(float& t_dt);
 		void drawEndUI();
 		void unloadEndUI();
+
+		void loadWinUI(Vector2& t_pos);
+		void updateWinUI(float& t_dt, Command& t_newCommand, Vector2& t_pos);
+		void drawWinUI();
+		void unloadWinUI();
 };
 
 #endif

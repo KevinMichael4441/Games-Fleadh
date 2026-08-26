@@ -70,6 +70,7 @@ private:
 	
 	void checkMechOozeCollision();
 	void Respawn();
+	void ResetLevelState();
 
 	UI_Manager ui_manager;
 	GameState gamestate;
@@ -104,6 +105,10 @@ private:
 	float volume = 0.8f;
 	bool gameOver{false};
 	bool m_hideOoze = false;
+
+	// Level end variables
+	Rectangle m_levelEndTrigger = {0, 0, 64, 64};
+	bool m_hasLevelEndTrigger = false;
 };
 
 #endif //game.h

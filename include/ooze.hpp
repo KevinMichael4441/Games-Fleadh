@@ -143,6 +143,7 @@ public:
 	int FindBoundaryAABBs(Vector2 centerPos, c2AABB outRects[MAX_BOUNDARY_RECTS]) const;
 	void ResolvePointVsAABB(Point& p, const c2AABB& rec, float slop, float str, float friction);
 	void Reset();
+	void ResetCheckpoint();
 
 	Vector2 getPosition();
 	Point* GetPoints();

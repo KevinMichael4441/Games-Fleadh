@@ -74,6 +74,9 @@ GameState UI_Manager::updateUI(float& t_dt, Vector2 t_pos, Command& t_activeComm
 		case GAME_INSTRUCTION:
 			updateInstructionUI(t_dt, t_activeCommand, t_pos);
 		break;
+		case GAME_WIN:
+			updateWinUI(t_dt, t_activeCommand, t_pos);
+		break;
 		case GAME_END:
 			updateEndUI(t_dt);
 		break;
@@ -99,6 +102,9 @@ void UI_Manager::drawUI(){
 		break;
 		case GAME_INSTRUCTION:
 			drawInstructionUI();
+		break;
+		case GAME_WIN:
+			drawWinUI();
 		break;
 		case GAME_END:
 			drawEndUI();
@@ -126,6 +132,9 @@ void UI_Manager::loadUI(Vector2& t_pos){
 		case GAME_INSTRUCTION:
 			loadInstructionUI();
 		break;
+		case GAME_WIN:
+			loadWinUI(t_pos);
+		break;
 		case GAME_END:
 			loadEndUI(t_pos);
 		break;
@@ -149,6 +158,9 @@ void UI_Manager::unloadUI(){
 		break;
 		case GAME_INSTRUCTION:
 			unloadInstructionUI();
+		break;
+		case GAME_WIN:
+			unloadWinUI();
 		break;
 		case GAME_END:
 			unloadEndUI();
@@ -268,8 +280,8 @@ void UI_Manager::updateMenuUI(float& t_dt, Command& t_newCommand, Vector2& t_pos
 	}
 }
 void UI_Manager::drawMenuUI(){
-	DrawTexture(menu_background, 0, -20, WHITE);
-	DrawTexture(menu_background, 0, SCREEN_HEIGHT-20, WHITE);
+	DrawTexture(menu_background, corner.x, corner.y - 20, WHITE);
+	DrawTexture(menu_background, corner.x, corner.y + SCREEN_HEIGHT - 20, WHITE);
 
 	DrawText(TextFormat("OOZ3"), corner.x + 90, corner.y + 50, 180, DARKGREEN);
 	DrawText(TextFormat("OOZ3"), corner.x + 90, corner.y + 40, 180, GREEN);
@@ -507,4 +519,36 @@ void UI_Manager::drawEndUI(){
 }
 void UI_Manager::unloadEndUI(){
 	std::cout << "Unloading END Screen UI\n";
+}
+
+void UI_Manager::loadWinUI(Vector2& t_pos)
+{
+	recenter(t_pos);
+}
+
+void UI_Manager::updateWinUI(float& t_dt, Command& t_newCommand, Vector2& t_pos)
+{
+
+}
+
+void UI_Manager::drawWinUI()
+{
+	DrawRectangle(corner.x, corner.y, SCREEN_WIDTH, SCREEN_HEIGHT, BLACK);
+
+	const char* winText = "You have escaped the lab!";
+	int fontSize = 40;
+	int textWidth = MeasureText(winText, fontSize);
+
+	DrawText(winText, center.x - textWidth / 2, center.y - fontSize / 2, fontSize, WHITE);
+
+	const char* continueText = "Press any key to continue";
+	int continueFontSize = 20;
+	int continueTextWidth = MeasureText(continueText, continueFontSize);
+
+	DrawText(continueText, center.x - continueTextWidth / 2, corner.y + SCREEN_HEIGHT - 50, continueFontSize, WHITE);
+}
+
+void UI_Manager::unloadWinUI()
+{
+
 }
